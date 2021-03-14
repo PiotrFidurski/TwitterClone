@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 4000;
   serverConfig();
 
   await connect(
-    `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@localhost:27017/api`,
+    `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.riogn.mongodb.net/api?retryWrites=true&w=majority`,
     {
       useNewUrlParser: true,
       useCreateIndex: true,
