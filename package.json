@@ -7,6 +7,7 @@
     "node": "v12.21.0",
     "npm": "6.14.8"
   },
+  "type": "module",
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
     "@types/compression": "^1.7.0",
@@ -36,12 +37,13 @@
     "saslprep": "^1.0.3",
     "yup": "^0.27.0"
   },
+
   "resolutions": {
     "fs-capacitor": "^6.2.0",
     "graphql-upload": "^11.0.0"
   },
   "scripts": {
-    "start": "node index.ts",
+    "start": "node --experimental-modules index.ts",
     "heroku-postbuild": "cd client && npm install && npm install --only=dev --no-shrinkwrap && npm run build"
   }
 }
