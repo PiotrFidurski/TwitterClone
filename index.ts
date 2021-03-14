@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 4000;
 
 (async () => {
   await connect(
-    `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.riogn.mongodb.net/api?retryWrites=true&w=majority`,
+    `mongodb+srv://Chimson:4300c943081b7d962e817bfe9776aa14@cluster0.riogn.mongodb.net/api?retryWrites=true&w=majority`,
     {
       useNewUrlParser: true,
       useCreateIndex: true,
@@ -21,7 +21,7 @@ const PORT = process.env.PORT || 4000;
     },
     (error) => {
       if (error) {
-        throw new Error(error);
+        console.log(`connecting to DB failed, ${error}`);
       } else {
         console.log("connecting to DB succeeded");
       }
