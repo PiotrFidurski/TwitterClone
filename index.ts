@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 4000;
 
 (async () => {
   await connect(
-    `mongodb+srv://Chimson:4300c943081b7d962e817bfe9776aa14@cluster0.riogn.mongodb.net/api?retryWrites=true&w=majority`,
+    `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.riogn.mongodb.net/api?retryWrites=true&w=majority`,
     {
       useNewUrlParser: true,
       useCreateIndex: true,
