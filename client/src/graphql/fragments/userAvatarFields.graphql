@@ -1,0 +1,3 @@
+fragment userAvatarFields on User {
+  avatar
+}

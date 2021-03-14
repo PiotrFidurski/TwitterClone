@@ -1,0 +1,9 @@
+fragment userFollowerFields on User {
+  isFollowed @client
+  followersCount
+  followingCount
+  followers {
+    id
+    ...userAvatarFields
+  }
+}

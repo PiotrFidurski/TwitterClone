@@ -1,0 +1,14 @@
+mutation uploadAvatar($file: Upload!, $userId: ID!) {
+  uploadAvatar(file: $file, userId: $userId) {
+    status
+    node {
+      ... on User {
+        id
+        name
+        username
+        email
+        ...userAvatarFields
+      }
+    }
+  }
+}

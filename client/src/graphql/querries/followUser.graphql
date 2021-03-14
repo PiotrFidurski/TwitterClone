@@ -1,0 +1,14 @@
+mutation followUser($id: ID!) {
+  followUser(id: $id) {
+    node {
+      ... on User {
+        id
+        # username
+        # email
+        # name
+        ...userFollowerFields
+        ...userAvatarFields
+      }
+    }
+  }
+}

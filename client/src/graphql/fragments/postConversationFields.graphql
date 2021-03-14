@@ -1,0 +1,6 @@
+fragment postConversationFields on Post {
+  conversation {
+    id
+    body
+  }
+}

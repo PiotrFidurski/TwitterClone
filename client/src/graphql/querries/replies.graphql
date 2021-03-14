@@ -1,0 +1,18 @@
+query replies($postId: ID!, $offset: Int, $loadMoreId: ID) {
+  replies(postId: $postId, offset: $offset, loadMoreId: $loadMoreId) {
+    id
+    body
+    conversationId
+    inReplyToId
+    ...postLikesFields
+    ...postConversationFields
+    owner {
+      id
+      username
+      name
+      email
+      ...userAvatarFields
+      ...userFollowerFields
+    }
+  }
+}

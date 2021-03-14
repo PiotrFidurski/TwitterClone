@@ -1,0 +1,10 @@
+query suggestedUsers {
+  suggestedUsers {
+    id
+    username
+    name
+    # email
+    ...userAvatarFields
+    ...userFollowerFields
+  }
+}

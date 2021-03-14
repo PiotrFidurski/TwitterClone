@@ -1,0 +1,18 @@
+query conversation($conversationId: ID!, $postId: ID!) {
+  conversation(conversationId: $conversationId, postId: $postId) {
+    id
+    body
+    conversationId
+    inReplyToId
+    ...postLikesFields
+    ...postConversationFields
+    owner {
+      id
+      username
+      name
+      email
+      ...userAvatarFields
+      ...userFollowerFields
+    }
+  }
+}

@@ -1,0 +1,28 @@
+mutation UpdateUser(
+  $userId: ID!
+  $name: String
+  $bio: String
+  $website: String
+) {
+  updateUser(userId: $userId, name: $name, bio: $bio, website: $website) {
+    __typename
+    ... on UserUpdateSuccess {
+      node {
+        ... on User {
+          id
+          name
+          bio
+          website
+          ...userFollowerFields
+          ...userAvatarFields
+        }
+      }
+    }
+    ... on UserUpdateInvalidInputError {
+      name
+      bio
+      website
+      message
+    }
+  }
+}

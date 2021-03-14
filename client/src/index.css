@@ -1,0 +1,101 @@
+body[data-theme="rgb(255, 255, 255)"] {
+  --colors-mainbackground: rgb(255, 255, 255);
+  --colors-background: rgb(245, 248, 250);
+  --colors-thirdbackground: rgb(230, 236, 240);
+  --colors-border: rgb(230, 236, 240);
+  --colors-maintext: rgb(20, 23, 26);
+  --colors-secondarytext: rgb(101, 119, 134);
+  --colors-threadedline: rgb(204, 214, 221);
+  --colors-hover: rgba(0, 0, 0, 0.03);
+}
+
+body[data-theme="rgb(21, 32, 43)"] {
+  --colors-thirdbackground: rgb(37, 51, 65);
+  --colors-mainbackground: rgb(21, 32, 43);
+  --colors-background: rgb(25, 39, 52);
+  --colors-border: rgb(56, 68, 77);
+  --colors-maintext: rgb(255, 255, 255);
+  --colors-secondarytext: rgb(136, 153, 166);
+  --colors-threadedline: rgb(61, 84, 102);
+  --colors-hover: rgba(255, 255, 255, 0.03);
+}
+
+body[data-color="rgb(244, 93, 34)"] {
+  --colors-button: rgb(244, 93, 34);
+  --colors-button-hover-opacity: rgba(220, 84, 31, 0.1);
+  --colors-button-hover: rgb(220, 84, 31);
+}
+
+body[data-color="rgb(255, 173, 31)"] {
+  --colors-button: rgb(255, 173, 31);
+  --colors-button-hover-opacity: rgba(255, 173, 31, 0.1);
+  --colors-button-hover: rgb(230, 160, 28);
+}
+
+body[data-color="rgb(29, 161, 242)"] {
+  --colors-button: rgb(29, 161, 242);
+  --colors-button-hover-opacity: rgba(29, 161, 242, 0.1);
+  --colors-button-hover: rgb(26, 145, 218);
+}
+body[data-color="rgb(224, 36, 94)"] {
+  --colors-button: rgb(224, 36, 94);
+  --colors-button-hover-opacity: rgba(224, 36, 94, 0.1);
+  --colors-button-hover: rgb(204, 24, 91);
+}
+
+body[data-color="rgb(23, 191, 99)"] {
+  --colors-button: rgb(23, 191, 99);
+  --colors-button-hover-opacity: rgba(23, 191, 99, 0.1);
+  --colors-button-hover: rgb(3, 178, 96);
+}
+
+body[data-color="rgb(121, 75, 196)"] {
+  --colors-button: rgb(121, 75, 196);
+  --colors-button-hover-opacity: rgba(121, 75, 196, 0.1);
+  --colors-button-hover: rgb(101, 62, 193);
+}
+
+.window-scroller-override {
+  height: 100% !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-basis: auto !important;
+  min-width: 0px !important;
+  width: 100% !important;
+}
+
+@keyframes fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.fade {
+  opacity: 1;
+  animation-name: fade;
+  animation-iteration-count: 1;
+  animation-timing-function: ease-in;
+  animation-duration: 0.15s;
+}
+
+.ReactModal__Overlay {
+  background: rgba(110, 118, 125, 0.4) !important;
+}
+
+.public-DraftEditorPlaceholder-root {
+  z-index: -1;
+  position: absolute;
+  color: #9197a3;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--colors-maintext);
+  -webkit-box-shadow: 0 0 0px 1000px var(--colors-secondarytext) inset;
+  box-shadow: 0 0 0px 1000px var(--colors-thirdbackground) inset;
+  transition: background-color 5000s ease-in-out 0s;
+}

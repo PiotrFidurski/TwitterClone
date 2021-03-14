@@ -1,0 +1,21 @@
+query feed($offset: Int) {
+  feed(offset: $offset) {
+    feed {
+      id
+      body
+      conversationId
+      inReplyToId
+      ...postLikesFields
+      ...postConversationFields
+      owner {
+        id
+        username
+        name
+        email
+        ...userAvatarFields
+        ...userFollowerFields
+      }
+    }
+    length
+  }
+}

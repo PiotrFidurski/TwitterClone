@@ -1,0 +1,9 @@
+fragment postLikesFields on Post {
+  id
+  isLiked @client
+  likesCount
+  replyCount
+  likes {
+    id
+  }
+}

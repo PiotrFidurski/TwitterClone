@@ -1,0 +1,12 @@
+query authUser {
+  authUser {
+    id
+    username
+    email
+    name
+    bio
+    website
+    ...userFollowerFields
+    ...userAvatarFields
+  }
+}

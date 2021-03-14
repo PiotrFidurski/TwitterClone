@@ -1,0 +1,17 @@
+query postsAndReplies($userId: ID!, $offset: Int) {
+  postsAndReplies(userId: $userId, offset: $offset) {
+    id
+    body
+    conversationId
+    inReplyToId
+    ...postLikesFields
+    ...postConversationFields
+    owner {
+      id
+      username
+      name
+      email
+      ...userAvatarFields
+    }
+  }
+}
