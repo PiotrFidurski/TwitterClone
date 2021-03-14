@@ -41,8 +41,7 @@
     "graphql-upload": "^11.0.0"
   },
   "scripts": {
-    "start": "start index.ts",
-    "startdev": "ts-node-dev --respawn --transpile-only index.ts",
+    "start": "ts-node-dev --respawn --transpile-only index.ts",
     "heroku-postbuild": "cd client && npm install && npm install --only=dev --no-shrinkwrap && npm run build"
   }
 }
