@@ -2,7 +2,7 @@
   "name": "server",
   "version": "0.0.1",
   "description": "Awesome project.",
-  "main": "index.ts",
+  "main": "index.js",
   "engines": {
     "node": "v12.21.0",
     "npm": "6.14.8"
@@ -18,11 +18,11 @@
     "@types/mongoose": "^5.10.3",
     "@types/node": "^12.7.8",
     "@types/yup": "^0.26.24",
-    "ts-node-dev": "^1.0.0",
-    "typescript": "^4.2.3"
+    "ts-node-dev": "^1.0.0"
   },
   "dependencies": {
     "apollo-server-express": "^2.19.0",
+    "typescript": "^4.2.3",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.16.0",
     "compression": "^1.7.4",
@@ -43,8 +43,9 @@
     "graphql-upload": "^11.0.0"
   },
   "scripts": {
-    "start": "node index.js",
-    "postinstall": "tsc",
+    "tsc":"tsc",
+    "start": "node index.ts",
+    "postinstall": "npm run tsc",
     "heroku-postbuild": "cd client && npm install && npm install --only=dev --no-shrinkwrap && npm run build"
   }
 }
