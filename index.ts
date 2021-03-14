@@ -7,11 +7,11 @@ import { app, serverConfig } from "./config/expressServer";
 import { createServer } from "http";
 import { connect } from "mongoose";
 
+serverConfig();
+
 const PORT = process.env.PORT || 4000;
 
 (async () => {
-  serverConfig();
-
   await connect(
     `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.riogn.mongodb.net/api?retryWrites=true&w=majority`,
     {
@@ -27,26 +27,26 @@ const PORT = process.env.PORT || 4000;
       }
     }
   );
-
-  const apolloServer = new ApolloServer({
-    typeDefs,
-    resolvers,
-    schemaDirectives: {
-      auth: AuthDirective,
-    },
-    context: ({ req, res }) => ({ req, res }),
-  });
-
-  apolloServer.applyMiddleware({ app, cors: false });
-
-  const httpServer = createServer(app);
-
-  apolloServer.installSubscriptionHandlers(httpServer);
-
-  httpServer.listen(PORT, () => {
-    console.log("Express server started");
-    console.log(
-      `Subscriptions ready at ws://localhost:${PORT}${apolloServer.subscriptionsPath}`
-    );
-  });
 })();
+
+const apolloServer = new ApolloServer({
+  typeDefs,
+  resolvers,
+  schemaDirectives: {
+    auth: AuthDirective,
+  },
+  context: ({ req, res }) => ({ req, res }),
+});
+
+apolloServer.applyMiddleware({ app, cors: false });
+
+const httpServer = createServer(app);
+
+apolloServer.installSubscriptionHandlers(httpServer);
+
+httpServer.listen(PORT, () => {
+  console.log("Express server started");
+  console.log(
+    `Subscriptions ready at ws://localhost:${PORT}${apolloServer.subscriptionsPath}`
+  );
+});
