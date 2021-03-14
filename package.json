@@ -43,9 +43,7 @@
     "graphql-upload": "^11.0.0"
   },
   "scripts": {
-    "tsc":"tsc",
     "start": "node index.ts",
-    "postinstall": "npm run tsc",
     "heroku-postbuild": "cd client && npm install && npm install --only=dev --no-shrinkwrap && npm run build"
   }
 }
