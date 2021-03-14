@@ -21,7 +21,7 @@ const PORT = process.env.PORT || 4000;
     },
     (error) => {
       if (error) {
-        console.log(`connecting to DB failed, ${error}`);
+        throw new Error(error);
       } else {
         console.log("connecting to DB succeeded");
       }
