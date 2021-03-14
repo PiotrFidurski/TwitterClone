@@ -39,9 +39,7 @@ interface Props {
 }
 
 export const Form: React.FC<Props> = ({ postToReplyTo }) => {
-  const [createPost, { loading, data }] = useMutation<CreatePostMutation>(
-    CreatePostDocument
-  );
+  const [createPost] = useMutation<CreatePostMutation>(CreatePostDocument);
   const { closeModal } = useModalContext();
   const history = useHistory();
 
@@ -61,7 +59,6 @@ export const Form: React.FC<Props> = ({ postToReplyTo }) => {
         cache.modify({
           fields: {
             feed(existingFeed = []) {
-              console.log(existingFeed, "existing after add");
               const newPostRef = cache.writeFragment({
                 data: data!.createPost!,
                 fragment: gql`
@@ -99,7 +96,7 @@ export const Form: React.FC<Props> = ({ postToReplyTo }) => {
       }, 50);
     }
   };
-  console.log(data);
+
   return (
     <Formik
       initialValues={{ body: "" }}
@@ -114,7 +111,7 @@ export const Form: React.FC<Props> = ({ postToReplyTo }) => {
               setState={setState}
               setFieldValue={setFieldValue}
             />
-            <Toolbar state={state} loading={loading} />
+            <Toolbar state={state} />
           </StyledForm>
         );
       }}

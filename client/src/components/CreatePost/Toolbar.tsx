@@ -24,10 +24,9 @@ export const StyledProgressCircleContainer = styled.div`
 
 interface Props {
   state: EditorState;
-  loading: boolean;
 }
 
-export const Toolbar: React.FC<Props> = ({ state, loading }) => {
+export const Toolbar: React.FC<Props> = ({ state }) => {
   return (
     <StyledContainer>
       <div>
@@ -47,15 +46,7 @@ export const Toolbar: React.FC<Props> = ({ state, loading }) => {
           }
         >
           <SpanContainer bold>
-            <span>
-              {loading ? (
-                <Spinner
-                  style={{ margin: "0 7.5px", width: "19px", height: "19px" }}
-                />
-              ) : (
-                "Tweet"
-              )}
-            </span>
+            <span>Tweet</span>
           </SpanContainer>
         </ButtonContainer>
       </div>

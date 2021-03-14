@@ -127,7 +127,6 @@ export const cache: InMemoryCache = new InMemoryCache({
             return { ...existing, feed: array };
           },
           merge(existing = [], incoming) {
-            console.log(existing, "existing", incoming, "inc");
             return {
               ...existing,
               length:
