@@ -2,6 +2,9 @@
   "name": "server",
   "version": "0.0.1",
   "description": "Awesome project.",
+  "engines": {
+    "node": "12.x"
+  },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
     "@types/compression": "^1.7.0",
