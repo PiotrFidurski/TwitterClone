@@ -345,7 +345,7 @@ const ReplyingTo: React.FC = () => {
       >
         {post.inReplyToId !== prevItem.id && post.inReplyToId !== postId ? (
           <SpanContainer grey>
-            <span id="link">Replying to @{post!.inReplyToId}</span>
+            <span id="link"></span>
           </SpanContainer>
         ) : null}
       </Link>

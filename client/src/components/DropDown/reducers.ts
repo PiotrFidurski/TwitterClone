@@ -24,7 +24,6 @@ export const moveUpReducer = (state: IState, action: IAction) => {
       return {
         ...state,
         open: false,
-        visible: false,
       };
     }
 
@@ -51,7 +50,6 @@ export const moveUpAndLeftReducer = (state: IState, action: IAction) => {
       return {
         ...state,
         open: false,
-        visible: false,
       };
     }
     case "set_menu_size": {
