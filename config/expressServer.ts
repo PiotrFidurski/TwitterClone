@@ -24,6 +24,7 @@ export const serverConfig = () => {
       res.sendFile(path.join(__dirname, "client/build", "index.html"));
     });
   }
+
   app.post("/refresh_token", async (req, res) => {
     const token = req.cookies.cookiez;
 
