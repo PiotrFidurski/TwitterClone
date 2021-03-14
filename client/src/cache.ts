@@ -106,9 +106,9 @@ export const cache: InMemoryCache = new InMemoryCache({
                 return !field;
               });
 
-            existing &&
-              existing.feed &&
-              existing.feed.slice(0).forEach((post: any) => {
+            array &&
+              array!.length &&
+              array!.slice(0).forEach((post: any) => {
                 const ref = toReference(post);
                 const inReplyToId: any = readField("inReplyToId", ref);
                 let parent: any = thread[inReplyToId];
@@ -128,7 +128,7 @@ export const cache: InMemoryCache = new InMemoryCache({
           },
           merge(existing = [], incoming) {
             return {
-              ...existing,
+              ...incoming,
               length:
                 existing && existing!.feed
                   ? existing!.length + incoming!.length
