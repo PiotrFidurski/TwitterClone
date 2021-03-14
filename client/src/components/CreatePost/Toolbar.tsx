@@ -1,5 +1,10 @@
 import * as React from "react";
-import { ButtonContainer, SpanContainer, BaseStyles } from "../../styles";
+import {
+  ButtonContainer,
+  SpanContainer,
+  BaseStyles,
+  Spinner,
+} from "../../styles";
 import { EditorState } from "draft-js";
 import { ProgressCircle } from "./ProgressCircle";
 import styled from "styled-components";
@@ -19,9 +24,10 @@ export const StyledProgressCircleContainer = styled.div`
 
 interface Props {
   state: EditorState;
+  loading: boolean;
 }
 
-export const Toolbar: React.FC<Props> = ({ state }) => {
+export const Toolbar: React.FC<Props> = ({ state, loading }) => {
   return (
     <StyledContainer>
       <div>
@@ -41,7 +47,15 @@ export const Toolbar: React.FC<Props> = ({ state }) => {
           }
         >
           <SpanContainer bold>
-            <span>Tweet</span>
+            <span>
+              {loading ? (
+                <Spinner
+                  style={{ margin: "0 7.5px", width: "19px", height: "19px" }}
+                />
+              ) : (
+                "Tweet"
+              )}
+            </span>
           </SpanContainer>
         </ButtonContainer>
       </div>

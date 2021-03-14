@@ -9,6 +9,7 @@ debug.log
 .vscode
 # testing
 /coverage
+issues.md
 
 # production
 /build
