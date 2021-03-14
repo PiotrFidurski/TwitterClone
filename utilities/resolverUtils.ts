@@ -79,6 +79,48 @@ export const postPipeline = [
             preserveNullAndEmptyArrays: true,
           },
         },
+        {
+          $lookup: {
+            from: "users",
+            let: { following: "$following" },
+            pipeline: [
+              { $match: { $expr: { $in: ["$_id", "$$following"] } } },
+              {
+                $group: {
+                  _id: null,
+                  count: { $sum: 1 },
+                  document: { $push: "$$ROOT" },
+                },
+              },
+            ],
+            as: "_following",
+          },
+        },
+        {
+          $addFields: {
+            following: "$_following.document",
+          },
+        },
+        {
+          $addFields: {
+            followingCount: {
+              $cond: [
+                { $ne: ["$_following.count", []] },
+                "$_following.count",
+                0,
+              ],
+            },
+          },
+        },
+        {
+          $unwind: "$followingCount",
+        },
+        {
+          $unwind: {
+            path: "$following",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
       ],
       as: "owner",
     },
