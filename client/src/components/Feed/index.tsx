@@ -29,18 +29,21 @@ interface GnenerateFeedProps {
 }
 
 const GenerateFeed: React.FC<GnenerateFeedProps> = React.memo(({ userId }) => {
-  const { data, loading, fetchMore } = useQuery<FeedQuery>(FeedDocument);
+  const { data, loading, fetchMore } = useQuery<FeedQuery>(FeedDocument, {
+    fetchPolicy: "network-only",
+    nextFetchPolicy: "cache-first",
+  });
 
-  const loadMore = async (): Promise<any> => {
+  const loadMore = React.useCallback(async (): Promise<any> => {
     try {
       await fetchMore({
         variables: { offset: data && data!.feed!.length! },
       });
     } catch (error) {}
-  };
+  }, [fetchMore, data]);
 
   if (loading) return <Spinner />;
-  // console.log(data!.feed.length);
+
   return !loading ? (
     <VirtualizedList
       userId={userId}
