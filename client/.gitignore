@@ -6,13 +6,12 @@
 .pnp.js
 codegen.yml
 debug.log
-tsconfig.json
 .vscode
 # testing
 /coverage
 
 # production
-/build
+build
 
 # misc
 .DS_Store
