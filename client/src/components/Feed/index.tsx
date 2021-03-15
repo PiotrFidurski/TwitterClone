@@ -29,10 +29,7 @@ interface GnenerateFeedProps {
 }
 
 const GenerateFeed: React.FC<GnenerateFeedProps> = React.memo(({ userId }) => {
-  const { data, loading, fetchMore } = useQuery<FeedQuery>(FeedDocument, {
-    fetchPolicy: "network-only",
-    nextFetchPolicy: "cache-first",
-  });
+  const { data, loading, fetchMore } = useQuery<FeedQuery>(FeedDocument);
 
   const loadMore = React.useCallback(async (): Promise<any> => {
     try {

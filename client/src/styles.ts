@@ -253,6 +253,7 @@ export const StyledAvatar = styled.div<StyledAvatarProps>`
     background: ${!url && "grey"};
     border-radius: 9999px;
     background-size: cover;
+    background-color: var(--colors-thirdbackground);
     flex-grow: 1;
     flex-shrink: 0;
   `}

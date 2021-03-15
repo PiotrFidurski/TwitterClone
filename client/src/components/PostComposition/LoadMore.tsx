@@ -12,30 +12,39 @@ interface Props {
 }
 
 export const LoadMore: React.FC<Props> = ({ post }) => {
-  const [loaded, setLoaded] = React.useState(false);
+  const [{ loaded, loading }, setLoadings] = React.useState({
+    loaded: false,
+    loading: false,
+  });
   const { postId } = useParams<{ postId: string }>();
-  const { fetchMore, loading } = useQuery(RepliesDocument, {
+  const { fetchMore } = useQuery(RepliesDocument, {
     variables: { postId: postId! },
+    fetchPolicy: "network-only",
     skip: true,
   });
 
-  return !loading && !loaded ? (
+  return (
     <Wrapper
-      onClick={(e) => {
+      style={loaded ? { borderBottom: "transparent" } : {}}
+      onClick={async (e) => {
         e.stopPropagation();
-        setLoaded(true);
+
         try {
-          fetchMore!({
+          setLoadings({ loaded: false, loading: true });
+          await fetchMore!({
             variables: { postId: postId!, loadMoreId: post.id! },
           });
+          setLoadings({ loaded: true, loading: false });
         } catch (e) {}
       }}
     >
-      <DisplayMoreButton post={post} isPostView={true}>
-        more replies
-      </DisplayMoreButton>
+      {!loading && !loaded ? (
+        <DisplayMoreButton post={post} isPostView={true}>
+          more replies
+        </DisplayMoreButton>
+      ) : loading ? (
+        <Spinner style={{ margin: "0 auto" }} />
+      ) : null}
     </Wrapper>
-  ) : loading ? (
-    <Spinner />
-  ) : null;
+  );
 };

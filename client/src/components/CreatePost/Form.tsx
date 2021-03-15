@@ -58,16 +58,10 @@ export const Form: React.FC<Props> = ({ postToReplyTo }) => {
       update: (cache, { data }) => {
         cache.modify({
           fields: {
-            feed(existingFeed = []) {
-              const newPostRef = cache.writeFragment({
-                data: data!.createPost!,
-                fragment: gql`
-                  fragment NewPost on Post {
-                    id
-                    body
-                  }
-                `,
-              });
+            feed(existingFeed = [], { toReference }) {
+              console.log(existingFeed);
+              const newPostRef = toReference(data!.createPost!.id);
+
               return {
                 length: existingFeed.length,
                 feed: [newPostRef, ...existingFeed.feed!],

@@ -36,7 +36,10 @@ export const UploadAvatar: React.FC<Props> = ({ user, saving, upload }) => {
     // eslint-disable-next-line
   }, [image, saving]);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: "image/jpeg, image/png",
+  });
 
   return (
     <div
@@ -51,7 +54,7 @@ export const UploadAvatar: React.FC<Props> = ({ user, saving, upload }) => {
         position: "relative",
       }}
     >
-      <input accept="image/*" {...getInputProps()} />
+      <input {...getInputProps()} />
 
       <AvatarContainer
         style={{ position: "absolute", top: 0, left: 0 }}
