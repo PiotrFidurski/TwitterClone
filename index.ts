@@ -10,10 +10,7 @@ import { decode } from "jsonwebtoken";
 
 serverConfig();
 
-const DBURI =
-  process.env.NODE_ENV !== "production"
-    ? `mongodb://${process.env.DB_USERNAME}:secret@127.0.0.1:27017/api?retryWrites=true&w=majority`
-    : `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.riogn.mongodb.net/api?retryWrites=true&w=majority`;
+const DBURI = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.riogn.mongodb.net/api?retryWrites=true&w=majority`;
 
 const PORT = process.env.PORT || 4000;
 

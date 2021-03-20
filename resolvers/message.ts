@@ -8,9 +8,11 @@ import { withFilter } from "graphql-subscriptions";
 
 const redisPubSub = new RedisPubSub({
   connection: {
-    host: "127.0.0.1",
-    port: 6379,
-    retry_strategy: (options: any) => Math.max(options.attempt * 100, 3000),
+    host: `${process.env.REDIS_HOST}`,
+    port: 18964,
+    password: process.env.REDIS_PASSWORD,
+    username: process.env.REDIS_USERNAME,
+    retryStrategy: (options: any) => Math.max(options.attempt * 100, 3000),
   },
 });
 
