@@ -21,7 +21,6 @@
     "@types/yup": "^0.26.24"
   },
   "dependencies": {
-    "@axelspringer/graphql-google-pubsub": "^2.1.0",
     "apollo-server-express": "^2.19.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.16.0",
@@ -46,7 +45,7 @@
     "graphql-upload": "^11.0.0"
   },
   "scripts": {
-    "start": "concurrently \"ts-node-dev --respawn --transpile-only index.ts\" \"cd client && npm start\"",
+    "start": "ts-node-dev index.ts",
     "heroku-postbuild": "cd client && npm install && npm install --only=dev --no-shrinkwrap && npm run build"
   }
 }
