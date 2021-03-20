@@ -36,23 +36,7 @@ const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,
   context: ({ req, res, connection }) => ({ req, res, connection }),
-  subscriptions: {
-    onConnect: (_, ws: any, { request }) => {
-      if (!request!.headers!.cookie) {
-        throw new Error("Not Authorized.");
-      }
-      const token: any = decode(
-        request!.headers!.cookie!.replace("cookiez=", ""),
-        {}
-      );
 
-      return new Promise((res) =>
-        sessionMiddleware(ws.upgradeReq, {} as any, () => {
-          res({ req: ws.upgradeReq, userId: token._id });
-        })
-      );
-    },
-  },
   schemaDirectives: {
     auth: AuthDirective,
   },

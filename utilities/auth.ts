@@ -33,27 +33,27 @@ export const revokeRefreshTokens = async (user: IUser) => {
 };
 
 export const authenticate = (context: OwnContext) => {
-  if (context.connection) {
-    if (context.connection.context.userId) {
-      return true;
-    } else {
-      throw new Error("Not authorized to view this resource.");
-    }
-  } else {
-    const authorization = context!.req.header("Authorization") || "";
-    if (authorization) {
-      const token = authorization.replace("Bearer ", "");
-      const secret = process.env.ACCESS_TOKEN_SECRET;
-      try {
-        if (!secret) {
-          throw new Error("Secret not provided.");
-        }
-        return verify(token, secret);
-      } catch (error) {
-        throw new Error("Invalid Token");
+  // if (context.connection) {
+  //   if (context.connection.context.userId) {
+  //     return true;
+  //   } else {
+  //     throw new Error("Not authorized to view this resource.");
+  //   }
+  // } else {
+  const authorization = context!.req.header("Authorization") || "";
+  if (authorization) {
+    const token = authorization.replace("Bearer ", "");
+    const secret = process.env.ACCESS_TOKEN_SECRET;
+    try {
+      if (!secret) {
+        throw new Error("Secret not provided.");
       }
+      return verify(token, secret);
+    } catch (error) {
+      throw new Error("Invalid Token");
     }
   }
+  // }
 
   throw new Error("Not authorized to view this resource.");
 };

@@ -18,7 +18,7 @@ export default gql`
     ): Message! @auth
   }
   extend type Subscription {
-    messageSent(conversationId: ID!): Message @auth
+    messageSent(conversationId: ID!): Message
   }
   type Message {
     id: ID!

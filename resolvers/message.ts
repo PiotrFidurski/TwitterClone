@@ -12,6 +12,7 @@ const redisPubSub = new RedisPubSub({
     port: 18964,
     password: process.env.REDIS_PASSWORD,
     username: process.env.REDIS_USERNAME,
+
     retryStrategy: (options: any) => Math.max(options.attempt * 100, 3000),
   },
 });
