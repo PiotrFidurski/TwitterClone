@@ -3,10 +3,9 @@ import { ApolloServer } from "apollo-server-express";
 import typeDefs from "./typeDefs";
 import resolvers from "./resolvers";
 import AuthDirective from "./customDirectives/AuthDirective";
-import { app, serverConfig, sessionMiddleware } from "./config/expressServer";
+import { app, serverConfig } from "./config/expressServer";
 import { createServer } from "http";
 import { connect } from "mongoose";
-import { decode } from "jsonwebtoken";
 
 serverConfig();
 
