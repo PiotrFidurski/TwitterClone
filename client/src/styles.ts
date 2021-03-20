@@ -212,12 +212,13 @@ export const PlaceHolder = styled.div<{ noPadding?: boolean; light?: boolean }>`
 `;
 
 export const AvatarContainer = styled.div<{
-  width: string;
+  width: string | number;
   height: string;
   borderColor?: boolean;
   borderWidth?: boolean;
   marginTop?: string;
   noRightMargin?: boolean;
+  displayAsGroup?: boolean;
 }>`
   ${({
     borderColor,
@@ -226,19 +227,25 @@ export const AvatarContainer = styled.div<{
     noRightMargin,
     width,
     height,
+    displayAsGroup,
   }) => css`
     ${BaseStyles};
     flex-grow: 0;
-    width: ${width};
+    width: ${width}px;
     margin-top: ${marginTop};
     border-width: ${borderWidth ? "4px" : "0"};
     min-height: ${height};
     flex-direction: row;
     height: 100%;
-    flex-basis: ${width};
-    border-radius: 9999px;
+    flex-basis: ${!displayAsGroup ? width : (width as number) / 2}px;
+    border-radius: ${!displayAsGroup ? "9999px" : "unset"};
+    border-top-left-radius: ${displayAsGroup ? "9999px" : null};
+    border-bottom-left-radius: ${displayAsGroup ? "9999px" : null};
     border-color: ${borderColor ? "rgb(21, 32, 43)" : "transparent"};
-    margin-right: ${noRightMargin ? "0" : "10px"};
+    margin-right: ${noRightMargin || displayAsGroup ? "0" : "10px"};
+    ${StyledAvatar} {
+      border-radius: ${displayAsGroup ? "inherit" : "9999px"};
+    }
   `}
 `;
 

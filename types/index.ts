@@ -4,6 +4,7 @@ import { Document } from "mongoose";
 export interface OwnContext {
   req: Request;
   res: Response;
+  connection: any;
   authenticatedUser: IAuth;
 }
 

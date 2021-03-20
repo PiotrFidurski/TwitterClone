@@ -3,10 +3,12 @@ import { TokenRefreshLink } from "apollo-link-token-refresh";
 import jwtDecode from "jwt-decode";
 import { getAccessToken, setAccessToken } from "./accessToken";
 import { onError } from "@apollo/client/link/error";
-import { ApolloClient, ApolloLink, from } from "@apollo/client";
+import { ApolloClient, ApolloLink, from, split } from "@apollo/client";
+import { getMainDefinition } from "@apollo/client/utilities";
 import { Observable } from "@apollo/client/utilities/observables/Observable";
 import { cache } from "./cache";
 import typeDefs from "./typeDefs";
+import { WebSocketLink } from "@apollo/client/link/ws";
 import {
   AuthUserDocument,
   AuthUserQuery,
@@ -40,6 +42,25 @@ const uploadLink: any = createUploadLink({
   uri: "/graphql",
   credentials: "include",
 });
+
+const wsLink = new WebSocketLink({
+  uri: "ws://localhost:4000/graphql",
+  options: {
+    reconnect: true,
+  },
+});
+
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === "OperationDefinition" &&
+      definition.operation === "subscription"
+    );
+  },
+  wsLink,
+  uploadLink
+);
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors) {
@@ -117,9 +138,9 @@ export const client = new ApolloClient({
         console.warn(`Your refresh token is invalid. Try to relogin, ${error}`);
       },
     }),
-    errorLink,
+    // errorLink,
     requestLink,
-    uploadLink,
+    splitLink,
   ]),
   typeDefs,
   resolvers: {

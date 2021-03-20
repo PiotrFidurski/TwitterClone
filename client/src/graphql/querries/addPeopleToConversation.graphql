@@ -1,0 +1,12 @@
+mutation addPeopleToConversation($conversationId: ID, $userIds: [ID!]!) {
+  addPeopleToConversation(conversationId: $conversationId, userIds: $userIds) {
+    id
+    conversationId
+    type
+    members {
+      username
+      id
+      avatar
+    }
+  }
+}

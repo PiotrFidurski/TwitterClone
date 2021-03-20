@@ -82,7 +82,7 @@ const UserToFollow: React.FC<UserToFollowProps> = ({ userToFollow }) => {
 
   return (
     <StyledWrapper hover style={{ display: "flex" }}>
-      <AvatarContainer width="49px" height="49px">
+      <AvatarContainer width={49} height="49px">
         <StyledAvatar url={userToFollow.avatar!} />
       </AvatarContainer>
       <StyledHeader>

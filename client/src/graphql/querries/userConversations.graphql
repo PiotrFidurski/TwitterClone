@@ -1,0 +1,12 @@
+query userConversations {
+  userConversations {
+    id
+    conversationId
+    type
+    members {
+      username
+      id
+      avatar
+    }
+  }
+}

@@ -222,7 +222,7 @@ export const Profile: React.FC<Props> = ({ user }) => {
       <S.Background />
       <StyledHeaderContainer>
         <AvatarContainer
-          width="134px"
+          width={134}
           height="134px"
           borderColor
           borderWidth
@@ -280,14 +280,21 @@ export const Profile: React.FC<Props> = ({ user }) => {
             <span>@{user.username}</span>
           </SpanContainer>
           {user!.bio && (
-            <SpanContainer breakSpaces style={{ margin: "10px 0" }}>
+            <SpanContainer
+              breakSpaces
+              style={{ margin: "10px 0", maxWidth: "-webkit-fill-available" }}
+            >
               <span>{user!.bio}</span>
             </SpanContainer>
           )}
           <BaseStylesDiv
-            style={{ marginBottom: "10px", maxWidth: "-webkit-fill-available" }}
+            style={{
+              marginBottom: "10px",
+              maxWidth: "-webkit-fill-available",
+              flexWrap: "wrap",
+            }}
           >
-            <SpanContainer grey marginRight={!!user.website}>
+            <SpanContainer grey breakSpaces marginRight={!!user.website}>
               <span>{user.website}</span>
             </SpanContainer>
             <SpanContainer marginRight>

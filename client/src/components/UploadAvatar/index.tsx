@@ -58,7 +58,7 @@ export const UploadAvatar: React.FC<Props> = ({ user, saving, upload }) => {
 
       <AvatarContainer
         style={{ position: "absolute", top: 0, left: 0 }}
-        width="100px"
+        width={100}
         noRightMargin
         height="100px"
       >

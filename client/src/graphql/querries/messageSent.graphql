@@ -1,0 +1,12 @@
+subscription messageSent($conversationId: ID!) {
+  messageSent(conversationId: $conversationId) {
+    id
+    conversationId
+    messagedata {
+      text
+      id
+      conversationId
+      senderId
+    }
+  }
+}

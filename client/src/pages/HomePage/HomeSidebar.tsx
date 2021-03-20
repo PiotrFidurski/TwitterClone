@@ -55,7 +55,7 @@ export const HomeSidebar: React.FC<Props> = ({ user }) => {
             <span>Notifications</span>
           </SpanContainer>
         </Link>
-        <Link>
+        <Link path="/messages">
           <Messages />
           <SpanContainer bold bigger marginLeft marginRight>
             <span>Messages</span>
@@ -80,7 +80,7 @@ export const HomeSidebar: React.FC<Props> = ({ user }) => {
           </SpanContainer>
         </Link>
         <Link path={`/user/${user!.username}`}>
-          <AvatarContainer noRightMargin width="30px" height="30px">
+          <AvatarContainer noRightMargin width={30} height="30px">
             <StyledAvatar url={user!.avatar!} />
           </AvatarContainer>
           <SpanContainer bold bigger marginLeft marginRight>

@@ -125,7 +125,7 @@ const Avatar: React.FC = ({ children }) => {
   const { post } = usePost();
   return (
     <StyledAvatarWrapper>
-      <AvatarContainer height="49px" width="49px">
+      <AvatarContainer height="49px" width={49}>
         <StyledAvatar url={post!.owner!.avatar!} />
       </AvatarContainer>
       {children}

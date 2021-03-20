@@ -5,7 +5,7 @@ import {
   createRefreshToken,
   sendRefreshToken,
 } from "../utilities/auth";
-import { OwnContext } from "src/types";
+import { OwnContext } from "../types";
 import {
   loginSchema,
   registerSchema,
@@ -83,7 +83,7 @@ export default {
         return { ...errors, message: "invalid input" };
       }
     },
-    login: async (_, { email, password }, { res }) => {
+    login: async (_, { email, password }, { res, req }) => {
       try {
         await loginSchema.validate({ email, password }, { abortEarly: false });
         const user = await User.findOne({ email })

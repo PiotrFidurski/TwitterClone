@@ -6,18 +6,28 @@ import {
   JustifyCenter,
   BaseStylesDiv,
   SpanContainer,
+  PrimaryColumn,
+  SidebarColumn,
 } from "../../styles";
 import { useParams } from "react-router-dom";
 import { useUserByNameQuery } from "../../generated/introspection-result";
 import { Header } from "../../components/Header";
 import { Profile } from "./Profile";
+import { User } from "../../generated/graphql";
+import { SecondaryColumn } from "../../components/SecondaryColumn";
 
 const StyledContainer = styled.div`
   ${BaseStyles};
-  flex-direction: column;
+  flex-direction: row;
+  flex-grow: 1;
+  justify-content: space-between;
 `;
 
-export const ProfilePage: React.FC = () => {
+interface Props {
+  user: User;
+}
+
+export const ProfilePage: React.FC<Props> = ({ user }) => {
   const { username } = useParams<{ username: string }>();
 
   const { data, loading } = useUserByNameQuery({
@@ -41,15 +51,18 @@ export const ProfilePage: React.FC = () => {
   }
 
   return (
-    <>
+    <StyledContainer>
       {data! &&
         data!.userByName! &&
         data!.userByName!.__typename === "UserByNameSuccess" && (
-          <StyledContainer>
+          <PrimaryColumn>
             <Header justifyStart>{data!.userByName!.node.name}</Header>
             <Profile user={data!.userByName!.node} />
-          </StyledContainer>
+          </PrimaryColumn>
         )}
-    </>
+      <SidebarColumn>
+        <SecondaryColumn user={user} />
+      </SidebarColumn>
+    </StyledContainer>
   );
 };

@@ -90,6 +90,36 @@ body[data-color="rgb(121, 75, 196)"] {
   position: absolute;
   color: #9197a3;
 }
+.emoji-mart-preview {
+  display: none;
+}
+
+.DraftEditor-root {
+  height: inherit;
+  position: relative;
+  overflow: auto;
+  min-height: inherit;
+  max-height: inherit;
+  height: 100%;
+  width: 100%;
+}
+
+span.emoji-mart-emoji {
+  vertical-align: text-bottom;
+  font-size: 16px;
+  margin: 0 4px !important;
+  width: 20px;
+  height: 20px;
+}
+span.emoji-mart-emoji span {
+  background-image: none !important;
+}
+.emoji-mart {
+  border-color: var(--colors-button) !important;
+}
+.emoji-mart-category-label span {
+  background-color: var(--colors-background) !important;
+}
 
 input:-webkit-autofill,
 input:-webkit-autofill:hover,

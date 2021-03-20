@@ -5,6 +5,8 @@ import {
   BaseStylesDiv,
   fade,
   JustifyCenter,
+  PrimaryColumn,
+  SidebarColumn,
   SpanContainer,
 } from "../../styles";
 import { useParams } from "react-router-dom";
@@ -13,6 +15,7 @@ import { Header } from "../../components/Header";
 import { Conversation } from "./Conversation";
 import { useQuery } from "@apollo/client";
 import { PostDocument } from "../../generated/graphql";
+import { SecondaryColumn } from "../../components/SecondaryColumn";
 
 interface Props {
   user: User;
@@ -20,8 +23,10 @@ interface Props {
 
 const StyledContainer = styled.div`
   ${BaseStyles};
-  flex-direction: column;
+  flex-direction: flex;
+  flex-grow: 1;
   opacity: 1;
+  justify-content: space-between;
   animation-name: ${fade};
   animation-iteration-count: 1;
   animation-timing-function: ease-in;
@@ -53,10 +58,15 @@ export const CommentsPage: React.FC<Props> = ({ user }) => {
 
   return (
     <StyledContainer id="feed">
-      <Header justifyStart>Tweet</Header>
-      {data && data!.post && data!.post!.__typename === "PostByIdSuccess" && (
-        <Conversation post={data!.post!.node!} user={user} />
-      )}
+      <PrimaryColumn>
+        <Header justifyStart>Tweet</Header>
+        {data && data!.post && data!.post!.__typename === "PostByIdSuccess" && (
+          <Conversation post={data!.post!.node!} user={user} />
+        )}
+      </PrimaryColumn>
+      <SidebarColumn>
+        <SecondaryColumn user={user} />
+      </SidebarColumn>
     </StyledContainer>
   );
 };

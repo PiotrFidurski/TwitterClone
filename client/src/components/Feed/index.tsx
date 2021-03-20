@@ -1,17 +1,26 @@
 import * as React from "react";
 import { CreatePost } from "../CreatePost";
 import { User, FeedQuery } from "../../generated/graphql";
-import { Spinner, PlaceHolder, BaseStyles } from "../../styles";
+import {
+  Spinner,
+  PlaceHolder,
+  BaseStyles,
+  PrimaryColumn,
+  SidebarColumn,
+} from "../../styles";
 import styled from "styled-components";
 import { Header as FeedHeader } from "../Header";
 import { useQuery } from "@apollo/client";
 import { FeedDocument } from "../../generated/introspection-result";
 import { VirtualizedList } from "../VirtualizedList";
 import "../../index.css";
+import { SecondaryColumn } from "../SecondaryColumn";
 
 export const StyledContainer = styled.div<{ display?: boolean }>`
   ${BaseStyles};
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: space-between;
+  flex-grow: 1;
   flex-grow: 1;
   height: 100%;
   opacity: 1;
@@ -56,10 +65,15 @@ const GenerateFeed: React.FC<GnenerateFeedProps> = React.memo(({ userId }) => {
 export const Feed: React.FC<Props> = ({ user }) => {
   return (
     <StyledContainer id="feed">
-      <FeedHeader justifyStart={false}>Home</FeedHeader>
-      <CreatePost user={user} />
-      <PlaceHolder light />
-      <GenerateFeed userId={user!.id} />
+      <PrimaryColumn>
+        <FeedHeader justifyStart={false}>Home</FeedHeader>
+        <CreatePost user={user} />
+        <PlaceHolder light />
+        <GenerateFeed userId={user!.id} />
+      </PrimaryColumn>
+      <SidebarColumn>
+        <SecondaryColumn user={user} />
+      </SidebarColumn>
     </StyledContainer>
   );
 };

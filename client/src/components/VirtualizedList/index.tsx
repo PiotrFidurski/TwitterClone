@@ -6,7 +6,7 @@ import { WindowScroller } from "react-virtualized/dist/es/WindowScroller";
 import { Row } from "./Row";
 import { ApolloQueryResult } from "@apollo/client";
 import { FeedQuery, RepliesQuery } from "../../generated/introspection-result";
-import { JustifyCenter, SpanContainer } from "../../styles";
+import { JustifyCenter, SpanContainer, Spinner } from "../../styles";
 
 const mergeRefs = (...refs: Array<any>) => (ref: any) => {
   refs.forEach((possibleRef) => {
@@ -80,9 +80,6 @@ export const VirtualizedList: React.FC<Props> = ({
       ? data!.some((item: any) => item.id !== data![index].id)
       : false;
 
-  const itemCountt =
-    itemCount! % 10 === 0 ? data!.length + 1 : data!.length + 1;
-
   const itemData = createItemData(
     data,
     setRowHeight,
@@ -90,7 +87,7 @@ export const VirtualizedList: React.FC<Props> = ({
     showBorder,
     showConnector
   );
-
+  console.log(loading);
   return (
     <InfiniteLoader
       itemCount={data!.length + 1}
@@ -124,9 +121,13 @@ export const VirtualizedList: React.FC<Props> = ({
               >
                 <SpanContainer biggest>
                   <span>
-                    {!data!.length
-                      ? "There's nothing here."
-                      : "You're all caught up."}
+                    {!data!.length ? (
+                      "There's nothing here."
+                    ) : loading ? (
+                      <Spinner />
+                    ) : (
+                      "You're all caught up."
+                    )}
                   </span>
                 </SpanContainer>
               </JustifyCenter>

@@ -1,0 +1,12 @@
+query conversationMessages($conversationId: ID!) {
+  conversationMessages(conversationId: $conversationId) {
+    id
+    conversationId
+    messagedata {
+      id
+      text 
+      conversationId
+      senderId
+    }
+  }
+}

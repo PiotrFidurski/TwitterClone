@@ -13,6 +13,7 @@
     "@types/compression": "^1.7.0",
     "@types/cookie-parser": "^1.4.2",
     "@types/express": "^4.17.1",
+    "@types/express-session": "^1.17.3",
     "@types/graphql": "^14.5.0",
     "@types/jsonwebtoken": "^8.3.4",
     "@types/mongoose": "^5.10.3",
@@ -20,9 +21,8 @@
     "@types/yup": "^0.26.24"
   },
   "dependencies": {
-    "ts-node-dev": "^1.0.0",
+    "@axelspringer/graphql-google-pubsub": "^2.1.0",
     "apollo-server-express": "^2.19.0",
-    "typescript": "^4.2.3",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.16.0",
     "compression": "^1.7.4",
@@ -30,11 +30,15 @@
     "cors": "^2.8.5",
     "dotenv": "^8.1.0",
     "express": "^4.17.1",
+    "express-session": "^1.17.1",
     "graphql": "^14.5.8",
+    "graphql-redis-subscriptions": "^2.3.1",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.11.20",
     "mongoose-unique-validator": "^2.0.3",
     "saslprep": "^1.0.3",
+    "ts-node-dev": "^1.0.0",
+    "typescript": "^4.2.3",
     "yup": "^0.27.0"
   },
   "resolutions": {
@@ -42,7 +46,7 @@
     "graphql-upload": "^11.0.0"
   },
   "scripts": {
-    "start": "ts-node-dev --respawn --transpile-only index.ts",
+    "start": "concurrently \"ts-node-dev --respawn --transpile-only index.ts\" \"cd client && npm start\"",
     "heroku-postbuild": "cd client && npm install && npm install --only=dev --no-shrinkwrap && npm run build"
   }
 }

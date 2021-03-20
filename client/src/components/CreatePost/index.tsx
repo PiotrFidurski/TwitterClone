@@ -42,7 +42,7 @@ export const CreatePost: React.FC<Props> = React.memo(
         />
         <StyledWrapper>
           <StyledAvatarWrapper>
-            <AvatarContainer width="49px" height="49px">
+            <AvatarContainer width={49} height="49px">
               <StyledAvatar url={user!.avatar!} />
             </AvatarContainer>
           </StyledAvatarWrapper>

@@ -10,9 +10,15 @@ import compression from "compression";
 import path from "path";
 import cookieParser from "cookie-parser";
 import User from "../entity/User";
+import session from "express-session";
 
 export const app = express();
-
+export const sessionMiddleware = session({
+  secret: process.env.REFRESH_TOKEN_SECRET!,
+  resave: false,
+  saveUninitialized: false,
+});
+app.use(sessionMiddleware);
 export const serverConfig = () => {
   app.use(cors(), cookieParser());
 

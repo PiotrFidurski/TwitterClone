@@ -4,6 +4,7 @@ import {
   Absolute,
   BaseStyles,
   SpanContainer,
+  BaseStylesDiv,
 } from "../../styles";
 import { ReactComponent as ArrowLeft } from "../svgs/ArrowLeft.svg";
 import { useHistory } from "react-router-dom";
@@ -15,7 +16,6 @@ export const StyledContainer = styled.div`
   position: sticky;
   top: 0;
   border-bottom: 1px solid var(--colors-border);
-  flex-grow: 1;
   z-index: 3;
   min-height: 53px;
   flex-direction: row;
@@ -48,9 +48,11 @@ export const Header: React.FC<Props> = ({ children, justifyStart }) => {
             <ArrowLeft />
           </HoverContainer>
         )}
-        <SpanContainer bigger bolder>
+
+        <SpanContainer bigger bolder style={{ flexGrow: 1 }}>
           {children}
         </SpanContainer>
+
         {!justifyStart && (
           <HoverContainer>
             <Absolute />

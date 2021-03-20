@@ -1,0 +1,16 @@
+mutation sendMessage($text: String!, $conversationId: ID!, $senderId: ID!) {
+  sendMessage(
+    text: $text
+    conversationId: $conversationId
+    senderId: $senderId
+  ) {
+    id
+    conversationId
+    messagedata {
+      text
+      id
+      conversationId
+      senderId
+    }
+  }
+}

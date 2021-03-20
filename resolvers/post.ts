@@ -1,5 +1,5 @@
 import { IResolvers } from "graphql-tools";
-import { OwnContext } from "src/types";
+import { OwnContext } from "../types";
 import Post, { IPost } from "../entity/Post";
 import User from "../entity/User";
 import schema from "../schemaValidation/post";
