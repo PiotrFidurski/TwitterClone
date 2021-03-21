@@ -30,8 +30,9 @@ const schema: Schema<IConversation> = new Schema(
 );
 
 schema.pre<IConversation>("save", async function (next) {
-  if (this.type !== "ONE_TO_ONE") {
+  if (this.type !== "ONE_ON_ONE") {
     this.conversationId = this.id;
+
     next();
   }
 });

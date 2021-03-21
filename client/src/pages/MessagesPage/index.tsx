@@ -4,6 +4,7 @@ import { Route } from "react-router";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { Header } from "../../components/Header";
+import { ReactComponent as NewMessage } from "../../components/svgs/NewMessage.svg";
 import {
   UserConversationsDocument,
   User,
@@ -13,6 +14,7 @@ import {
   AvatarContainer,
   BaseStyles,
   BaseStylesDiv,
+  ButtonContainer,
   SpanContainer,
   Spinner,
   StyledAvatar,
@@ -80,7 +82,33 @@ export const MessagesPage: React.FC<Props> = ({ user }) => {
   return (
     <StyledContainer>
       <StyledConversationWrapper>
-        <Header justifyStart>Messages</Header>
+        <Header justifyStart>
+          <BaseStylesDiv
+            flexGrow
+            style={{ justifyContent: "space-between", alignItems: "center" }}
+          >
+            <SpanContainer biggest bolder>
+              <span>Messages</span>
+            </SpanContainer>
+            <BaseStylesDiv>
+              <Link to={{ pathname: "/messages/compose" }}>
+                <ButtonContainer
+                  noMarginLeft
+                  noPadding
+                  style={{
+                    border: "none",
+                    minWidth: "40px",
+                    minHeight: "40px",
+                  }}
+                >
+                  <div>
+                    <NewMessage fill="var(--colors-button)" />
+                  </div>
+                </ButtonContainer>
+              </Link>
+            </BaseStylesDiv>
+          </BaseStylesDiv>
+        </Header>
         <StyledConversationDetails>
           {!loading && data
             ? data!.userConversations!.map((conversation) => (

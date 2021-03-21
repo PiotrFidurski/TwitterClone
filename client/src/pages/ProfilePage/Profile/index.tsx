@@ -10,6 +10,8 @@ import { AvatarContainer, ButtonContainer } from "../../../styles";
 import * as S from "./styles";
 import { Tabs } from "./Tabs";
 import {
+  AddPeopleToConversationDocument,
+  AddPeopleToConversationMutation,
   AuthUserDocument,
   useAuthUserQuery,
   useFollowUserMutation,
@@ -18,12 +20,13 @@ import {
   User,
   useUserByNameQuery,
 } from "../../../generated/graphql";
-import { useLocation, useParams } from "react-router-dom";
+import { ReactComponent as Message } from "../../../components/svgs/Messages.svg";
+import { useHistory, useLocation, useParams } from "react-router-dom";
 import { StyledLink } from "../../../styles";
 import styled from "styled-components";
 import { useUserPostsQuery } from "../../../generated/introspection-result";
 import { VirtualizedList } from "../../../components/VirtualizedList";
-import { useQuery } from "@apollo/client";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 
 interface Props {
   user: User;
@@ -196,6 +199,11 @@ const tabsData = [
 
 export const Profile: React.FC<Props> = ({ user }) => {
   let location = useLocation();
+  const history = useHistory();
+  const [message] = useMutation<AddPeopleToConversationMutation>(
+    AddPeopleToConversationDocument,
+    { variables: { userIds: [user!.id] } }
+  );
 
   const [followUser] = useFollowUserMutation({
     variables: { id: user!.id! },
@@ -210,6 +218,35 @@ export const Profile: React.FC<Props> = ({ user }) => {
       },
     },
   });
+
+  const startMessage = async () => {
+    // if user.isDmed  go to his post instead
+    try {
+      const msg = await message({
+        update: (cache, { data }) => {
+          cache.modify({
+            fields: {
+              userConversations(existingConversations = [], { toReference }) {
+                const newConversation = toReference(
+                  data!.addPeopleToConversation!.id
+                );
+
+                return [...existingConversations, newConversation];
+              },
+            },
+          });
+        },
+      });
+
+      if (msg.data!.addPeopleToConversation!.id) {
+        history.push(`/messages/${msg!.data!.addPeopleToConversation!.id!}`);
+      } else {
+        history.push(`/messages/${msg!.data!.addPeopleToConversation!.id!}`);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const { data } = useAuthUserQuery();
 
@@ -251,18 +288,32 @@ export const Profile: React.FC<Props> = ({ user }) => {
             </ButtonContainer>
           </StyledLink>
         ) : (
-          <BaseStylesDiv>
-            <ButtonContainer
-              isFollowed={!!user.isFollowed}
-              onClick={handleFollowUser}
-              filledVariant={!!user.isFollowed}
-            >
-              <div>
-                <SpanContainer>
-                  <span></span>
-                </SpanContainer>
-              </div>
-            </ButtonContainer>
+          <BaseStylesDiv style={{ minHeight: "40px" }}>
+            <BaseStylesDiv>
+              <ButtonContainer
+                onClick={startMessage}
+                noMarginLeft
+                noPadding
+                style={{ minWidth: "40px" }}
+              >
+                <div>
+                  <Message fill="var(--colors-button)" />
+                </div>
+              </ButtonContainer>
+            </BaseStylesDiv>
+            <BaseStylesDiv>
+              <ButtonContainer
+                isFollowed={!!user.isFollowed}
+                onClick={handleFollowUser}
+                filledVariant={!!user.isFollowed}
+              >
+                <div>
+                  <SpanContainer>
+                    <span></span>
+                  </SpanContainer>
+                </div>
+              </ButtonContainer>
+            </BaseStylesDiv>
           </BaseStylesDiv>
         )}
       </StyledHeaderContainer>

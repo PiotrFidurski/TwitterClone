@@ -84,21 +84,18 @@ export default {
             return conversation[0];
           }
         } else {
-          const alreadyExisting = await Conversation.find({
-            members: { $in: userIds },
-          });
-          if (alreadyExisting[0]) {
-            throw new Error("this group DM already exists");
-          }
           const authUser = await User.findById(authenticatedUser._id);
           const users = await User.find({
             _id: { $in: userIds },
           });
-          if (users.length === 1) {
-            const alreadyMessaged = await Conversation.find({
-              conversationId: `${authUser!.id}-${users[0].id}`,
+          if (userIds.length === 1) {
+            const alreadyExisting = await Conversation.find({
+              members: { $in: userIds[0] },
+              type: { $eq: "ONE_ON_ONE" },
             });
-            if (!alreadyMessaged.length) {
+            if (alreadyExisting[0]) {
+              throw new Error("this user has been messaged already");
+            } else {
               const conversation = await (
                 await Conversation.create({
                   members: [authUser, ...users],
@@ -107,11 +104,14 @@ export default {
                 })
               ).populate("members");
               return conversation;
-            } else {
-              throw new Error("this conversation already exists.");
             }
           }
-
+          const alreadyExisting = await Conversation.find({
+            members: { $in: [authUser!.id, ...userIds] },
+          });
+          if (alreadyExisting[0]) {
+            throw new Error("conversation already exists");
+          }
           const conversation = await (
             await Conversation.create({
               members: [authUser, ...users],

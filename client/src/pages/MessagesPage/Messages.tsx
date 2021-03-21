@@ -1,7 +1,8 @@
 import * as React from "react";
 import { useMutation, useQuery, useSubscription } from "@apollo/client";
-import { useLocation, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { ReactComponent as SadFace } from "../../components/svgs/SadFace.svg";
+import { ReactComponent as Settings } from "../../components/svgs/settings.svg";
 import {
   ConversationMessagesQuery,
   ConversationMessagesDocument,
@@ -19,6 +20,7 @@ import {
   StyledForm,
   AvatarContainer,
   StyledAvatar,
+  ButtonContainer,
 } from "../../styles";
 import Editor from "draft-js-plugins-editor";
 import createEmojiMartPlugin from "draft-js-emoji-mart-plugin";
@@ -26,21 +28,18 @@ import styled, { css } from "styled-components";
 import { Field, Formik } from "formik";
 import { EditorState, DraftHandleValue, ContentState } from "draft-js";
 import data from "emoji-mart/data/all.json";
-import {
-  DropdownProvider,
-  useDropDown,
-  useDropdownCtxt,
-} from "../../components/DropDown";
+import { DropdownProvider, useDropdownCtxt } from "../../components/DropDown";
 import { moveUpAndLeftReducer } from "../../components/DropDown/reducers";
 import { StyledDropDownItem } from "../../components/DropDown/DropDownComposition/Menu";
-import CompositeDecorator from "../../components/CreatePost/CompositeDecorator";
 import { Header } from "../../components/Header";
 
 const emojiPlugin = createEmojiMartPlugin({
   data,
   set: "google",
 });
+
 const { Picker } = emojiPlugin;
+
 const StyledContainer = styled.div<{ height: number }>`
   ${BaseStyles};
   padding: 10px;
@@ -82,9 +81,12 @@ const StyledMessage = styled.div<{ isItMyMsg: boolean }>`
   ${({ isItMyMsg }) => css`
     ${BaseStyles};
     max-width: 85%;
-    border: 1px solid ${isItMyMsg ? "var(--colors-button)" : "rgb(37, 51, 65)"};
+    border: 1px solid
+      ${isItMyMsg ? "var(--colors-button)" : "var(--colors-thirdbackground)"};
     border-radius: 16px;
-    background-color: ${isItMyMsg ? "var(--colors-button)" : "rgb(37, 51, 65)"};
+    background-color: ${isItMyMsg
+      ? "var(--colors-button)"
+      : "var(--colors-thirdbackground)"};
     border-bottom-left-radius: ${isItMyMsg ? "16px" : "0px"};
     border-bottom-right-radius: ${isItMyMsg ? "0px" : "16px"};
     padding: 10px;
@@ -187,6 +189,7 @@ export const Messages: React.FC<Props> = ({ user, members }) => {
 
   React.useEffect(() => {
     conversationThread &&
+      conversationThread![conversationId] &&
       conversationThread![conversationId]!.members!.forEach(
         (member: any) => (userThread[member.id] = member)
       );
@@ -249,81 +252,106 @@ export const Messages: React.FC<Props> = ({ user, members }) => {
       {conversationThread ? (
         <Header justifyStart>
           <BaseStylesDiv flexGrow style={{ alignItems: "center" }}>
-            {conversationThread[conversationId]!.members!.filter(
-              (member: any) => member.id !== user.id
-            )
-              .slice(
-                Math.max(
-                  conversationThread[conversationId]!.members!.length - 3,
-                  0
-                )
+            {conversationThread[conversationId] &&
+              conversationThread[conversationId]!.members!.filter(
+                (member: any) => member.id !== user.id
               )
-              .map((user: any, index: any) =>
-                conversationThread[conversationId]!.members!.filter(
-                  (member: any) => member.id !== user.id
-                ).length > 1 ? (
-                  <section key={user.id} style={{ display: "contents" }}>
-                    <AvatarContainer
-                      style={
-                        index % 2 !== 0 || index !== 0
-                          ? { transform: "scaleX(-1)" }
-                          : {}
-                      }
-                      displayAsGroup
-                      height="34px"
-                      width={34}
-                    >
-                      <StyledAvatar url={user.avatar} />
-                    </AvatarContainer>
-                    <BaseStylesDiv
-                      style={
-                        index % 2 === 0 || index === 0
-                          ? {
-                              height: "100%",
-                              width: "1px",
-                              backgroundColor: "var(--colors-mainbackground)",
-                            }
-                          : {}
-                      }
-                    ></BaseStylesDiv>
-                  </section>
-                ) : (
-                  <section key={user.id} style={{ display: "contents" }}>
-                    <AvatarContainer height="34px" width={34} noRightMargin>
-                      <StyledAvatar url={user.avatar} />
-                    </AvatarContainer>
-                  </section>
+                .slice(
+                  Math.max(
+                    conversationThread[conversationId]!.members!.length - 3,
+                    0
+                  )
                 )
-              )}
+                .map((user: any, index: any) =>
+                  conversationThread[conversationId]!.members!.filter(
+                    (member: any) => member.id !== user.id
+                  ).length > 1 ? (
+                    <section key={user.id} style={{ display: "contents" }}>
+                      <AvatarContainer
+                        style={
+                          index % 2 !== 0 || index !== 0
+                            ? { transform: "scaleX(-1)" }
+                            : {}
+                        }
+                        displayAsGroup
+                        height="34px"
+                        width={34}
+                      >
+                        <StyledAvatar url={user.avatar} />
+                      </AvatarContainer>
+                      <BaseStylesDiv
+                        style={
+                          index % 2 === 0 || index === 0
+                            ? {
+                                height: "100%",
+                                width: "1px",
+                                backgroundColor: "var(--colors-mainbackground)",
+                              }
+                            : {}
+                        }
+                      ></BaseStylesDiv>
+                    </section>
+                  ) : (
+                    <section key={user.id} style={{ display: "contents" }}>
+                      <AvatarContainer height="34px" width={34} noRightMargin>
+                        <StyledAvatar url={user.avatar} />
+                      </AvatarContainer>
+                    </section>
+                  )
+                )}
             <BaseStylesDiv
               flexGrow
               style={{
                 margin: "0px 0px 0px 10px",
                 width: "0px",
                 textOverflow: "ellipsis",
+                justifyContent: "space-between",
               }}
             >
               <SpanContainer bold biggest>
-                {conversationThread!
-                  [conversationId]!.members!.filter(
-                    (member: any) => member.id !== user.id
-                  )
-                  .map((user: any, index: any) => (
-                    <section key={user.id} style={{ display: "contents" }}>
-                      {user.username}
-                      <span>
-                        {index <
-                        conversationThread![conversationId]!.members!.filter(
-                          (member: any) => member.id !== user.id
-                        ).length -
-                          1
-                          ? ","
-                          : ""}
-                      </span>
-                      <span>&nbsp;</span>
-                    </section>
-                  ))}
+                {conversationThread![conversationId] &&
+                  conversationThread!
+                    [conversationId]!.members!.filter(
+                      (member: any) => member.id !== user.id
+                    )
+                    .map((user: any, index: any) => (
+                      <section key={user.id} style={{ display: "contents" }}>
+                        {user.username}
+                        <span>
+                          {index <
+                          conversationThread![conversationId]!.members!.filter(
+                            (member: any) => member.id !== user.id
+                          ).length -
+                            1
+                            ? ","
+                            : ""}
+                        </span>
+                        <span>&nbsp;</span>
+                      </section>
+                    ))}
               </SpanContainer>
+              {false ? (
+                <BaseStylesDiv>
+                  <Link to={{ pathname: "/messages/compose" }}>
+                    <ButtonContainer
+                      noPadding
+                      style={{
+                        border: 0,
+                        minHeight: "35px",
+                        minWidth: "35px",
+                      }}
+                    >
+                      <div>
+                        <Settings
+                          fill="var(--colors-button)"
+                          width="1.20rem"
+                          height="1.20rem"
+                        />
+                      </div>
+                    </ButtonContainer>
+                  </Link>
+                </BaseStylesDiv>
+              ) : null}
             </BaseStylesDiv>
           </BaseStylesDiv>
         </Header>

@@ -3,6 +3,7 @@ import { CreatePostModal } from "../../Modals/CreatePostModal";
 import { EditProfileModal } from "../../Modals/EditProfileModal";
 import { useLocation } from "react-router-dom";
 import { CustomizeViewModal } from "../../Modals/CustomizeViewModal";
+import { CreateNewMessageModal } from "../../Modals/CreateNewMessageModal";
 import { useModalContext } from "./";
 import { DeletePostModal } from "../../Modals/DeletePostModal";
 import { UnfollowUserModal } from "../../Modals/UnfollowUserModal";
@@ -19,6 +20,7 @@ export const Modals: {
   "/posts/compose": CreatePostModal,
   "/settings/profile": EditProfileModal,
   "/i/display": CustomizeViewModal,
+  "/messages/compose": CreateNewMessageModal,
 };
 
 export const AlertModals: {

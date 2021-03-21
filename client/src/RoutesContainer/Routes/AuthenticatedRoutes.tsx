@@ -8,6 +8,7 @@ import { EditProfileModal } from "../../components/Modals/EditProfileModal";
 import { ProfilePage } from "../../pages/ProfilePage";
 import { CommentsPage } from "../../pages/CommentsPage";
 import { CustomizeViewModal } from "../../components/Modals/CustomizeViewModal";
+import { CreateNewMessageModal } from "../../components/Modals/CreateNewMessageModal";
 import { MessagesPage } from "../../pages/MessagesPage";
 
 interface Props {
@@ -46,6 +47,9 @@ export const AutheticatedRoutes: React.FC<Props> = ({ user }) => {
         </Route>
         <Route exact path="/i/display">
           <CustomizeViewModal />
+        </Route>
+        <Route exact path="/messages/compose">
+          <CreateNewMessageModal />
         </Route>
       </Switch>
     </StyledRoutesWrapper>

@@ -302,8 +302,17 @@ export const ButtonContainer = styled.button<{
   isFollowed?: boolean;
   warning?: boolean;
   grey?: boolean;
+  noPadding?: boolean;
 }>`
-  ${({ filledVariant, noMarginLeft, bigger, isFollowed, warning, grey }) => css`
+  ${({
+    filledVariant,
+    noMarginLeft,
+    bigger,
+    isFollowed,
+    warning,
+    grey,
+    noPadding,
+  }) => css`
     ${BaseStyles};
     background-color: ${filledVariant && !warning && !grey
       ? "var(--colors-button)"
@@ -374,7 +383,7 @@ export const ButtonContainer = styled.button<{
       align-items: center;
       justify-content: center;
       flex-grow: 1;
-      padding: 0 1em;
+      padding: ${noPadding ? "0" : "0 1em"};
       overflow-wrap: break-word;
       ${SpanContainer} {
         ::before {
