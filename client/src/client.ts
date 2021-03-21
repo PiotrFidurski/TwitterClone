@@ -45,7 +45,7 @@ const uploadLink: any = createUploadLink({
 });
 
 const wsLink = new WebSocketLink({
-  uri: "ws://localhost:4000/graphql",
+  uri: "wss://frozen-ridge-40926.herokuapp.com/graphql",
   options: {
     reconnect: true,
   },
