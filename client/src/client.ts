@@ -44,8 +44,13 @@ const uploadLink: any = createUploadLink({
   credentials: "include",
 });
 
+const subscriptionUrl =
+  process.env.NODE_ENV === "production"
+    ? "wss://frozen-ridge-40926.herokuapp.com/graphql"
+    : "ws://localhost:4000/graphql";
+
 const wsLink = new WebSocketLink({
-  uri: "wss://frozen-ridge-40926.herokuapp.com/graphql",
+  uri: subscriptionUrl,
   options: {
     reconnect: true,
   },
