@@ -26,17 +26,10 @@ const publisher = new Redis({
   retryStrategy: (options: any) => Math.max(options.attempt * 100, 3000),
 });
 
-export const localRedis = new RedisPubSub({
-  connection: { host: "127.0.0.1", port: 6379 },
-});
-
 export const redisPubSub = new RedisPubSub({
   subscriber,
   publisher,
 });
-
-export const pubsub =
-  process.env.NODE_ENV === "production" ? redisPubSub : localRedis;
 
 const DBURI =
   process.env.NODE_ENV === "production"

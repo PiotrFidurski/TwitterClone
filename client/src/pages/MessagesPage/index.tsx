@@ -12,7 +12,7 @@ import {
   MessageSentDocument,
   Conversation,
 } from "../../generated/graphql";
-import { UserConversationsQueryHookResult } from "../../generated/introspection-result";
+
 import {
   AvatarContainer,
   BaseStyles,

@@ -3,7 +3,7 @@ import { IResolvers } from "graphql-tools";
 import { OwnContext } from "types";
 import Conversation from "../entity/Conversation";
 import Message from "../entity/Message";
-import { pubsub } from "../index";
+import { redisPubSub } from "../index";
 import { withFilter } from "graphql-subscriptions";
 // delete directConversation, createConversation
 export default {
@@ -223,7 +223,7 @@ export default {
         });
 
         if (newMessage && newMessage.id) {
-          pubsub.publish("message_sent", {
+          redisPubSub.publish("message_sent", {
             messageSent: {
               id: newMessage._id,
               conversationId: newMessage.conversationId,
@@ -240,7 +240,7 @@ export default {
   Subscription: {
     messageSent: {
       subscribe: withFilter(
-        () => pubsub.asyncIterator("message_sent"),
+        () => redisPubSub.asyncIterator("message_sent"),
         (payload, variables) => {
           return (
             payload.messageSent.conversationId === variables.conversationId

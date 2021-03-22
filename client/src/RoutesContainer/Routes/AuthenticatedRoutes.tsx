@@ -1,9 +1,5 @@
 import * as React from "react";
-import {
-  User,
-  UserConversationsDocument,
-  UserConversationsQuery,
-} from "../../generated/graphql";
+import { User } from "../../generated/graphql";
 import { Feed } from "../../components/Feed";
 import { StyledRoutesWrapper } from "../../styles";
 import { Switch, Redirect, Route, useLocation } from "react-router-dom";
@@ -14,12 +10,6 @@ import { CommentsPage } from "../../pages/CommentsPage";
 import { CustomizeViewModal } from "../../components/Modals/CustomizeViewModal";
 import { CreateNewMessageModal } from "../../components/Modals/CreateNewMessageModal";
 import { MessagesPage } from "../../pages/MessagesPage";
-import { Messages } from "../../pages/MessagesPage/Messages";
-import { useQuery } from "@apollo/client";
-import {
-  MessageSentDocument,
-  UserConversationsQueryResult,
-} from "../../generated/introspection-result";
 
 interface Props {
   user: User;
