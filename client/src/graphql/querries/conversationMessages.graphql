@@ -1,10 +1,10 @@
-query conversationMessages($conversationId: ID!) {
+query conversationMessages($conversationId: String!) {
   conversationMessages(conversationId: $conversationId) {
     id
     conversationId
     messagedata {
       id
-      text 
+      text
       conversationId
       senderId
     }

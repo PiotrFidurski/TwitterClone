@@ -86,7 +86,7 @@ export type QueryDirectconversationArgs = {
 };
 
 export type QueryConversationMessagesArgs = {
-  conversationId: Scalars["ID"];
+  conversationId: Scalars["String"];
 };
 
 export type Node = {
@@ -104,6 +104,7 @@ export type User = Node & {
   followingCount?: Maybe<Scalars["Int"]>;
   id: Scalars["ID"];
   isFollowed?: Maybe<Scalars["Boolean"]>;
+  isMessaged?: Maybe<Scalars["Boolean"]>;
   name?: Maybe<Scalars["String"]>;
   password?: Maybe<Scalars["String"]>;
   username?: Maybe<Scalars["String"]>;
@@ -166,6 +167,7 @@ export type Conversation = {
   conversationId: Scalars["String"];
   members?: Maybe<Array<User>>;
   type?: Maybe<Scalars["String"]>;
+  acceptedInvitation?: Maybe<Array<Scalars["String"]>>;
 };
 
 export type Message = {
@@ -197,6 +199,8 @@ export type Mutation = {
   deletePost?: Maybe<DeleteResourceResponse>;
   likePost?: Maybe<UpdateResourceResponse>;
   loadMorePosts?: Maybe<Array<Post>>;
+  messageUser?: Maybe<Conversation>;
+  acceptInvitation?: Maybe<Conversation>;
   addPeopleToConversation: Conversation;
   createConversation: Conversation;
   sendMessage: Message;
@@ -248,6 +252,14 @@ export type MutationLoadMorePostsArgs = {
   postId: Scalars["ID"];
 };
 
+export type MutationMessageUserArgs = {
+  userId: Scalars["ID"];
+};
+
+export type MutationAcceptInvitationArgs = {
+  conversationId: Scalars["String"];
+};
+
 export type MutationAddPeopleToConversationArgs = {
   conversationId?: Maybe<Scalars["ID"]>;
   userIds: Array<Scalars["ID"]>;
@@ -259,7 +271,7 @@ export type MutationCreateConversationArgs = {
 
 export type MutationSendMessageArgs = {
   text: Scalars["String"];
-  conversationId: Scalars["ID"];
+  conversationId: Scalars["String"];
   senderId: Scalars["ID"];
   receiverId?: Maybe<Scalars["String"]>;
 };
@@ -331,7 +343,7 @@ export type Subscription = {
 };
 
 export type SubscriptionMessageSentArgs = {
-  conversationId: Scalars["ID"];
+  conversationId: Scalars["String"];
 };
 
 export enum Permission {
@@ -394,7 +406,7 @@ export type UserAvatarFieldsFragment = { __typename?: "User" } & Pick<
 
 export type UserFollowerFieldsFragment = { __typename?: "User" } & Pick<
   User,
-  "isFollowed" | "followersCount" | "followingCount"
+  "isFollowed" | "isMessaged" | "followersCount" | "followingCount"
 > & {
     followers?: Maybe<
       Array<
@@ -403,22 +415,23 @@ export type UserFollowerFieldsFragment = { __typename?: "User" } & Pick<
     >;
   };
 
-export type AddPeopleToConversationMutationVariables = Exact<{
-  conversationId?: Maybe<Scalars["ID"]>;
-  userIds: Array<Scalars["ID"]> | Scalars["ID"];
+export type AcceptInvitationMutationVariables = Exact<{
+  conversationId: Scalars["String"];
 }>;
 
-export type AddPeopleToConversationMutation = { __typename?: "Mutation" } & {
-  addPeopleToConversation: { __typename?: "Conversation" } & Pick<
-    Conversation,
-    "id" | "conversationId" | "type"
-  > & {
-      members?: Maybe<
-        Array<
-          { __typename?: "User" } & Pick<User, "username" | "id" | "avatar">
-        >
-      >;
-    };
+export type AcceptInvitationMutation = { __typename?: "Mutation" } & {
+  acceptInvitation?: Maybe<
+    { __typename?: "Conversation" } & Pick<
+      Conversation,
+      "id" | "conversationId" | "type" | "acceptedInvitation"
+    > & {
+        members?: Maybe<
+          Array<
+            { __typename?: "User" } & Pick<User, "username" | "id" | "avatar">
+          >
+        >;
+      }
+  >;
 };
 
 export type AuthUserQueryVariables = Exact<{ [key: string]: never }>;
@@ -459,7 +472,7 @@ export type ConversationQuery = { __typename?: "Query" } & {
 };
 
 export type ConversationMessagesQueryVariables = Exact<{
-  conversationId: Scalars["ID"];
+  conversationId: Scalars["String"];
 }>;
 
 export type ConversationMessagesQuery = { __typename?: "Query" } & {
@@ -682,7 +695,7 @@ export type LogoutMutation = { __typename?: "Mutation" } & Pick<
 >;
 
 export type MessageSentSubscriptionVariables = Exact<{
-  conversationId: Scalars["ID"];
+  conversationId: Scalars["String"];
 }>;
 
 export type MessageSentSubscription = { __typename?: "Subscription" } & {
@@ -691,6 +704,25 @@ export type MessageSentSubscription = { __typename?: "Subscription" } & {
         messagedata: { __typename?: "MessageData" } & Pick<
           MessageData,
           "text" | "id" | "conversationId" | "senderId"
+        >;
+      }
+  >;
+};
+
+export type MessageUserMutationVariables = Exact<{
+  userId: Scalars["ID"];
+}>;
+
+export type MessageUserMutation = { __typename?: "Mutation" } & {
+  messageUser?: Maybe<
+    { __typename?: "Conversation" } & Pick<
+      Conversation,
+      "id" | "conversationId" | "type" | "acceptedInvitation"
+    > & {
+        members?: Maybe<
+          Array<
+            { __typename?: "User" } & Pick<User, "username" | "id" | "avatar">
+          >
         >;
       }
   >;
@@ -794,7 +826,7 @@ export type RepliesQuery = { __typename?: "Query" } & {
 
 export type SendMessageMutationVariables = Exact<{
   text: Scalars["String"];
-  conversationId: Scalars["ID"];
+  conversationId: Scalars["String"];
   senderId: Scalars["ID"];
 }>;
 
@@ -864,7 +896,7 @@ export type UserConversationsQuery = { __typename?: "Query" } & {
     Array<
       { __typename?: "Conversation" } & Pick<
         Conversation,
-        "id" | "conversationId" | "type"
+        "id" | "conversationId" | "type" | "acceptedInvitation"
       > & {
           members?: Maybe<
             Array<
@@ -928,6 +960,7 @@ export const UserAvatarFieldsFragmentDoc = gql`
 export const UserFollowerFieldsFragmentDoc = gql`
   fragment userFollowerFields on User {
     isFollowed @client
+    isMessaged @client
     followersCount
     followingCount
     followers {
@@ -937,15 +970,13 @@ export const UserFollowerFieldsFragmentDoc = gql`
   }
   ${UserAvatarFieldsFragmentDoc}
 `;
-export const AddPeopleToConversationDocument = gql`
-  mutation addPeopleToConversation($conversationId: ID, $userIds: [ID!]!) {
-    addPeopleToConversation(
-      conversationId: $conversationId
-      userIds: $userIds
-    ) {
+export const AcceptInvitationDocument = gql`
+  mutation acceptInvitation($conversationId: String!) {
+    acceptInvitation(conversationId: $conversationId) {
       id
       conversationId
       type
+      acceptedInvitation
       members {
         username
         id
@@ -954,47 +985,46 @@ export const AddPeopleToConversationDocument = gql`
     }
   }
 `;
-export type AddPeopleToConversationMutationFn = ApolloReactCommon.MutationFunction<
-  AddPeopleToConversationMutation,
-  AddPeopleToConversationMutationVariables
+export type AcceptInvitationMutationFn = ApolloReactCommon.MutationFunction<
+  AcceptInvitationMutation,
+  AcceptInvitationMutationVariables
 >;
 
 /**
- * __useAddPeopleToConversationMutation__
+ * __useAcceptInvitationMutation__
  *
- * To run a mutation, you first call `useAddPeopleToConversationMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useAddPeopleToConversationMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useAcceptInvitationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAcceptInvitationMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [addPeopleToConversationMutation, { data, loading, error }] = useAddPeopleToConversationMutation({
+ * const [acceptInvitationMutation, { data, loading, error }] = useAcceptInvitationMutation({
  *   variables: {
  *      conversationId: // value for 'conversationId'
- *      userIds: // value for 'userIds'
  *   },
  * });
  */
-export function useAddPeopleToConversationMutation(
+export function useAcceptInvitationMutation(
   baseOptions?: ApolloReactHooks.MutationHookOptions<
-    AddPeopleToConversationMutation,
-    AddPeopleToConversationMutationVariables
+    AcceptInvitationMutation,
+    AcceptInvitationMutationVariables
   >
 ) {
   return ApolloReactHooks.useMutation<
-    AddPeopleToConversationMutation,
-    AddPeopleToConversationMutationVariables
-  >(AddPeopleToConversationDocument, baseOptions);
+    AcceptInvitationMutation,
+    AcceptInvitationMutationVariables
+  >(AcceptInvitationDocument, baseOptions);
 }
-export type AddPeopleToConversationMutationHookResult = ReturnType<
-  typeof useAddPeopleToConversationMutation
+export type AcceptInvitationMutationHookResult = ReturnType<
+  typeof useAcceptInvitationMutation
 >;
-export type AddPeopleToConversationMutationResult = ApolloReactCommon.MutationResult<AddPeopleToConversationMutation>;
-export type AddPeopleToConversationMutationOptions = ApolloReactCommon.BaseMutationOptions<
-  AddPeopleToConversationMutation,
-  AddPeopleToConversationMutationVariables
+export type AcceptInvitationMutationResult = ApolloReactCommon.MutationResult<AcceptInvitationMutation>;
+export type AcceptInvitationMutationOptions = ApolloReactCommon.BaseMutationOptions<
+  AcceptInvitationMutation,
+  AcceptInvitationMutationVariables
 >;
 export const AuthUserDocument = gql`
   query authUser {
@@ -1133,7 +1163,7 @@ export type ConversationQueryResult = ApolloReactCommon.QueryResult<
   ConversationQueryVariables
 >;
 export const ConversationMessagesDocument = gql`
-  query conversationMessages($conversationId: ID!) {
+  query conversationMessages($conversationId: String!) {
     conversationMessages(conversationId: $conversationId) {
       id
       conversationId
@@ -1874,7 +1904,7 @@ export type LogoutMutationOptions = ApolloReactCommon.BaseMutationOptions<
   LogoutMutationVariables
 >;
 export const MessageSentDocument = gql`
-  subscription messageSent($conversationId: ID!) {
+  subscription messageSent($conversationId: String!) {
     messageSent(conversationId: $conversationId) {
       id
       conversationId
@@ -1919,6 +1949,62 @@ export type MessageSentSubscriptionHookResult = ReturnType<
   typeof useMessageSentSubscription
 >;
 export type MessageSentSubscriptionResult = ApolloReactCommon.SubscriptionResult<MessageSentSubscription>;
+export const MessageUserDocument = gql`
+  mutation messageUser($userId: ID!) {
+    messageUser(userId: $userId) {
+      id
+      conversationId
+      type
+      acceptedInvitation
+      members {
+        username
+        id
+        avatar
+      }
+    }
+  }
+`;
+export type MessageUserMutationFn = ApolloReactCommon.MutationFunction<
+  MessageUserMutation,
+  MessageUserMutationVariables
+>;
+
+/**
+ * __useMessageUserMutation__
+ *
+ * To run a mutation, you first call `useMessageUserMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useMessageUserMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [messageUserMutation, { data, loading, error }] = useMessageUserMutation({
+ *   variables: {
+ *      userId: // value for 'userId'
+ *   },
+ * });
+ */
+export function useMessageUserMutation(
+  baseOptions?: ApolloReactHooks.MutationHookOptions<
+    MessageUserMutation,
+    MessageUserMutationVariables
+  >
+) {
+  return ApolloReactHooks.useMutation<
+    MessageUserMutation,
+    MessageUserMutationVariables
+  >(MessageUserDocument, baseOptions);
+}
+export type MessageUserMutationHookResult = ReturnType<
+  typeof useMessageUserMutation
+>;
+export type MessageUserMutationResult = ApolloReactCommon.MutationResult<MessageUserMutation>;
+export type MessageUserMutationOptions = ApolloReactCommon.BaseMutationOptions<
+  MessageUserMutation,
+  MessageUserMutationVariables
+>;
 export const PostDocument = gql`
   query post($postId: ID!) {
     post(postId: $postId) {
@@ -2212,7 +2298,11 @@ export type RepliesQueryResult = ApolloReactCommon.QueryResult<
   RepliesQueryVariables
 >;
 export const SendMessageDocument = gql`
-  mutation sendMessage($text: String!, $conversationId: ID!, $senderId: ID!) {
+  mutation sendMessage(
+    $text: String!
+    $conversationId: String!
+    $senderId: ID!
+  ) {
     sendMessage(
       text: $text
       conversationId: $conversationId
@@ -2413,6 +2503,7 @@ export const UserConversationsDocument = gql`
       id
       conversationId
       type
+      acceptedInvitation
       members {
         username
         id

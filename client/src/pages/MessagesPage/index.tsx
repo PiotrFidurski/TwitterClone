@@ -1,6 +1,6 @@
-import { useQuery } from "@apollo/client";
+import { useQuery, useSubscription } from "@apollo/client";
 import * as React from "react";
-import { Route } from "react-router";
+import { Route, useLocation } from "react-router";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { Header } from "../../components/Header";
@@ -9,7 +9,10 @@ import {
   UserConversationsDocument,
   User,
   UserConversationsQuery,
+  MessageSentDocument,
+  Conversation,
 } from "../../generated/graphql";
+import { UserConversationsQueryHookResult } from "../../generated/introspection-result";
 import {
   AvatarContainer,
   BaseStyles,
@@ -31,11 +34,15 @@ const StyledContainer = styled.div`
   border-left: 1px solid var(--colors-border);
 `;
 
-const StyledConversationWrapper = styled.div`
+const StyledConversationWrapper = styled.div<{ location: string }>`
   ${BaseStyles};
   flex-direction: column;
   flex: 1 1 0%;
   max-width: 600px;
+  @media only screen and (max-width: 1010px) {
+    ${(props) =>
+      props.location === "/messages" ? "flex: 1 1 0%;" : "flex: 0 1 0%"};
+  }
 `;
 
 const StyledConversationDetails = styled.div`
@@ -45,19 +52,21 @@ const StyledConversationDetails = styled.div`
   flex-shrink: 0;
 `;
 
-const StyledConversation = styled.div`
+const StyledConversation = styled.div<{ recentMessage: boolean }>`
   ${BaseStyles};
   flex-grow: 1;
   padding: 10px;
   overflow: hidden;
   border-bottom: 1px solid var(--colors-border);
+  background-color: ${(props) =>
+    props.recentMessage ? "var(--colors-background)" : "transparent"};
   :hover {
     cursor: pointer;
     background-color: var(--colors-background);
   }
 `;
 
-const StyledMessageContainer = styled.div`
+const StyledMessageContainer = styled.div<{ location: string }>`
   ${BaseStyles};
   flex-direction: column;
   height: 100vh;
@@ -65,6 +74,10 @@ const StyledMessageContainer = styled.div`
   max-width: 600px;
   flex: 1.54 1 0%;
   width: 0px;
+  @media only screen and (max-width: 1010px) {
+    ${(props) =>
+      props.location === "/messages" ? "flex: 0 1 0%;" : "flex: 1.54 1 0%"};
+  }
   border-left: 1px solid var(--colors-border);
 `;
 
@@ -73,15 +86,16 @@ interface Props {
 }
 
 export const MessagesPage: React.FC<Props> = ({ user }) => {
-  const { data, loading } = useQuery<UserConversationsQuery>(
+  const { data, loading, subscribeToMore } = useQuery<UserConversationsQuery>(
     UserConversationsDocument
   );
-
+  useSubscription(MessageSentDocument);
+  const location = useLocation();
   if (!loading) <Spinner />;
 
   return (
     <StyledContainer>
-      <StyledConversationWrapper>
+      <StyledConversationWrapper location={location.pathname}>
         <Header justifyStart>
           <BaseStylesDiv
             flexGrow
@@ -91,7 +105,12 @@ export const MessagesPage: React.FC<Props> = ({ user }) => {
               <span>Messages</span>
             </SpanContainer>
             <BaseStylesDiv>
-              <Link to={{ pathname: "/messages/compose" }}>
+              <Link
+                to={{
+                  pathname: "/messages/compose",
+                  state: { isModalLoc: location },
+                }}
+              >
                 <ButtonContainer
                   noMarginLeft
                   noPadding
@@ -112,113 +131,150 @@ export const MessagesPage: React.FC<Props> = ({ user }) => {
         <StyledConversationDetails>
           {!loading && data
             ? data!.userConversations!.map((conversation) => (
-                <Link
-                  style={{ textDecoration: "none" }}
+                <ConversationCmp
+                  subMore={subscribeToMore}
+                  user={user}
+                  conversation={conversation}
                   key={conversation.id}
-                  to={{ pathname: `/messages/${conversation.id}` }}
-                >
-                  <StyledConversation key={conversation.id}>
-                    <BaseStylesDiv
-                      flexGrow
-                      style={{
-                        justifyContent: "flex-start",
-                        alignItems: "flex-start",
-                      }}
-                    >
-                      {conversation!
-                        .members!.filter((member) => member.id !== user.id)
-                        .slice(Math.max(conversation!.members!.length - 3, 0))
-                        .map((user, index) =>
-                          conversation!.members!.filter(
-                            (member) => member.id !== user.id
-                          ).length > 1 ? (
-                            <section
-                              key={user.id}
-                              style={{ display: "contents" }}
-                            >
-                              <AvatarContainer
-                                style={
-                                  index % 2 !== 0 || index !== 0
-                                    ? { transform: "scaleX(-1)" }
-                                    : {}
-                                }
-                                displayAsGroup
-                                height="49px"
-                                width={49}
-                              >
-                                <StyledAvatar url={user.avatar} />
-                              </AvatarContainer>
-                              <BaseStylesDiv
-                                style={
-                                  index % 2 === 0 || index === 0
-                                    ? {
-                                        height: "100%",
-                                        width: "1px",
-                                        backgroundColor:
-                                          "var(--colors-mainbackground)",
-                                      }
-                                    : {}
-                                }
-                              ></BaseStylesDiv>
-                            </section>
-                          ) : (
-                            <section
-                              key={user.id}
-                              style={{ display: "contents" }}
-                            >
-                              <AvatarContainer
-                                height="49px"
-                                width={49}
-                                noRightMargin
-                              >
-                                <StyledAvatar url={user.avatar} />
-                              </AvatarContainer>
-                            </section>
-                          )
-                        )}
-                      <BaseStylesDiv
-                        flexGrow
-                        style={{
-                          margin: "4px 0px 0px 10px",
-                          textOverflow: "ellipsis",
-                          width: "0px",
-                        }}
-                      >
-                        <SpanContainer bold>
-                          {conversation!
-                            .members!.filter((member) => member.id !== user.id)
-                            .map((user, index) => (
-                              <section
-                                key={user.id}
-                                style={{ display: "contents" }}
-                              >
-                                <span>{user.username}</span>
-                                <span>
-                                  {index <
-                                  conversation!.members!.filter(
-                                    (member) => member.id !== user.id
-                                  ).length -
-                                    1
-                                    ? ","
-                                    : ""}
-                                </span>
-                                <span>&nbsp;</span>
-                              </section>
-                            ))}
-                        </SpanContainer>
-                      </BaseStylesDiv>
-                    </BaseStylesDiv>
-                  </StyledConversation>
-                </Link>
+                />
               ))
             : null}
         </StyledConversationDetails>
       </StyledConversationWrapper>
-      <StyledMessageContainer>
+      <StyledMessageContainer location={location.pathname}>
         <Route path="/messages/:conversationId">
-          {data && <Messages user={user} members={data!} />}
+          {data ? <Messages user={user} members={data!} /> : null}
         </Route>
       </StyledMessageContainer>
     </StyledContainer>
+  );
+};
+
+const ConversationCmp: React.FC<{
+  conversation: Conversation;
+  user: User;
+  subMore: any;
+}> = ({ conversation, user, subMore }) => {
+  const [recentMessage, setRecentMessage] = React.useState("");
+  const location = useLocation();
+  React.useEffect(() => {
+    let unsubscribe: any;
+    unsubscribe = subMore({
+      document: MessageSentDocument,
+      variables: { conversationId: conversation.conversationId },
+
+      updateQuery: (prev: any, { subscriptionData }: any) => {
+        if (!subscriptionData.data) return prev;
+
+        if (
+          subscriptionData!.data!.messageSent.messagedata.senderId !==
+            user.id &&
+          location.pathname !==
+            `/messages/${
+              subscriptionData!.data!.messageSent.messagedata.conversationId
+            }`
+        ) {
+          setRecentMessage(
+            subscriptionData!.data!.messageSent.messagedata.text
+          );
+        }
+      },
+    });
+    if (unsubscribe) return () => unsubscribe();
+  }, [conversation.conversationId, subMore, user, location]);
+  return (
+    <Link
+      style={{ textDecoration: "none" }}
+      key={conversation.id}
+      to={{ pathname: `/messages/${conversation.conversationId}` }}
+    >
+      <StyledConversation
+        key={conversation.id}
+        recentMessage={!!recentMessage}
+        onClick={() => {
+          setRecentMessage("");
+        }}
+      >
+        <BaseStylesDiv
+          flexGrow
+          style={{
+            justifyContent: "flex-start",
+            alignItems: "flex-start",
+          }}
+        >
+          {conversation!
+            .members!.filter((member) => member.id !== user.id)
+            .slice(Math.max(conversation!.members!.length - 3, 0))
+            .map((user, index) =>
+              conversation!.members!.filter((member) => member.id !== user.id)
+                .length > 1 ? (
+                <section key={user.id} style={{ display: "contents" }}>
+                  <AvatarContainer
+                    style={
+                      index % 2 !== 0 || index !== 0
+                        ? { transform: "scaleX(-1)" }
+                        : {}
+                    }
+                    displayAsGroup
+                    height="49px"
+                    width={49}
+                  >
+                    <StyledAvatar url={user.avatar} />
+                  </AvatarContainer>
+                  <BaseStylesDiv
+                    style={
+                      index % 2 === 0 || index === 0
+                        ? {
+                            height: "100%",
+                            width: "1px",
+                            backgroundColor: "var(--colors-mainbackground)",
+                          }
+                        : {}
+                    }
+                  ></BaseStylesDiv>
+                </section>
+              ) : (
+                <section key={user.id} style={{ display: "contents" }}>
+                  <AvatarContainer height="49px" width={49} noRightMargin>
+                    <StyledAvatar url={user.avatar} />
+                  </AvatarContainer>
+                </section>
+              )
+            )}
+          <BaseStylesDiv
+            flexGrow
+            flexColumn
+            style={{
+              margin: "4px 0px 0px 10px",
+              textOverflow: "ellipsis",
+              width: "0px",
+            }}
+          >
+            <SpanContainer bold>
+              {conversation!
+                .members!.filter((member) => member.id !== user.id)
+                .map((user, index) => (
+                  <section key={user.id} style={{ display: "contents" }}>
+                    <span>{user.username}</span>
+                    <span>
+                      {index <
+                      conversation!.members!.filter(
+                        (member) => member.id !== user.id
+                      ).length -
+                        1
+                        ? ","
+                        : ""}
+                    </span>
+                    <span>&nbsp;</span>
+                  </section>
+                ))}
+            </SpanContainer>
+            <SpanContainer grey smaller>
+              <span>{recentMessage}</span>
+            </SpanContainer>
+          </BaseStylesDiv>
+        </BaseStylesDiv>
+      </StyledConversation>
+    </Link>
   );
 };

@@ -1,5 +1,5 @@
-query userConversations {
-  userConversations {
+mutation messageUser($userId: ID!) {
+  messageUser(userId: $userId) {
     id
     conversationId
     type

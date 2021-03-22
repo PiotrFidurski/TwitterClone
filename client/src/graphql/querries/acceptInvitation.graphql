@@ -1,5 +1,5 @@
-query userConversations {
-  userConversations {
+mutation acceptInvitation($conversationId: String!) {
+  acceptInvitation(conversationId: $conversationId) {
     id
     conversationId
     type

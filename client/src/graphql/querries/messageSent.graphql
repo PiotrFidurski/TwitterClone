@@ -1,4 +1,4 @@
-subscription messageSent($conversationId: ID!) {
+subscription messageSent($conversationId: String!) {
   messageSent(conversationId: $conversationId) {
     id
     conversationId

@@ -57,6 +57,7 @@ export const HomeSidebar: React.FC<Props> = ({ user }) => {
         </Link>
         <Link path="/messages">
           <Messages />
+
           <SpanContainer bold bigger marginLeft marginRight>
             <span>Messages</span>
           </SpanContainer>

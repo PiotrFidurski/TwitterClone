@@ -1,8 +1,6 @@
 import { useMutation, useQuery } from "@apollo/client";
 import * as React from "react";
 import {
-  AddPeopleToConversationDocument,
-  AddPeopleToConversationMutation,
   AuthUserDocument,
   AuthUserQuery,
   SuggestedUsersDocument,
@@ -28,10 +26,10 @@ export const CreateNewMessageModal: React.FC = () => {
   );
   const { data: authUser } = useQuery<AuthUserQuery>(AuthUserDocument);
   const [userIds, setUserIds] = React.useState<Array<string>>([]);
-  const [createGroupDm] = useMutation<AddPeopleToConversationMutation>(
-    AddPeopleToConversationDocument,
-    { variables: { userIds: [...userIds] } }
-  );
+  // const [createGroupDm] = useMutation<AddPeopleToConversationMutation>(
+  //   AddPeopleToConversationDocument,
+  //   { variables: { userIds: [...userIds] } }
+  // );
   const thread: any = React.useMemo(() => [], []);
 
   React.useEffect(() => {
@@ -77,7 +75,7 @@ export const CreateNewMessageModal: React.FC = () => {
                   onClick={async () => {
                     try {
                       if (userIds.length) {
-                        await createGroupDm();
+                        // await createGroupDm();
                         closeModal();
                       }
 

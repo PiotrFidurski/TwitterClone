@@ -1,4 +1,4 @@
-mutation sendMessage($text: String!, $conversationId: ID!, $senderId: ID!) {
+mutation sendMessage($text: String!, $conversationId: String!, $senderId: ID!) {
   sendMessage(
     text: $text
     conversationId: $conversationId

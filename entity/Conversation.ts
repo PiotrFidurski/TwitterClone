@@ -5,6 +5,7 @@ interface IConversationSchema extends Document {
   conversationId: string;
   members: Types.Array<Document>;
   type: string;
+  acceptedInvitation: Types.Array<String>;
 }
 
 export interface IConversation extends IConversationSchema {}
@@ -25,6 +26,7 @@ const schema: Schema<IConversation> = new Schema(
         ref: "User",
       },
     ],
+    acceptedInvitation: [{ type: String }],
   },
   { timestamps: true }
 );

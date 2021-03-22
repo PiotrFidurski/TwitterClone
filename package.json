@@ -47,7 +47,8 @@
     "graphql-upload": "^11.0.0"
   },
   "scripts": {
-    "start": "ts-node-dev index.ts",
+    "start": "ts-node-dev --respawn --transpile-only index.ts",
+    "dev": "concurrently \"ts-node-dev --respawn --transpile-only index.ts\" \"cd client && npm start\" \"mongod --auth\" \"redis-server\"",
     "heroku-postbuild": "cd client && npm install && npm install --only=dev --no-shrinkwrap && npm run build"
   }
 }

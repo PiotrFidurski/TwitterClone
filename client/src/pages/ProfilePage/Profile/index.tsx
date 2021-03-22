@@ -10,9 +10,8 @@ import { AvatarContainer, ButtonContainer } from "../../../styles";
 import * as S from "./styles";
 import { Tabs } from "./Tabs";
 import {
-  AddPeopleToConversationDocument,
-  AddPeopleToConversationMutation,
   AuthUserDocument,
+  MessageUserMutation,
   useAuthUserQuery,
   useFollowUserMutation,
   useLikedPostsQuery,
@@ -24,9 +23,12 @@ import { ReactComponent as Message } from "../../../components/svgs/Messages.svg
 import { useHistory, useLocation, useParams } from "react-router-dom";
 import { StyledLink } from "../../../styles";
 import styled from "styled-components";
-import { useUserPostsQuery } from "../../../generated/introspection-result";
+import {
+  MessageUserDocument,
+  useUserPostsQuery,
+} from "../../../generated/introspection-result";
 import { VirtualizedList } from "../../../components/VirtualizedList";
-import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 
 interface Props {
   user: User;
@@ -200,11 +202,10 @@ const tabsData = [
 export const Profile: React.FC<Props> = ({ user }) => {
   let location = useLocation();
   const history = useHistory();
-  const [message] = useMutation<AddPeopleToConversationMutation>(
-    AddPeopleToConversationDocument,
-    { variables: { userIds: [user!.id] } }
-  );
-
+  const [message] = useMutation<MessageUserMutation>(MessageUserDocument, {
+    variables: { userId: user!.id },
+  });
+  const { data } = useAuthUserQuery();
   const [followUser] = useFollowUserMutation({
     variables: { id: user!.id! },
     optimisticResponse: {
@@ -220,16 +221,16 @@ export const Profile: React.FC<Props> = ({ user }) => {
   });
 
   const startMessage = async () => {
-    // if user.isDmed  go to his post instead
+    if (user.isMessaged) {
+      history.push(`/messages/`);
+    }
     try {
       const msg = await message({
         update: (cache, { data }) => {
           cache.modify({
             fields: {
               userConversations(existingConversations = [], { toReference }) {
-                const newConversation = toReference(
-                  data!.addPeopleToConversation!.id
-                );
+                const newConversation = toReference(data!.messageUser!.id);
 
                 return [...existingConversations, newConversation];
               },
@@ -238,22 +239,19 @@ export const Profile: React.FC<Props> = ({ user }) => {
         },
       });
 
-      if (msg.data!.addPeopleToConversation!.id) {
-        history.push(`/messages/${msg!.data!.addPeopleToConversation!.id!}`);
+      if (msg.data!.messageUser!.id) {
+        history.push(`/messages/${msg!.data!.messageUser!.conversationId!}`);
       } else {
-        history.push(`/messages/${msg!.data!.addPeopleToConversation!.id!}`);
       }
     } catch (error) {
       console.log(error);
     }
   };
 
-  const { data } = useAuthUserQuery();
-
   const handleFollowUser = () => {
     followUser();
   };
-
+  console.log(user);
   return (
     <div style={{ position: "relative" }}>
       <S.Background />
