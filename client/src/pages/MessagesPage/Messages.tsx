@@ -22,6 +22,7 @@ import {
   StyledAvatar,
   ButtonContainer,
 } from "../../styles";
+import { format } from "date-fns";
 import InfiniteScroll from "react-infinite-scroll-component";
 import Editor from "draft-js-plugins-editor";
 import createEmojiMartPlugin from "draft-js-emoji-mart-plugin";
@@ -364,14 +365,45 @@ export const Messages: React.FC<Props> = ({ user, conversation }) => {
                       </SpanContainer>
                     </StyledMessage>
 
-                    <SpanContainer smaller grey style={{ marginLeft: "5px" }}>
-                      {isItMyLastMsg(index)
-                        ? conversation!(conversationId)!.user.id !==
-                          message.messagedata!.senderId
-                          ? user.username
-                          : conversation!(conversationId)!.user.username
-                        : null}
-                    </SpanContainer>
+                    <BaseStylesDiv>
+                      <SpanContainer smaller grey style={{ marginLeft: "5px" }}>
+                        <span>
+                          {isItMyLastMsg(index)
+                            ? conversation!(conversationId)!.user.id !==
+                              message.messagedata!.senderId
+                              ? null
+                              : conversation!(conversationId)!.user.username
+                            : null}
+                        </span>
+                      </SpanContainer>
+
+                      <>
+                        {message!.messagedata!.senderId !== user.id ? (
+                          <SpanContainer
+                            grey
+                            style={{ flexShrink: 0, padding: "0 5px 0 5px" }}
+                          >
+                            <span>·</span>
+                          </SpanContainer>
+                        ) : null}
+                        {isItMyLastMsg(index) ? (
+                          <SpanContainer grey smaller>
+                            <span>
+                              {format(
+                                new Date(
+                                  parseInt(
+                                    message!.id.toString().substring(0, 8),
+                                    16
+                                  ) * 1000
+                                ),
+                                "MMM dd, yyyy, hh:mm aaa",
+                                {}
+                              )}
+                            </span>
+                          </SpanContainer>
+                        ) : null}
+                      </>
+                    </BaseStylesDiv>
                   </MessageWrapper>
                 </>
               ) : null}

@@ -15,7 +15,7 @@ import {
   RandomUsersDocument,
   RandomUsersQuery,
 } from "../../generated/graphql";
-import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { FollowUserDocument } from "../../generated/introspection-result";
 import { useModalContext } from "../context/ModalContext";
 
@@ -76,7 +76,7 @@ interface UserToFollowProps {
 const UserToFollow: React.FC<UserToFollowProps> = React.memo(
   ({ userToFollow }) => {
     const { openModal } = useModalContext();
-    const { cache } = useApolloClient();
+
     const [followUser] = useMutation<FollowUserMutation>(FollowUserDocument, {
       variables: { id: userToFollow.id },
 
@@ -88,7 +88,7 @@ const UserToFollow: React.FC<UserToFollowProps> = React.memo(
         },
       },
     });
-    console.log(cache);
+
     const handleFollowUser = () => {
       userToFollow.isFollowed
         ? openModal("unfollowUserAlert", {
