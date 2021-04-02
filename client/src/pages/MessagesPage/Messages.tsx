@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
-import { useLocation, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { ReactComponent as SadFace } from "../../components/svgs/SadFace.svg";
 import {
   User,
@@ -66,8 +66,10 @@ export const InputContainer = styled(Field)`
   font-size: 19px;
 `;
 
-const MessageContainer = styled.div<{ isItMyMsg: boolean }>`
+const MessageContainer = styled.div<{ isItMyMsg: boolean; margin: boolean }>`
   ${BaseStyles};
+  align-items: center;
+  margin-left: ${(props) => (props.margin ? "50px" : "0")};
   justify-content: ${(props) => (props.isItMyMsg ? "flex-end" : "flex-start")};
 `;
 
@@ -257,11 +259,19 @@ export const Messages: React.FC<Props> = ({ user, conversation }) => {
                 flexGrow
                 style={{ alignItems: "center" }}
               >
-                <AvatarContainer height="34px" width={34} noRightMargin>
-                  <StyledAvatar
-                    url={conversation!(conversationId)!.user.avatar}
-                  />
-                </AvatarContainer>
+                <Link
+                  to={{
+                    pathname: `/user/${
+                      conversation!(conversationId)!.user.username
+                    }`,
+                  }}
+                >
+                  <AvatarContainer height="34px" width={34} noRightMargin>
+                    <StyledAvatar
+                      url={conversation!(conversationId)!.user.avatar}
+                    />
+                  </AvatarContainer>
+                </Link>
 
                 <BaseStylesDiv
                   flexGrow
@@ -317,26 +327,53 @@ export const Messages: React.FC<Props> = ({ user, conversation }) => {
           {data!.conversationMessages!.messages!.map((message, index) => (
             <MessageContainer
               key={message.id}
+              margin={
+                message.messagedata!.senderId !== user.id &&
+                !isItMyLastMsg(index)
+              }
               isItMyMsg={isItMyMessage(message)}
             >
               {conversation(conversationId).acceptedInvitation!.includes(
                 user.id
               ) ? (
-                <MessageWrapper isItMyMsg={isItMyMessage(message)}>
-                  <StyledMessage isItMyMsg={isItMyMessage(message)}>
-                    <SpanContainer breakSpaces>
-                      <span>{message.messagedata.text}</span>
+                <>
+                  {message.messagedata!.senderId !== user.id &&
+                  isItMyLastMsg(index) ? (
+                    <Link
+                      to={{
+                        pathname: `/user/${
+                          conversation!(conversationId)!.user.username
+                        }`,
+                      }}
+                    >
+                      <AvatarContainer
+                        height="40px"
+                        width={40}
+                        style={{ marginBottom: "15px" }}
+                      >
+                        <StyledAvatar
+                          url={conversation!(conversationId)!.user.avatar}
+                        />
+                      </AvatarContainer>
+                    </Link>
+                  ) : null}
+                  <MessageWrapper isItMyMsg={isItMyMessage(message)}>
+                    <StyledMessage isItMyMsg={isItMyMessage(message)}>
+                      <SpanContainer breakSpaces>
+                        <span>{message.messagedata.text}</span>
+                      </SpanContainer>
+                    </StyledMessage>
+
+                    <SpanContainer smaller grey style={{ marginLeft: "5px" }}>
+                      {isItMyLastMsg(index)
+                        ? conversation!(conversationId)!.user.id !==
+                          message.messagedata!.senderId
+                          ? user.username
+                          : conversation!(conversationId)!.user.username
+                        : null}
                     </SpanContainer>
-                  </StyledMessage>
-                  <SpanContainer smaller grey style={{ marginLeft: "5px" }}>
-                    {isItMyLastMsg(index)
-                      ? conversation!(conversationId)!.user.id !==
-                        message.messagedata!.senderId
-                        ? user.username
-                        : conversation!(conversationId)!.user.username
-                      : null}
-                  </SpanContainer>
-                </MessageWrapper>
+                  </MessageWrapper>
+                </>
               ) : null}
             </MessageContainer>
           ))}

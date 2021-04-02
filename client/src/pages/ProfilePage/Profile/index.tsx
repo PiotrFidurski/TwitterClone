@@ -9,8 +9,8 @@ import {
 import { AvatarContainer, ButtonContainer } from "../../../styles";
 import * as S from "./styles";
 import { Tabs } from "./Tabs";
+import format from "date-fns/format";
 import {
-  AuthUserDocument,
   MessageUserMutation,
   useAuthUserQuery,
   useFollowUserMutation,
@@ -231,7 +231,7 @@ export const Profile: React.FC<Props> = ({ user, inbox }) => {
 
   const startMessage = async () => {
     if (inbox) {
-      inbox!.data!.userInbox!.forEach(async (conversation) => {
+      inbox!.data!.userInbox!.forEach((conversation) => {
         const convo = conversation!.participants!.some(
           (participant) => participant.userId === user!.id!
         );
@@ -243,7 +243,11 @@ export const Profile: React.FC<Props> = ({ user, inbox }) => {
       });
     }
     try {
-      await message();
+      const msg = await message();
+
+      if (msg!.data!.messageUser!.id) {
+        history.push(`/messages`);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -328,20 +332,22 @@ export const Profile: React.FC<Props> = ({ user, inbox }) => {
           <SpanContainer bolder bigger>
             <span>{user.name}</span>
           </SpanContainer>
-          <SpanContainer grey>
+          <SpanContainer grey style={{ margin: "10px 0" }}>
             <span>@{user.username}</span>
           </SpanContainer>
           {user!.bio && (
             <SpanContainer
               breakSpaces
-              style={{ margin: "10px 0", maxWidth: "-webkit-fill-available" }}
+              style={{
+                maxWidth: "-webkit-fill-available",
+                marginBottom: "10px",
+              }}
             >
               <span>{user!.bio}</span>
             </SpanContainer>
           )}
           <BaseStylesDiv
             style={{
-              marginBottom: "10px",
               maxWidth: "-webkit-fill-available",
               flexWrap: "wrap",
             }}
@@ -349,14 +355,21 @@ export const Profile: React.FC<Props> = ({ user, inbox }) => {
             <SpanContainer grey breakSpaces marginRight={!!user.website}>
               <span>{user.website}</span>
             </SpanContainer>
-            <SpanContainer marginRight>
-              <span>Born December 29, 1990</span>
-            </SpanContainer>
-            <SpanContainer>
-              <span>Joined August 2012</span>
+
+            <SpanContainer grey>
+              <span>
+                Joined{" "}
+                {format(
+                  new Date(
+                    parseInt(user!.id.toString().substring(0, 8), 16) * 1000
+                  ),
+                  "MMM dd, yyyy",
+                  {}
+                )}
+              </span>
             </SpanContainer>
           </BaseStylesDiv>
-          <BaseStylesDiv>
+          <BaseStylesDiv style={{ marginTop: "10px" }}>
             <SpanContainer bold marginRight>
               <span>{user.followingCount}</span>
             </SpanContainer>

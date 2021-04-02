@@ -215,9 +215,11 @@ const ConversationCmp: React.FC<{
           }}
         >
           <section style={{ display: "contents" }}>
-            <AvatarContainer height="49px" width={49} noRightMargin>
-              <StyledAvatar url={conversation.user.avatar} />
-            </AvatarContainer>
+            <Link to={{ pathname: `/user/${conversation.user.username}` }}>
+              <AvatarContainer height="49px" width={49} noRightMargin>
+                <StyledAvatar url={conversation.user.avatar} />
+              </AvatarContainer>
+            </Link>
 
             <BaseStylesDiv
               flexGrow

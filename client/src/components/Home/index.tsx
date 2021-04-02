@@ -1,14 +1,12 @@
 import * as React from "react";
 import {
   PrimaryColumn,
-  SidebarColumn,
   Main,
   StyledRoutesWrapper,
   BaseStylesDiv,
   SpanContainer,
 } from "../../styles";
 import { Switch, Redirect, Route } from "react-router-dom";
-import { SecondaryColumn } from "../SecondaryColumn";
 import { ProfilePage } from "../../pages/ProfilePage";
 import { CommentsPage } from "../../pages/CommentsPage";
 import { SideBar, Nav, Link } from "../Sidebar";

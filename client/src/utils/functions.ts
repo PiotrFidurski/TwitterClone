@@ -128,7 +128,7 @@ export const convertDateToTime = (post: Post) => {
   const time = new Date(
     parseInt(post!.id.toString().substring(0, 8), 16) * 1000
   );
-  let date =
+  const date =
     Number(
       formatDistanceToNowStrict(time, { unit: "hour" }).replace("hours", "")
     ) > 24
