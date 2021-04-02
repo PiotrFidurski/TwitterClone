@@ -249,7 +249,7 @@ const Menu: React.FC = () => {
                 <span>Not interested in this Tweet</span>
               </SpanContainer>
             </StyledDropDownItem>
-            {data ? (
+            {data!.authUser!.id === post!.owner!.id ? (
               <StyledDropDownItem
                 danger
                 id="dropdown-item"

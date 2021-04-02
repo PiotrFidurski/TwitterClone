@@ -8,24 +8,6 @@ export const cache: InMemoryCache = new InMemoryCache({
   typePolicies: {
     Query: {
       fields: {
-        // userInbox: {
-        //   keyArgs: ["cursorId", "limit"],
-        //   read(existing, { toReference, readField, args }: any) {
-        //     console.log(existing);
-        //     return existing;
-        //   },
-        //   merge(existing = [], incoming, { args }: any) {
-        //     console.log(existing, incoming);
-        //     return incoming;
-
-        //     return {...existing.conversations, }
-        //     // return Array.from(
-        //     //   [...existing, ...incoming]
-        //     //     .reduce((array, item) => array.set(item.__ref, item), new Map())
-        //     //     .values()
-        //     // );
-        //   },
-        // },
         conversation: {
           keyArgs: ["conversationId", "postId"],
           read(existing, { toReference, readField, args }: any) {
@@ -112,13 +94,25 @@ export const cache: InMemoryCache = new InMemoryCache({
           keyArgs: [],
           read(existing, { toReference, readField, args }) {
             let thread: Array<{ [key: string]: Post }> = [];
+            let secondThread: Array<{ [key: string]: Post }> = [];
             existing &&
               existing.feed &&
               existing.feed.forEach((item: any) => (thread[item.__ref] = item));
+
+            existing &&
+              existing.feed &&
+              existing.feed.forEach((item: any) => {
+                const ref = toReference(item);
+                const inReplyToId: any = readField("inReplyToId", ref);
+                return (secondThread[inReplyToId] = item);
+              });
             let array =
               existing &&
               existing.feed &&
               existing.feed.filter((item: any) => {
+                // const ref = toReference(item);
+                // const field = readField("conversationId", ref);
+                // return field === item.__ref;
                 const ref = toReference(item);
                 const field = readField("replyCount", ref);
                 return !field;
@@ -128,6 +122,20 @@ export const cache: InMemoryCache = new InMemoryCache({
               array!.length &&
               array!.slice(0).forEach((post: any) => {
                 const ref = toReference(post);
+                // const conversationId: any = readField("conversationId", ref);
+                // let child: any = secondThread[conversationId];
+
+                // if (child && !array!.includes(child)) {
+                //   const idx = array!.indexOf(post);
+                //   array!.splice(idx + 1, 0, child);
+                //   const ref = toReference(child);
+                //   const replyCount = readField("replyCount", ref);
+                //   if (replyCount) {
+                //     let childOfaChild: any = secondThread[child.__ref];
+                //     const idx = array!.indexOf(child);
+                //     array!.splice(idx + 1, 0, childOfaChild);
+                //   }
+                // }
                 const inReplyToId: any = readField("inReplyToId", ref);
                 let parent: any = thread[inReplyToId];
                 if (parent && !array!.includes(parent)) {

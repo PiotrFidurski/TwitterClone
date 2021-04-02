@@ -2,14 +2,12 @@ import { gql } from "apollo-server-core";
 
 export default gql`
   extend type Query {
+    userInbox: [Conversation!] @auth
     conversationMessages(
       conversationId: String!
       cursorId: String
       limit: Int!
     ): ConversationMessagesResult @auth
-    userConversations: [Conversation!] @auth
-    getConversation(conversationId: String!): Conversation @auth
-    userInbox: [Conversation!] @auth
   }
   extend type Mutation {
     updateLastSeenMessage(
@@ -28,7 +26,6 @@ export default gql`
     ): Message! @auth
   }
   extend type Subscription {
-    messageSent(conversationId: String!): Message @auth
     conversationUpdated(userId: String!): ConversationUpdatedResult @auth
   }
   type ConversationMessagesResult {

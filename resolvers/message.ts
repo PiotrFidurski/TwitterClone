@@ -10,100 +10,89 @@ import { Types } from "mongoose";
 export default {
   Query: {
     userInbox: async (_, args, { authenticatedUser }: OwnContext) => {
-      // we are grabbing users inbox which consists of
-      // all the conversations he's part of
-      // and for each conversation we load last 3 messages of users
-      // that arent us
-      const user = await User.findById(authenticatedUser!._id);
+      try {
+        const user = await User.findById(authenticatedUser!._id);
 
-      const conversationAggregation = await Conversation.aggregate([
-        {
-          $match: {
-            "participants.userId": { $in: [user!.id] },
-          },
-        },
-        {
-          $lookup: {
-            from: "messages",
-            let: {
-              conversationId: "$conversationId",
-              weSendIt: authenticatedUser!._id,
+        const conversation = await Conversation.aggregate([
+          {
+            $match: {
+              "participants.userId": { $in: [user!.id] },
             },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [{ $eq: ["$conversationId", "$$conversationId"] }],
-                  },
-                },
-              },
-              { $sort: { _id: -1 } },
-              { $limit: 3 },
-            ],
-            as: "messages_conversation",
           },
-        },
-        {
-          $lookup: {
-            from: "users",
-            let: {
-              // userId: { $filter: ["$participants", 1] },
-              userId: {
-                $filter: {
-                  input: "$participants",
-                  as: "user",
-                  cond: {
-                    $ne: [
-                      "$$user.userId",
-                      { $toString: authenticatedUser!._id },
-                    ],
+          {
+            $lookup: {
+              from: "messages",
+              let: {
+                conversationId: "$conversationId",
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [{ $eq: ["$conversationId", "$$conversationId"] }],
+                    },
                   },
                 },
-              },
+                { $sort: { _id: -1 } },
+                { $limit: 3 },
+              ],
+              as: "messages_conversation",
             },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      {
-                        $eq: [
-                          { $arrayElemAt: ["$$userId.userId", 0] },
-                          { $toString: "$_id" },
-                        ],
-                      },
-                    ],
+          },
+          {
+            $lookup: {
+              from: "users",
+              let: {
+                filteredParticipants: {
+                  $filter: {
+                    input: "$participants",
+                    as: "user",
+                    cond: {
+                      $ne: [
+                        "$$user.userId",
+                        { $toString: authenticatedUser!._id },
+                      ],
+                    },
                   },
                 },
               },
-            ],
-            as: "user",
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: [
+                            {
+                              $arrayElemAt: [
+                                "$$filteredParticipants.userId",
+                                0,
+                              ],
+                            },
+                            { $toString: "$_id" },
+                          ],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+              as: "user",
+            },
           },
-        },
-        { $unwind: "$user" },
-        { $sort: { createdAt: -1 } },
-      ]);
-
-      // const user = await User.find({})
-      // const message = await Message.findById(cursorId);
-      // const hasNextPage = await Message.find({
-      //   conversationId: { $eq: message!.conversationId },
-      //   _id: { $lt: Types.ObjectId(cursorId) },
-      // })
-      //   .sort({ _id: -1 })
-      //   .limit(1);
-      console.log(conversationAggregation);
-      return conversationAggregation;
+          { $unwind: "$user" },
+          { $sort: { createdAt: -1 } },
+        ]);
+        return conversation;
+      } catch (error) {
+        throw new Error(error);
+      }
     },
     conversationMessages: async (
       _,
       { cursorId, limit, conversationId },
       { authenticatedUser }: OwnContext
     ) => {
-      // grab conversation where messages are from
-      // grab all messages of this conversation (paginated)
-      // return {conversation: Conversation}, messages: Array<Messages>}
-
       try {
         const conversation = await Conversation.aggregate([
           { $match: { conversationId: { $eq: conversationId } } },
@@ -128,6 +117,48 @@ export default {
               as: "messages_conversation",
             },
           },
+          {
+            $lookup: {
+              from: "users",
+              let: {
+                filteredParticipants: {
+                  $filter: {
+                    input: "$participants",
+                    as: "user",
+                    cond: {
+                      $ne: [
+                        "$$user.userId",
+                        { $toString: authenticatedUser!._id },
+                      ],
+                    },
+                  },
+                },
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: [
+                            {
+                              $arrayElemAt: [
+                                "$$filteredParticipants.userId",
+                                0,
+                              ],
+                            },
+                            { $toString: "$_id" },
+                          ],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+              as: "user",
+            },
+          },
+          { $unwind: "$user" },
         ]);
         const messages = await Message.aggregate([
           {
@@ -149,7 +180,6 @@ export default {
             },
           },
           { $sort: { _id: -1 } },
-
           { $limit: limit },
         ]);
 
@@ -161,10 +191,7 @@ export default {
             },
           }).sort({ _id: -1 });
           if (result) {
-            console.log(result);
             hasNextPage = true;
-          } else {
-            hasNextPage = false;
           }
         }
 
@@ -176,26 +203,6 @@ export default {
       } catch (error) {
         throw new Error(error);
       }
-    },
-    userConversations: async (_, args, { authenticatedUser }: OwnContext) => {
-      const user = await User.findById(authenticatedUser!._id);
-
-      const conversations = await Conversation.find({
-        members: { $in: [user!] },
-      }).populate("members");
-
-      return conversations;
-    },
-    getConversation: async (
-      _,
-      { conversationId },
-      { authenticatedUser }: OwnContext
-    ) => {
-      const conversation = await Conversation.find({
-        conversationId: conversationId,
-      }).populate("members");
-
-      return conversation[0];
     },
   },
   Mutation: {
@@ -449,7 +456,6 @@ export default {
                 from: "messages",
                 let: {
                   conversationId: "$conversationId",
-                  weSendIt: authenticatedUser!._id,
                 },
                 pipeline: [
                   {
@@ -457,7 +463,6 @@ export default {
                       $expr: {
                         $and: [
                           { $eq: ["$conversationId", "$$conversationId"] },
-                          // { $ne: ["$messagedata.senderId", "$$weSendIt"] },
                         ],
                       },
                     },
@@ -517,16 +522,6 @@ export default {
             : payload.conversationUpdated.conversation.participants.some(
                 (participant: any) => participant.userId === variables.userId
               );
-        }
-      ),
-    },
-    messageSent: {
-      subscribe: withFilter(
-        () => redisPubSub.asyncIterator("message_sent"),
-        (payload, variables) => {
-          return (
-            payload.messageSent.conversationId === variables.conversationId
-          );
         }
       ),
     },

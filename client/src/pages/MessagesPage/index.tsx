@@ -194,9 +194,6 @@ const ConversationCmp: React.FC<{
                 ? conversation!.messages_conversation![0].messagedata.id
                 : "",
           },
-          update: (store, { data }) => {
-            console.log(data);
-          },
         });
         cache.modify({ fields: { userInbox(cachedEntries) {} } });
       }}

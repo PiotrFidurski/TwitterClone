@@ -164,8 +164,6 @@ const StyledEmojiPickerContainer = styled.div`
 interface Props {
   user: User;
   conversation: (conversationId: string) => Conversation;
-  // messages: (conversationId: string) => Array<Message>;
-  // conversation: (conversationId: string) => Conversation;
 }
 
 export const Messages: React.FC<Props> = ({ user, conversation }) => {
@@ -373,13 +371,8 @@ export const Messages: React.FC<Props> = ({ user, conversation }) => {
             >
               <SpanContainer bigger bolder breakSpaces>
                 <span>
-                  {
-                    user.username
-                    // !_conversation.participants!.filter(
-                    //   (member) => member.userId !== user.id
-                    // )[0].username
-                  }
-                  wants to start a conversation with you
+                  {conversation!(conversationId).user!.username} wants to start
+                  a conversation with you
                 </span>
               </SpanContainer>
             </BaseStylesDiv>
@@ -456,11 +449,7 @@ const MessageForm: React.FC<{ user: User }> = ({ user }) => {
             update: (store, { data }) => {
               cache.modify({
                 fields: {
-                  userInbox(cachedEntries) {
-                    // find the conversation we are messaging to
-                    // modify conversation_messages to include our message
-                    // return original object shape
-                  },
+                  userInbox(cachedEntries) {},
                 },
               });
             },

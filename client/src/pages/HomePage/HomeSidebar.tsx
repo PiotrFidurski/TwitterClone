@@ -97,34 +97,44 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
       variables: { userId: user!.id! },
       updateQuery: (prev: any, { subscriptionData }: any) => {
         if (!subscriptionData.data) return prev;
-        console.log(subscriptionData!.data!);
+
         cache.modify({
           fields: {
             userInbox(cachedEntries, { toReference, readField }) {
-              // return cachedEntries!.filter((conversation: any) => {
-              //   if (
-              //     conversation!.__ref ===
-              //     subscriptionData!.data!.conversationUpdated!.conversation!.id
-              //   ) {
-              //     const ref = toReference(conversation);
-              //     const messages_conversation: any = readField(
-              //       "messages_conversation",
-              //       ref
-              //     );
-              //     const newItemRef = toReference(
-              //       subscriptionData!.data!.conversationUpdated!.conversation
-              //     );
-              //     return {
-              //       ...conversation,
-              //       messages_conversation: [...messages_conversation]!.splice(
-              //         0,
-              //         1,
-              //         newItemRef
-              //       ),
-              //     };
-              //   }
-              //   return conversation;
-              // });
+              if (
+                subscriptionData!.data!.conversationUpdated!.message === null
+              ) {
+                return [
+                  ...cachedEntries,
+                  subscriptionData!.data!.conversationUpdated!.conversation,
+                ];
+              } else {
+                return cachedEntries!.filter((conversation: any) => {
+                  if (
+                    conversation!.__ref ===
+                    subscriptionData!.data!.conversationUpdated!.conversation!
+                      .id
+                  ) {
+                    const ref = toReference(conversation);
+                    const messages_conversation: any = readField(
+                      "messages_conversation",
+                      ref
+                    );
+                    const newItemRef = toReference(
+                      subscriptionData!.data!.conversationUpdated!.conversation
+                    );
+                    return {
+                      ...conversation,
+                      messages_conversation: [...messages_conversation]!.splice(
+                        0,
+                        1,
+                        newItemRef
+                      ),
+                    };
+                  }
+                  return conversation;
+                });
+              }
             },
             conversationMessages(cachedEntries, { toReference }) {
               if (

@@ -69,7 +69,7 @@ export const Form: React.FC = () => {
     >
       {() => (
         <StyledForm>
-          <TextFormField name="email" label="Username, or email" />
+          <TextFormField name="email" label="email" />
           <TextFormField name="password" label="Password" type="password" />
           <ButtonContainer type="submit" noMarginLeft filledVariant bigger>
             <SpanContainer bold>
