@@ -1,11 +1,6 @@
 import { useMutation, useQuery } from "@apollo/client";
 import * as React from "react";
-import {
-  AuthUserDocument,
-  AuthUserQuery,
-  SuggestedUsersDocument,
-  SuggestedUsersQuery,
-} from "../../generated/graphql";
+import { AuthUserDocument, AuthUserQuery } from "../../generated/graphql";
 import {
   BaseStylesDiv,
   SpanContainer,
@@ -21,9 +16,6 @@ import { ReactComponent as Close } from "../svgs/Close.svg";
 import { Modal } from "./ModalComposition/Modal";
 
 export const CreateNewMessageModal: React.FC = () => {
-  const { data, loading } = useQuery<SuggestedUsersQuery>(
-    SuggestedUsersDocument
-  );
   const { data: authUser } = useQuery<AuthUserQuery>(AuthUserDocument);
   const [userIds, setUserIds] = React.useState<Array<string>>([]);
   // const [createGroupDm] = useMutation<AddPeopleToConversationMutation>(
@@ -31,12 +23,6 @@ export const CreateNewMessageModal: React.FC = () => {
   //   { variables: { userIds: [...userIds] } }
   // );
   const thread: any = React.useMemo(() => [], []);
-
-  React.useEffect(() => {
-    if (data && data!.suggestedUsers) {
-      data!.suggestedUsers!.forEach((user) => (thread[user!.id] = user));
-    }
-  }, [data, loading, thread]);
 
   const addToList = (userId: string) => {
     if (userIds.includes(userId)) {
@@ -94,7 +80,7 @@ export const CreateNewMessageModal: React.FC = () => {
           )}
         </Modal.Header>
         <Modal.Content>
-          {!data && loading ? (
+          {/* {!data && loading ? (
             <Spinner />
           ) : (
             <BaseStylesDiv flexColumn style={{ overflow: "auto" }}>
@@ -184,7 +170,7 @@ export const CreateNewMessageModal: React.FC = () => {
                     ))
                 : null}
             </BaseStylesDiv>
-          )}
+          )} */}
         </Modal.Content>
       </Modal>
     </>

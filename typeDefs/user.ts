@@ -5,6 +5,7 @@ export default gql`
     suggestedUsers: [User!]
     authUser: User! @auth
     userByName(username: String!): UserByNameResult!
+    randomUsers(userId: String!): [User!]
   }
   extend type Mutation {
     login(email: String!, password: String!): UserLoginResult

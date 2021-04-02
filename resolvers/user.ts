@@ -56,6 +56,18 @@ export default {
         };
       }
     },
+    randomUsers: async (_, { userId }) => {
+      try {
+        const users = await User.aggregate([
+          { $match: { _id: { $ne: Types.ObjectId(userId) } } },
+          { $sample: { size: 3 } },
+          ...userPipeline,
+        ]);
+        return users;
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
   },
   Mutation: {
     register: async (_, { name, username, email, password }) => {

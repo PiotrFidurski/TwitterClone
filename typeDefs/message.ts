@@ -37,10 +37,6 @@ export default gql`
     conversation: Conversation
     message: Message
   }
-  type PageInfo {
-    hasPreviousPage: Boolean!
-    hasNextPage: Boolean!
-  }
   type Message {
     id: ID!
     conversationId: String!

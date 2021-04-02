@@ -55,6 +55,7 @@ export type Query = {
   suggestedUsers?: Maybe<Array<User>>;
   authUser: User;
   userByName: UserByNameResult;
+  randomUsers?: Maybe<Array<User>>;
   feed: FeedSuccess;
   conversation?: Maybe<Array<Post>>;
   post: PostByIdResult;
@@ -72,6 +73,10 @@ export type QueryNodeArgs = {
 
 export type QueryUserByNameArgs = {
   username: Scalars["String"];
+};
+
+export type QueryRandomUsersArgs = {
+  userId: Scalars["String"];
 };
 
 export type QueryFeedArgs = {
@@ -741,6 +746,20 @@ export type LoadMorePostsMutation = { __typename?: "Mutation" } & {
   >;
 };
 
+export type RandomUsersQueryVariables = Exact<{
+  userId: Scalars["String"];
+}>;
+
+export type RandomUsersQuery = { __typename?: "Query" } & {
+  randomUsers?: Maybe<
+    Array<
+      { __typename?: "User" } & Pick<User, "id" | "username" | "name"> &
+        UserAvatarFieldsFragment &
+        UserFollowerFieldsFragment
+    >
+  >;
+};
+
 export type UserByNameQueryVariables = Exact<{
   username: Scalars["String"];
 }>;
@@ -759,18 +778,6 @@ export type UserByNameQuery = { __typename?: "Query" } & {
         UserByNameInvalidInputError,
         "message" | "username"
       >);
-};
-
-export type SuggestedUsersQueryVariables = Exact<{ [key: string]: never }>;
-
-export type SuggestedUsersQuery = { __typename?: "Query" } & {
-  suggestedUsers?: Maybe<
-    Array<
-      { __typename?: "User" } & Pick<User, "id" | "username" | "name"> &
-        UserAvatarFieldsFragment &
-        UserFollowerFieldsFragment
-    >
-  >;
 };
 
 export type LikePostMutationVariables = Exact<{
@@ -1899,6 +1906,66 @@ export type LoadMorePostsMutationOptions = ApolloReactCommon.BaseMutationOptions
   LoadMorePostsMutation,
   LoadMorePostsMutationVariables
 >;
+export const RandomUsersDocument = gql`
+  query randomUsers($userId: String!) {
+    randomUsers(userId: $userId) {
+      id
+      username
+      name
+      ...userAvatarFields
+      ...userFollowerFields
+    }
+  }
+  ${UserAvatarFieldsFragmentDoc}
+  ${UserFollowerFieldsFragmentDoc}
+`;
+
+/**
+ * __useRandomUsersQuery__
+ *
+ * To run a query within a React component, call `useRandomUsersQuery` and pass it any options that fit your needs.
+ * When your component renders, `useRandomUsersQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useRandomUsersQuery({
+ *   variables: {
+ *      userId: // value for 'userId'
+ *   },
+ * });
+ */
+export function useRandomUsersQuery(
+  baseOptions?: ApolloReactHooks.QueryHookOptions<
+    RandomUsersQuery,
+    RandomUsersQueryVariables
+  >
+) {
+  return ApolloReactHooks.useQuery<RandomUsersQuery, RandomUsersQueryVariables>(
+    RandomUsersDocument,
+    baseOptions
+  );
+}
+export function useRandomUsersLazyQuery(
+  baseOptions?: ApolloReactHooks.LazyQueryHookOptions<
+    RandomUsersQuery,
+    RandomUsersQueryVariables
+  >
+) {
+  return ApolloReactHooks.useLazyQuery<
+    RandomUsersQuery,
+    RandomUsersQueryVariables
+  >(RandomUsersDocument, baseOptions);
+}
+export type RandomUsersQueryHookResult = ReturnType<typeof useRandomUsersQuery>;
+export type RandomUsersLazyQueryHookResult = ReturnType<
+  typeof useRandomUsersLazyQuery
+>;
+export type RandomUsersQueryResult = ApolloReactCommon.QueryResult<
+  RandomUsersQuery,
+  RandomUsersQueryVariables
+>;
 export const UserByNameDocument = gql`
   query userByName($username: String!) {
     userByName(username: $username) {
@@ -1971,67 +2038,6 @@ export type UserByNameLazyQueryHookResult = ReturnType<
 export type UserByNameQueryResult = ApolloReactCommon.QueryResult<
   UserByNameQuery,
   UserByNameQueryVariables
->;
-export const SuggestedUsersDocument = gql`
-  query suggestedUsers {
-    suggestedUsers {
-      id
-      username
-      name
-      ...userAvatarFields
-      ...userFollowerFields
-    }
-  }
-  ${UserAvatarFieldsFragmentDoc}
-  ${UserFollowerFieldsFragmentDoc}
-`;
-
-/**
- * __useSuggestedUsersQuery__
- *
- * To run a query within a React component, call `useSuggestedUsersQuery` and pass it any options that fit your needs.
- * When your component renders, `useSuggestedUsersQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useSuggestedUsersQuery({
- *   variables: {
- *   },
- * });
- */
-export function useSuggestedUsersQuery(
-  baseOptions?: ApolloReactHooks.QueryHookOptions<
-    SuggestedUsersQuery,
-    SuggestedUsersQueryVariables
-  >
-) {
-  return ApolloReactHooks.useQuery<
-    SuggestedUsersQuery,
-    SuggestedUsersQueryVariables
-  >(SuggestedUsersDocument, baseOptions);
-}
-export function useSuggestedUsersLazyQuery(
-  baseOptions?: ApolloReactHooks.LazyQueryHookOptions<
-    SuggestedUsersQuery,
-    SuggestedUsersQueryVariables
-  >
-) {
-  return ApolloReactHooks.useLazyQuery<
-    SuggestedUsersQuery,
-    SuggestedUsersQueryVariables
-  >(SuggestedUsersDocument, baseOptions);
-}
-export type SuggestedUsersQueryHookResult = ReturnType<
-  typeof useSuggestedUsersQuery
->;
-export type SuggestedUsersLazyQueryHookResult = ReturnType<
-  typeof useSuggestedUsersLazyQuery
->;
-export type SuggestedUsersQueryResult = ApolloReactCommon.QueryResult<
-  SuggestedUsersQuery,
-  SuggestedUsersQueryVariables
 >;
 export const LikePostDocument = gql`
   mutation likePost($id: ID!) {
