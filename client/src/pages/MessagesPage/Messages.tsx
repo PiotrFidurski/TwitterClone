@@ -67,9 +67,14 @@ export const InputContainer = styled(Field)`
   font-size: 19px;
 `;
 
-const MessageContainer = styled.div<{ isItMyMsg: boolean; margin: boolean }>`
+const MessageContainer = styled.div<{
+  isItMyMsg: boolean;
+  margin: boolean;
+  isItMyLastMsg: boolean;
+}>`
   ${BaseStyles};
   align-items: center;
+  margin-bottom: ${(props) => (props.isItMyLastMsg ? "10px" : "0")};
   margin-left: ${(props) => (props.margin ? "50px" : "0")};
   justify-content: ${(props) => (props.isItMyMsg ? "flex-end" : "flex-start")};
 `;
@@ -231,13 +236,13 @@ export const Messages: React.FC<Props> = ({ user, conversation }) => {
   });
 
   const isItMyLastMsg = (index: number) => {
-    return data &&
-      data!.conversationMessages!.messages!.length &&
-      data!.conversationMessages!.messages![index + 1]
+    return !!(data &&
+    data!.conversationMessages!.messages!.length &&
+    data!.conversationMessages!.messages![index + 1]
       ? data!.conversationMessages!.messages![index + 1].messagedata
           .senderId !==
-          data!.conversationMessages!.messages![index].messagedata.senderId
-      : data!.conversationMessages!.messages![0].id;
+        data!.conversationMessages!.messages![index].messagedata.senderId
+      : data!.conversationMessages!.messages![0].id);
   };
 
   if (loading) return <Spinner />;
@@ -328,6 +333,7 @@ export const Messages: React.FC<Props> = ({ user, conversation }) => {
           {data!.conversationMessages!.messages!.map((message, index) => (
             <MessageContainer
               key={message.id}
+              isItMyLastMsg={isItMyLastMsg(index)}
               margin={
                 message.messagedata!.senderId !== user.id &&
                 !isItMyLastMsg(index)
