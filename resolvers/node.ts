@@ -93,6 +93,16 @@ export default {
       return false;
     },
   },
+  Conversation: {
+    id: (parent, args, context, info) => {
+      return parent.id || parent._id;
+    },
+  },
+  Message: {
+    id: (parent, args, context, info) => {
+      return parent.id || parent._id;
+    },
+  },
   User: {
     id: (parent, args, context, info) => {
       return parent.id || parent._id;

@@ -3,11 +3,12 @@ import { ApolloServer } from "apollo-server-express";
 import typeDefs from "./typeDefs";
 import resolvers from "./resolvers";
 import AuthDirective from "./customDirectives/AuthDirective";
-import { app, serverConfig } from "./config/expressServer";
+import { app, serverConfig, sessionMiddleware } from "./config/expressServer";
 import { createServer } from "http";
 import { connect } from "mongoose";
 import { RedisPubSub } from "graphql-redis-subscriptions";
 import Redis from "ioredis";
+import { decode } from "jsonwebtoken";
 
 serverConfig();
 
@@ -45,6 +46,7 @@ const PORT = process.env.PORT || 4000;
       useNewUrlParser: true,
       useCreateIndex: true,
       useUnifiedTopology: true,
+      useFindAndModify: true,
     },
     (error) => {
       if (error) {
@@ -60,7 +62,20 @@ const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,
   context: ({ req, res, connection }) => ({ req, res, connection }),
+  subscriptions: {
+    onConnect: (_, ws: any, { request }) => {
+      const cookie = request.headers.cookie;
+      const token = cookie!.replace("cookiez=", "");
 
+      const userId: any = decode(token, { json: true });
+
+      return new Promise((res) =>
+        sessionMiddleware(ws.upgradeReq, {} as any, () => {
+          res({ req: ws.upgradeReq, userId: userId._id });
+        })
+      );
+    },
+  },
   schemaDirectives: {
     auth: AuthDirective,
   },

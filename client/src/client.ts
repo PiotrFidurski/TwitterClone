@@ -13,15 +13,11 @@ import { WebSocketLink } from "@apollo/client/link/ws";
 import {
   AuthUserDocument,
   AuthUserQuery,
+  Conversation,
   Post,
   User,
-  UserConversationsDocument,
-  UserConversationsQuery,
 } from "./generated/graphql";
-// cache.writeQuery({
-//   query: UserConversationsDocument,
-//   data: { userConversations: [] },
-// });
+
 cache.writeQuery({
   query: AuthUserDocument,
   data: {
@@ -149,7 +145,7 @@ export const client = new ApolloClient({
         console.warn(`Your refresh token is invalid. Try to relogin, ${error}`);
       },
     }),
-    // errorLink,
+    errorLink,
     requestLink,
     splitLink,
   ]),
@@ -167,25 +163,6 @@ export const client = new ApolloClient({
           !!parent.followers!.filter(
             (follower) => follower.id === data!.authUser.id
           ).length
-        );
-      },
-      isMessaged: (parent: User, args, { cache }) => {
-        const data: AuthUserQuery = cache.readQuery({
-          query: AuthUserDocument,
-        });
-        const conversations: UserConversationsQuery = cache.readQuery({
-          query: UserConversationsDocument,
-        });
-
-        return (
-          conversations &&
-          conversations!.userConversations!.some((conversation) => {
-            const arrayOfIds = conversation.conversationId.split("-");
-            return !!(
-              arrayOfIds.includes(parent.id) &&
-              arrayOfIds.includes(data!.authUser!.id)
-            );
-          })
         );
       },
     },

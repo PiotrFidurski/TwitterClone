@@ -29,6 +29,7 @@ export const Link: React.FC<Props> = ({ children, path = "/home" }) => {
         <Absolute noMargin />
         {children![0]}
         {children![1]}
+        {children![2]}
       </HoverContainer>
     </NavLink>
   );

@@ -87,7 +87,7 @@ export const VirtualizedList: React.FC<Props> = ({
     showBorder,
     showConnector
   );
-  console.log(loading);
+
   return (
     <InfiniteLoader
       itemCount={data!.length + 1}

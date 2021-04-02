@@ -1,0 +1,19 @@
+mutation updateLastSeenMessage($messageId: String!, $conversationId: String!) {
+  updateLastSeenMessage(
+    messageId: $messageId
+    conversationId: $conversationId
+  ) {
+    id
+    conversationId
+    lastReadMessageId
+    mostRecentEntryId
+    oldestEntryId
+    acceptedInvitation
+    type
+    participants {
+      userId
+      lastReadMessageId
+      lastSeenMessageId
+    }
+  }
+}

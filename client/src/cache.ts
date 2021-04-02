@@ -8,6 +8,24 @@ export const cache: InMemoryCache = new InMemoryCache({
   typePolicies: {
     Query: {
       fields: {
+        // userInbox: {
+        //   keyArgs: ["cursorId", "limit"],
+        //   read(existing, { toReference, readField, args }: any) {
+        //     console.log(existing);
+        //     return existing;
+        //   },
+        //   merge(existing = [], incoming, { args }: any) {
+        //     console.log(existing, incoming);
+        //     return incoming;
+
+        //     return {...existing.conversations, }
+        //     // return Array.from(
+        //     //   [...existing, ...incoming]
+        //     //     .reduce((array, item) => array.set(item.__ref, item), new Map())
+        //     //     .values()
+        //     // );
+        //   },
+        // },
         conversation: {
           keyArgs: ["conversationId", "postId"],
           read(existing, { toReference, readField, args }: any) {

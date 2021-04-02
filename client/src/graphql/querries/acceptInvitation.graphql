@@ -2,12 +2,26 @@ mutation acceptInvitation($conversationId: String!) {
   acceptInvitation(conversationId: $conversationId) {
     id
     conversationId
+    lastReadMessageId
+    mostRecentEntryId
+    oldestEntryId
     type
-    acceptedInvitation
-    members {
-      username
-      id
-      avatar
+    participants {
+      userId
+      lastReadMessageId
+      lastSeenMessageId
     }
+    messages_conversation {
+      conversationId
+      id
+      messagedata {
+        text
+        senderId
+        receiverId
+        conversationId
+        id
+      }
+    }
+    acceptedInvitation
   }
 }

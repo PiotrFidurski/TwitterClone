@@ -14,8 +14,9 @@ import { User } from "../../generated/introspection-result";
 import { Header } from "../../components/Header";
 import { Conversation } from "./Conversation";
 import { useQuery } from "@apollo/client";
-import { PostDocument } from "../../generated/graphql";
+import { AuthUserDocument, PostDocument } from "../../generated/graphql";
 import { SecondaryColumn } from "../../components/SecondaryColumn";
+import { AuthButtons } from "../../components/SecondaryColumn/AuthButtons";
 
 interface Props {
   user: User;
@@ -64,9 +65,11 @@ export const CommentsPage: React.FC<Props> = ({ user }) => {
           <Conversation post={data!.post!.node!} user={user} />
         )}
       </PrimaryColumn>
-      <SidebarColumn>
-        <SecondaryColumn user={user} />
-      </SidebarColumn>
+      {user && user.username ? (
+        <SidebarColumn>
+          <SecondaryColumn user={user} />
+        </SidebarColumn>
+      ) : null}
     </StyledContainer>
   );
 };

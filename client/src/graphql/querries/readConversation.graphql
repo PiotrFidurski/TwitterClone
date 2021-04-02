@@ -1,0 +1,16 @@
+mutation readConversation($conversationId: String!, $messageId: String!) {
+  readConversation(conversationId: $conversationId, messageId: $messageId) {
+    id
+    conversationId
+    lastReadMessageId
+    mostRecentEntryId
+    oldestEntryId
+    acceptedInvitation
+    type
+    participants {
+      userId
+      lastReadMessageId
+      lastSeenMessageId
+    }
+  }
+}

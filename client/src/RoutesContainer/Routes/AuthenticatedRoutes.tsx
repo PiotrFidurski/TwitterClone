@@ -1,5 +1,10 @@
 import * as React from "react";
-import { User } from "../../generated/graphql";
+import {
+  User,
+  UserInboxQuery,
+  UserInboxQueryHookResult,
+  UserInboxQueryResult,
+} from "../../generated/graphql";
 import { Feed } from "../../components/Feed";
 import { StyledRoutesWrapper } from "../../styles";
 import { Switch, Redirect, Route, useLocation } from "react-router-dom";
@@ -14,9 +19,10 @@ import { MessagesPage } from "../../pages/MessagesPage";
 interface Props {
   user: User;
   postId?: string;
+  userInbox: UserInboxQueryResult;
 }
 
-export const AutheticatedRoutes: React.FC<Props> = ({ user }) => {
+export const AutheticatedRoutes: React.FC<Props> = ({ user, userInbox }) => {
   let location: any = useLocation();
 
   let isModalLoc = location.state && location.state.isModalLoc;
@@ -37,7 +43,7 @@ export const AutheticatedRoutes: React.FC<Props> = ({ user }) => {
           <CommentsPage user={user} />
         </Route>
         <Route path="/messages">
-          <MessagesPage user={user} />
+          <MessagesPage user={user} userInbox={userInbox} />
         </Route>
         <Route exact path="/posts/compose">
           <CreatePostModal />

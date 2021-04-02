@@ -1,16 +1,19 @@
-query userConversations {
-  userConversations {
-    id
+query userInbox {
+  userInbox {
     conversationId
+    id
     lastReadMessageId
     mostRecentEntryId
     oldestEntryId
-    acceptedInvitation
-    type
     participants {
       userId
       lastReadMessageId
       lastSeenMessageId
+    }
+    user {
+      id
+      username
+      avatar
     }
     messages_conversation {
       conversationId
@@ -23,5 +26,7 @@ query userConversations {
         id
       }
     }
+    type
+    acceptedInvitation
   }
 }

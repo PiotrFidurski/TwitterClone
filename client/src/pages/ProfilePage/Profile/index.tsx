@@ -17,6 +17,9 @@ import {
   useLikedPostsQuery,
   usePostsAndRepliesQuery,
   User,
+  UserByNameQuery,
+  UserPostsDocument,
+  UserPostsQuery,
   useUserByNameQuery,
 } from "../../../generated/graphql";
 import { ReactComponent as Message } from "../../../components/svgs/Messages.svg";
@@ -25,7 +28,7 @@ import { StyledLink } from "../../../styles";
 import styled from "styled-components";
 import {
   MessageUserDocument,
-  useUserPostsQuery,
+  UserByNameDocument,
 } from "../../../generated/introspection-result";
 import { VirtualizedList } from "../../../components/VirtualizedList";
 import { useMutation, useQuery } from "@apollo/client";
@@ -52,17 +55,21 @@ const StyledContainer = styled.div`
 `;
 
 const Tweets = () => {
-  const { data: authUser } = useQuery(AuthUserDocument);
-
   const { username } = useParams<{ username: string }>();
 
-  const { data: userData, loading: userLoading } = useUserByNameQuery({
-    variables: { username: username! },
-  });
+  const { data: userData, loading: userLoading } = useQuery(
+    UserByNameDocument,
+    {
+      variables: { username: username! },
+    }
+  );
 
-  const { data, loading, fetchMore } = useUserPostsQuery({
-    variables: { userId: userData! && userData!.userByName!.node!.id! },
-  });
+  const { data, loading, fetchMore } = useQuery<UserPostsQuery>(
+    UserPostsDocument,
+    {
+      variables: { userId: userData! && userData!.userByName!.node!.id! },
+    }
+  );
 
   const loadMore = async (): Promise<any> => {
     try {
@@ -71,7 +78,7 @@ const Tweets = () => {
           userId: userData!.userByName!.node!.id!,
           offset: data!.userPosts!.length!,
         },
-        updateQuery: (prev, { fetchMoreResult }) => {
+        updateQuery: (prev: any, { fetchMoreResult }) => {
           if (!fetchMoreResult) return prev;
           return {
             userPosts: [...prev.userPosts!, ...fetchMoreResult!.userPosts!],
@@ -87,7 +94,7 @@ const Tweets = () => {
     <VirtualizedList
       data={data!.userPosts!}
       itemCount={data!.userPosts!.length}
-      userId={authUser!.authUser!.id!}
+      userId={userData!.userByName.node!.id!}
       loadMore={loadMore}
       showBorder={true}
       showConnector={false}
@@ -98,9 +105,7 @@ const Tweets = () => {
 const TweetsAndReplies = () => {
   const { username } = useParams<{ username: string }>();
 
-  const { data: authUser } = useAuthUserQuery();
-
-  const { data: userData } = useUserByNameQuery({
+  const { data: userData }: any = useUserByNameQuery({
     variables: { username: username! },
   });
 
@@ -115,7 +120,7 @@ const TweetsAndReplies = () => {
           userId: userData!.userByName!.node!.id!,
           offset: data!.postsAndReplies!.length!,
         },
-        updateQuery: (prev, { fetchMoreResult }) => {
+        updateQuery: (prev: any, { fetchMoreResult }: any) => {
           if (!fetchMoreResult) return prev;
           return {
             postsAndReplies: [
@@ -133,7 +138,7 @@ const TweetsAndReplies = () => {
     <VirtualizedList
       data={data!.postsAndReplies!}
       itemCount={data!.postsAndReplies!.length}
-      userId={authUser!.authUser!.id}
+      userId={userData!.userByName!.node!.id}
       loadMore={loadMore}
       showBorder={true}
       showConnector={false}
@@ -142,11 +147,13 @@ const TweetsAndReplies = () => {
 };
 
 const LikedPosts = () => {
-  const { data: authUser } = useAuthUserQuery();
   const { username } = useParams<{ username: string }>();
-  const { data: userData } = useUserByNameQuery({
-    variables: { username: username! },
-  });
+  const { data: userData }: any = useQuery<UserByNameQuery>(
+    UserByNameDocument,
+    {
+      variables: { username: username! },
+    }
+  );
   const { data, loading, fetchMore } = useLikedPostsQuery({
     variables: { userId: userData!.userByName!.node!.id! },
   });
@@ -157,7 +164,7 @@ const LikedPosts = () => {
           userId: userData!.userByName!.node!.id!,
           offset: data!.likedPosts!.length!,
         },
-        updateQuery: (prev, { fetchMoreResult }) => {
+        updateQuery: (prev: any, { fetchMoreResult }) => {
           if (!fetchMoreResult) return prev;
           return {
             likedPosts: [...prev.likedPosts!, ...fetchMoreResult!.likedPosts!],
@@ -172,7 +179,7 @@ const LikedPosts = () => {
     <VirtualizedList
       data={data!.likedPosts!}
       itemCount={data!.likedPosts!.length}
-      userId={authUser!.authUser!.id}
+      userId={userData!.userByName!.node!.id!}
       loadMore={loadMore}
       showBorder={true}
       showConnector={false}
@@ -221,26 +228,18 @@ export const Profile: React.FC<Props> = ({ user }) => {
   });
 
   const startMessage = async () => {
-    if (user.isMessaged) {
-      history.push(`/messages/`);
-    }
     try {
       const msg = await message({
         update: (cache, { data }) => {
-          cache.modify({
-            fields: {
-              userConversations(existingConversations = [], { toReference }) {
-                const newConversation = toReference(data!.messageUser!.id);
-
-                return [...existingConversations, newConversation];
-              },
-            },
-          });
+          console.log(data);
         },
       });
 
-      if (msg.data!.messageUser!.id) {
-        history.push(`/messages/${msg!.data!.messageUser!.conversationId!}`);
+      if (msg.data!.messageUser!.__typename) {
+        // history.push(
+        //   `/messages/${msg!.data!.messageUser!.conversations![0]
+        //     .conversationId!}`
+        // );
       } else {
       }
     } catch (error) {
@@ -251,7 +250,7 @@ export const Profile: React.FC<Props> = ({ user }) => {
   const handleFollowUser = () => {
     followUser();
   };
-  console.log(user);
+
   return (
     <div style={{ position: "relative" }}>
       <S.Background />
@@ -289,7 +288,7 @@ export const Profile: React.FC<Props> = ({ user }) => {
           <BaseStylesDiv style={{ minHeight: "40px" }}>
             <BaseStylesDiv>
               <ButtonContainer
-                onClick={startMessage}
+                onClick={() => {}}
                 noMarginLeft
                 noPadding
                 style={{ minWidth: "40px" }}

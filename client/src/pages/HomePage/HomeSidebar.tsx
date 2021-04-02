@@ -13,7 +13,12 @@ import { ReactComponent as Display } from "../../components/svgs/display.svg";
 import { ReactComponent as Lists } from "../../components/svgs/Lists.svg";
 import { ReactComponent as Feather } from "../../components/svgs/Feather.svg";
 import { ReactComponent as Logo } from "../../components/svgs/Logo.svg";
-import { User } from "../../generated/graphql";
+import {
+  ConversationUpdatedDocument,
+  ConversationUpdatedSubscription,
+  User,
+  UserInboxQuery,
+} from "../../generated/graphql";
 import {
   SpanContainer,
   AvatarContainer,
@@ -22,17 +27,126 @@ import {
   Absolute,
   BaseStylesDiv,
   ButtonContainer,
+  BaseStyles,
 } from "../../styles";
 import { NavLink } from "../../components/Sidebar/styles";
 import { Location } from "history";
 import { DropdownProvider } from "../../components/DropDown";
+import styled from "styled-components";
+import { useApolloClient, useSubscription } from "@apollo/client";
+import { UserInboxQueryResult } from "../../generated/introspection-result";
+
+const StyledNotification = styled.div`
+  ${BaseStyles};
+  position: absolute;
+  top: 3px;
+  display: flex !important;
+  justify-content: center;
+  text-align: center;
+  border-radius: 9999px;
+  height: 20px;
+  width: 20px;
+  font-size: 11px;
+  align-items: center;
+  box-shadow: 0px 1px 0px 1px #15202b;
+  color: white;
+  left: 28px;
+  background-color: var(--colors-button);
+  right: 0px;
+`;
 
 interface Props {
   user: User;
+  userInbox: UserInboxQueryResult;
 }
 
-export const HomeSidebar: React.FC<Props> = ({ user }) => {
+export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
+  const { data, loading, subscribeToMore } = userInbox;
   const location = useLocation<{ isModal: Location }>();
+
+  useSubscription<ConversationUpdatedSubscription>(
+    ConversationUpdatedDocument,
+    { variables: { userId: user!.id! } }
+  );
+  const { cache } = useApolloClient();
+
+  const notifications =
+    !loading &&
+    data &&
+    data!.userInbox &&
+    data!.userInbox
+      .map((conversation) => {
+        const lastSeenId = conversation!.participants!.filter(
+          (participant) => participant.userId === user.id
+        )[0].lastSeenMessageId;
+
+        return lastSeenId !== conversation!.mostRecentEntryId!
+          ? {
+              [conversation.conversationId!]:
+                lastSeenId !== conversation.mostRecentEntryId,
+            }
+          : null;
+      })
+      .filter((value) => value !== null);
+
+  React.useEffect(() => {
+    let unsubscribe: any;
+
+    unsubscribe = subscribeToMore({
+      document: ConversationUpdatedDocument,
+      variables: { userId: user!.id! },
+      updateQuery: (prev: any, { subscriptionData }: any) => {
+        if (!subscriptionData.data) return prev;
+
+        cache.modify({
+          fields: {
+            userInbox(cachedEntries, { toReference, readField }) {
+              return cachedEntries!.filter((conversation: any) => {
+                if (
+                  conversation!.__ref ===
+                  subscriptionData!.data!.conversationUpdated!.conversation!.id
+                ) {
+                  const ref = toReference(conversation);
+                  const messages_conversation: any = readField(
+                    "messages_conversation",
+                    ref
+                  );
+                  const newItemRef = toReference(
+                    subscriptionData!.data!.conversationUpdated!.conversation
+                  );
+
+                  return {
+                    ...conversation,
+                    messages_conversation: [...messages_conversation]!.splice(
+                      0,
+                      1,
+                      newItemRef
+                    ),
+                  };
+                }
+                return conversation;
+              });
+            },
+            conversationMessages(cachedEntries, { toReference }) {
+              if (
+                cachedEntries.conversation.__ref ===
+                subscriptionData!.data!.conversationUpdated!.conversation!.id
+              ) {
+                return {
+                  ...cachedEntries,
+                  messages: [
+                    ...cachedEntries.messages,
+                    subscriptionData!.data!.conversationUpdated!.message,
+                  ],
+                };
+              }
+            },
+          },
+        });
+      },
+    });
+    if (unsubscribe) return () => unsubscribe();
+  }, [cache, subscribeToMore, user]);
 
   return (
     <SideBar>
@@ -57,7 +171,9 @@ export const HomeSidebar: React.FC<Props> = ({ user }) => {
         </Link>
         <Link path="/messages">
           <Messages />
-
+          {notifications && notifications.length > 0 ? (
+            <StyledNotification>{notifications.length}</StyledNotification>
+          ) : null}
           <SpanContainer bold bigger marginLeft marginRight>
             <span>Messages</span>
           </SpanContainer>

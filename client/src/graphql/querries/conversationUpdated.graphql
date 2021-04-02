@@ -1,21 +1,18 @@
-query conversationMessages(
-  $conversationId: String!
-  $cursorId: String
-  $limit: Int!
-) {
-  conversationMessages(
-    conversationId: $conversationId
-    cursorId: $cursorId
-    limit: $limit
-  ) {
-    hasNextPage
+subscription conversationUpdated($userId: String!) {
+  conversationUpdated(userId: $userId) {
     conversation {
       id
       conversationId
       lastReadMessageId
       mostRecentEntryId
       oldestEntryId
+      acceptedInvitation
       type
+      participants {
+        userId
+        lastReadMessageId
+        lastSeenMessageId
+      }
       messages_conversation {
         conversationId
         id
@@ -23,25 +20,20 @@ query conversationMessages(
           text
           senderId
           receiverId
-          id
           conversationId
+          id
         }
       }
-      participants {
-        userId
-        lastReadMessageId
-        lastSeenMessageId
-      }
     }
-    messages {
-      conversationId
+    message {
       id
+      conversationId
       messagedata {
         text
-        senderId
         receiverId
         id
         conversationId
+        senderId
       }
     }
   }

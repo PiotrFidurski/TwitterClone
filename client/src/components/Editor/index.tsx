@@ -72,7 +72,7 @@ export const Editor: React.FC<EditorProps> = ({
           onChange={handleChange}
           editorState={editorState}
           spellCheck={true}
-          placeholder="Whats happening?"
+          placeholder="What's happening?"
         />
       </StyledWrapper>
     </StyledContainer>

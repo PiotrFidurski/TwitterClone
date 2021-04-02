@@ -34,9 +34,10 @@ export type Query = {
   userPosts?: Maybe<Array<Post>>;
   likedPosts?: Maybe<Array<Post>>;
   postsAndReplies?: Maybe<Array<Post>>;
-  directconversation: Conversation;
-  conversationMessages?: Maybe<Array<Message>>;
+  conversationMessages?: Maybe<ConversationMessagesResult>;
   userConversations?: Maybe<Array<Conversation>>;
+  getConversation?: Maybe<Conversation>;
+  userInbox?: Maybe<Array<Conversation>>;
 };
 
 export type QueryNodeArgs = {
@@ -81,11 +82,13 @@ export type QueryPostsAndRepliesArgs = {
   offset?: Maybe<Scalars["Int"]>;
 };
 
-export type QueryDirectconversationArgs = {
-  conversationId: Scalars["ID"];
+export type QueryConversationMessagesArgs = {
+  conversationId: Scalars["String"];
+  cursorId?: Maybe<Scalars["String"]>;
+  limit: Scalars["Int"];
 };
 
-export type QueryConversationMessagesArgs = {
+export type QueryGetConversationArgs = {
   conversationId: Scalars["String"];
 };
 
@@ -104,7 +107,8 @@ export type User = Node & {
   followingCount?: Maybe<Scalars["Int"]>;
   id: Scalars["ID"];
   isFollowed?: Maybe<Scalars["Boolean"]>;
-  isMessaged?: Maybe<Scalars["Boolean"]>;
+  lastReadMessageId?: Maybe<Scalars["String"]>;
+  lastSeenMessageId?: Maybe<Scalars["String"]>;
   name?: Maybe<Scalars["String"]>;
   password?: Maybe<Scalars["String"]>;
   username?: Maybe<Scalars["String"]>;
@@ -161,12 +165,24 @@ export type PostByIdInvalidInputError = Error & {
   id: Scalars["ID"];
 };
 
+export type ConversationMessagesResult = {
+  __typename?: "ConversationMessagesResult";
+  conversation: Conversation;
+  hasNextPage: Scalars["Boolean"];
+  messages?: Maybe<Array<Message>>;
+};
+
 export type Conversation = {
   __typename?: "Conversation";
   id: Scalars["ID"];
   conversationId: Scalars["String"];
-  members?: Maybe<Array<User>>;
+  lastReadMessageId?: Maybe<Scalars["String"]>;
+  mostRecentEntryId?: Maybe<Scalars["String"]>;
+  oldestEntryId?: Maybe<Scalars["String"]>;
   type?: Maybe<Scalars["String"]>;
+  messages_conversation?: Maybe<Array<Message>>;
+  user: User;
+  participants?: Maybe<Array<Participants>>;
   acceptedInvitation?: Maybe<Array<Scalars["String"]>>;
 };
 
@@ -186,6 +202,13 @@ export type MessageData = {
   receiverId: Scalars["String"];
 };
 
+export type Participants = {
+  __typename?: "Participants";
+  userId: Scalars["String"];
+  lastReadMessageId?: Maybe<Scalars["String"]>;
+  lastSeenMessageId?: Maybe<Scalars["String"]>;
+};
+
 export type Mutation = {
   __typename?: "Mutation";
   _?: Maybe<Scalars["String"]>;
@@ -199,10 +222,10 @@ export type Mutation = {
   deletePost?: Maybe<DeleteResourceResponse>;
   likePost?: Maybe<UpdateResourceResponse>;
   loadMorePosts?: Maybe<Array<Post>>;
+  updateLastSeenMessage?: Maybe<Conversation>;
+  readConversation?: Maybe<Conversation>;
   messageUser?: Maybe<Conversation>;
   acceptInvitation?: Maybe<Conversation>;
-  addPeopleToConversation: Conversation;
-  createConversation: Conversation;
   sendMessage: Message;
 };
 
@@ -252,21 +275,22 @@ export type MutationLoadMorePostsArgs = {
   postId: Scalars["ID"];
 };
 
+export type MutationUpdateLastSeenMessageArgs = {
+  messageId: Scalars["String"];
+  conversationId: Scalars["String"];
+};
+
+export type MutationReadConversationArgs = {
+  conversationId: Scalars["String"];
+  messageId: Scalars["String"];
+};
+
 export type MutationMessageUserArgs = {
   userId: Scalars["ID"];
 };
 
 export type MutationAcceptInvitationArgs = {
   conversationId: Scalars["String"];
-};
-
-export type MutationAddPeopleToConversationArgs = {
-  conversationId?: Maybe<Scalars["ID"]>;
-  userIds: Array<Scalars["ID"]>;
-};
-
-export type MutationCreateConversationArgs = {
-  userIds: Array<Scalars["ID"]>;
 };
 
 export type MutationSendMessageArgs = {
@@ -340,10 +364,21 @@ export type Subscription = {
   __typename?: "Subscription";
   _?: Maybe<Scalars["String"]>;
   messageSent?: Maybe<Message>;
+  conversationUpdated?: Maybe<ConversationUpdatedResult>;
 };
 
 export type SubscriptionMessageSentArgs = {
   conversationId: Scalars["String"];
+};
+
+export type SubscriptionConversationUpdatedArgs = {
+  userId: Scalars["String"];
+};
+
+export type ConversationUpdatedResult = {
+  __typename?: "ConversationUpdatedResult";
+  conversation?: Maybe<Conversation>;
+  message?: Maybe<Message>;
 };
 
 export enum Permission {
@@ -351,9 +386,10 @@ export enum Permission {
   OwnsPost = "ownsPost",
 }
 
-export type Member = {
-  __typename?: "Member";
-  userId: Scalars["String"];
+export type PageInfo = {
+  __typename?: "PageInfo";
+  hasPreviousPage: Scalars["Boolean"];
+  hasNextPage: Scalars["Boolean"];
 };
 
 export enum CacheControlScope {
@@ -406,7 +442,7 @@ export type UserAvatarFieldsFragment = { __typename?: "User" } & Pick<
 
 export type UserFollowerFieldsFragment = { __typename?: "User" } & Pick<
   User,
-  "isFollowed" | "isMessaged" | "followersCount" | "followingCount"
+  "isFollowed" | "followersCount" | "followingCount"
 > & {
     followers?: Maybe<
       Array<
@@ -423,11 +459,33 @@ export type AcceptInvitationMutation = { __typename?: "Mutation" } & {
   acceptInvitation?: Maybe<
     { __typename?: "Conversation" } & Pick<
       Conversation,
-      "id" | "conversationId" | "type" | "acceptedInvitation"
+      | "id"
+      | "conversationId"
+      | "lastReadMessageId"
+      | "mostRecentEntryId"
+      | "oldestEntryId"
+      | "type"
+      | "acceptedInvitation"
     > & {
-        members?: Maybe<
+        participants?: Maybe<
           Array<
-            { __typename?: "User" } & Pick<User, "username" | "id" | "avatar">
+            { __typename?: "Participants" } & Pick<
+              Participants,
+              "userId" | "lastReadMessageId" | "lastSeenMessageId"
+            >
+          >
+        >;
+        messages_conversation?: Maybe<
+          Array<
+            { __typename?: "Message" } & Pick<
+              Message,
+              "conversationId" | "id"
+            > & {
+                messagedata: { __typename?: "MessageData" } & Pick<
+                  MessageData,
+                  "text" | "senderId" | "receiverId" | "conversationId" | "id"
+                >;
+              }
           >
         >;
       }
@@ -473,18 +531,124 @@ export type ConversationQuery = { __typename?: "Query" } & {
 
 export type ConversationMessagesQueryVariables = Exact<{
   conversationId: Scalars["String"];
+  cursorId?: Maybe<Scalars["String"]>;
+  limit: Scalars["Int"];
 }>;
 
 export type ConversationMessagesQuery = { __typename?: "Query" } & {
   conversationMessages?: Maybe<
-    Array<
-      { __typename?: "Message" } & Pick<Message, "id" | "conversationId"> & {
-          messagedata: { __typename?: "MessageData" } & Pick<
-            MessageData,
-            "id" | "text" | "conversationId" | "senderId"
-          >;
-        }
-    >
+    { __typename?: "ConversationMessagesResult" } & Pick<
+      ConversationMessagesResult,
+      "hasNextPage"
+    > & {
+        conversation: { __typename?: "Conversation" } & Pick<
+          Conversation,
+          | "id"
+          | "conversationId"
+          | "lastReadMessageId"
+          | "mostRecentEntryId"
+          | "oldestEntryId"
+          | "type"
+        > & {
+            messages_conversation?: Maybe<
+              Array<
+                { __typename?: "Message" } & Pick<
+                  Message,
+                  "conversationId" | "id"
+                > & {
+                    messagedata: { __typename?: "MessageData" } & Pick<
+                      MessageData,
+                      | "text"
+                      | "senderId"
+                      | "receiverId"
+                      | "id"
+                      | "conversationId"
+                    >;
+                  }
+              >
+            >;
+            participants?: Maybe<
+              Array<
+                { __typename?: "Participants" } & Pick<
+                  Participants,
+                  "userId" | "lastReadMessageId" | "lastSeenMessageId"
+                >
+              >
+            >;
+          };
+        messages?: Maybe<
+          Array<
+            { __typename?: "Message" } & Pick<
+              Message,
+              "conversationId" | "id"
+            > & {
+                messagedata: { __typename?: "MessageData" } & Pick<
+                  MessageData,
+                  "text" | "senderId" | "receiverId" | "id" | "conversationId"
+                >;
+              }
+          >
+        >;
+      }
+  >;
+};
+
+export type ConversationUpdatedSubscriptionVariables = Exact<{
+  userId: Scalars["String"];
+}>;
+
+export type ConversationUpdatedSubscription = {
+  __typename?: "Subscription";
+} & {
+  conversationUpdated?: Maybe<
+    { __typename?: "ConversationUpdatedResult" } & {
+      conversation?: Maybe<
+        { __typename?: "Conversation" } & Pick<
+          Conversation,
+          | "id"
+          | "conversationId"
+          | "lastReadMessageId"
+          | "mostRecentEntryId"
+          | "oldestEntryId"
+          | "acceptedInvitation"
+          | "type"
+        > & {
+            participants?: Maybe<
+              Array<
+                { __typename?: "Participants" } & Pick<
+                  Participants,
+                  "userId" | "lastReadMessageId" | "lastSeenMessageId"
+                >
+              >
+            >;
+            messages_conversation?: Maybe<
+              Array<
+                { __typename?: "Message" } & Pick<
+                  Message,
+                  "conversationId" | "id"
+                > & {
+                    messagedata: { __typename?: "MessageData" } & Pick<
+                      MessageData,
+                      | "text"
+                      | "senderId"
+                      | "receiverId"
+                      | "conversationId"
+                      | "id"
+                    >;
+                  }
+              >
+            >;
+          }
+      >;
+      message?: Maybe<
+        { __typename?: "Message" } & Pick<Message, "id" | "conversationId"> & {
+            messagedata: { __typename?: "MessageData" } & Pick<
+              MessageData,
+              "text" | "receiverId" | "id" | "conversationId" | "senderId"
+            >;
+          }
+      >;
+    }
   >;
 };
 
@@ -569,6 +733,47 @@ export type FollowUserMutation = { __typename?: "Mutation" } & {
   >;
 };
 
+export type GetConversationQueryVariables = Exact<{
+  conversationId: Scalars["String"];
+}>;
+
+export type GetConversationQuery = { __typename?: "Query" } & {
+  getConversation?: Maybe<
+    { __typename?: "Conversation" } & Pick<
+      Conversation,
+      | "id"
+      | "conversationId"
+      | "lastReadMessageId"
+      | "mostRecentEntryId"
+      | "oldestEntryId"
+      | "acceptedInvitation"
+      | "type"
+    > & {
+        participants?: Maybe<
+          Array<
+            { __typename?: "Participants" } & Pick<
+              Participants,
+              "userId" | "lastReadMessageId" | "lastSeenMessageId"
+            >
+          >
+        >;
+        messages_conversation?: Maybe<
+          Array<
+            { __typename?: "Message" } & Pick<
+              Message,
+              "conversationId" | "id"
+            > & {
+                messagedata: { __typename?: "MessageData" } & Pick<
+                  MessageData,
+                  "text" | "senderId" | "receiverId" | "conversationId" | "id"
+                >;
+              }
+          >
+        >;
+      }
+  >;
+};
+
 export type LoadMorePostsMutationVariables = Exact<{
   postId: Scalars["ID"];
 }>;
@@ -598,18 +803,19 @@ export type UserByNameQueryVariables = Exact<{
 }>;
 
 export type UserByNameQuery = { __typename?: "Query" } & {
-  userByName: ({ __typename?: "UserByNameSuccess" } & {
-    node: { __typename?: "User" } & Pick<
-      User,
-      "id" | "email" | "username" | "name" | "bio" | "website"
-    > &
-      UserFollowerFieldsFragment &
-      UserAvatarFieldsFragment;
-  }) &
-    ({ __typename?: "UserByNameInvalidInputError" } & Pick<
-      UserByNameInvalidInputError,
-      "message" | "username"
-    >);
+  userByName:
+    | ({ __typename?: "UserByNameSuccess" } & {
+        node: { __typename?: "User" } & Pick<
+          User,
+          "id" | "email" | "username" | "name" | "bio" | "website"
+        > &
+          UserFollowerFieldsFragment &
+          UserAvatarFieldsFragment;
+      })
+    | ({ __typename?: "UserByNameInvalidInputError" } & Pick<
+        UserByNameInvalidInputError,
+        "message" | "username"
+      >);
 };
 
 export type SuggestedUsersQueryVariables = Exact<{ [key: string]: never }>;
@@ -670,21 +876,23 @@ export type LoginMutationVariables = Exact<{
 }>;
 
 export type LoginMutation = { __typename?: "Mutation" } & {
-  login?: ({ __typename?: "UserLoginSuccess" } & Pick<
-    UserLoginSuccess,
-    "accessToken"
-  > & {
-      node: { __typename?: "User" } & Pick<
-        User,
-        "id" | "username" | "email" | "name"
-      > &
-        UserAvatarFieldsFragment &
-        UserFollowerFieldsFragment;
-    }) &
-    ({ __typename?: "UserLoginInvalidInputError" } & Pick<
-      UserLoginInvalidInputError,
-      "email" | "password" | "message"
-    >);
+  login?: Maybe<
+    | ({ __typename: "UserLoginSuccess" } & Pick<
+        UserLoginSuccess,
+        "accessToken"
+      > & {
+          node: { __typename: "User" } & Pick<
+            User,
+            "id" | "username" | "email" | "bio" | "website" | "name"
+          > &
+            UserAvatarFieldsFragment &
+            UserFollowerFieldsFragment;
+        })
+    | ({ __typename: "UserLoginInvalidInputError" } & Pick<
+        UserLoginInvalidInputError,
+        "email" | "password" | "message"
+      >)
+  >;
 };
 
 export type LogoutMutationVariables = Exact<{ [key: string]: never }>;
@@ -703,7 +911,7 @@ export type MessageSentSubscription = { __typename?: "Subscription" } & {
     { __typename?: "Message" } & Pick<Message, "id" | "conversationId"> & {
         messagedata: { __typename?: "MessageData" } & Pick<
           MessageData,
-          "text" | "id" | "conversationId" | "senderId"
+          "text" | "receiverId" | "id" | "conversationId" | "senderId"
         >;
       }
   >;
@@ -717,11 +925,33 @@ export type MessageUserMutation = { __typename?: "Mutation" } & {
   messageUser?: Maybe<
     { __typename?: "Conversation" } & Pick<
       Conversation,
-      "id" | "conversationId" | "type" | "acceptedInvitation"
+      | "id"
+      | "conversationId"
+      | "lastReadMessageId"
+      | "mostRecentEntryId"
+      | "oldestEntryId"
+      | "type"
+      | "acceptedInvitation"
     > & {
-        members?: Maybe<
+        participants?: Maybe<
           Array<
-            { __typename?: "User" } & Pick<User, "username" | "id" | "avatar">
+            { __typename?: "Participants" } & Pick<
+              Participants,
+              "userId" | "lastReadMessageId" | "lastSeenMessageId"
+            >
+          >
+        >;
+        messages_conversation?: Maybe<
+          Array<
+            { __typename?: "Message" } & Pick<
+              Message,
+              "conversationId" | "id"
+            > & {
+                messagedata: { __typename?: "MessageData" } & Pick<
+                  MessageData,
+                  "text" | "senderId" | "receiverId" | "conversationId" | "id"
+                >;
+              }
           >
         >;
       }
@@ -733,26 +963,26 @@ export type PostQueryVariables = Exact<{
 }>;
 
 export type PostQuery = { __typename?: "Query" } & {
-  post: ({ __typename?: "PostByIdSuccess" } & {
-    node: { __typename?: "Post" } & Pick<
-      Post,
-      "id" | "body" | "conversationId" | "inReplyToId"
-    > & {
-        owner?: Maybe<
-          { __typename?: "User" } & Pick<
-            User,
-            "id" | "username" | "name" | "email"
-          > &
-            UserAvatarFieldsFragment &
-            UserFollowerFieldsFragment
-        >;
-      } & PostLikesFieldsFragment &
-      PostConversationFieldsFragment;
-  }) &
-    ({ __typename?: "PostByIdInvalidInputError" } & Pick<
-      PostByIdInvalidInputError,
-      "message" | "id"
-    >);
+  post:
+    | ({ __typename?: "PostByIdSuccess" } & {
+        node: { __typename?: "Post" } & Pick<
+          Post,
+          "id" | "body" | "conversationId" | "inReplyToId"
+        > & {
+            owner?: Maybe<
+              { __typename?: "User" } & Pick<
+                User,
+                "id" | "username" | "name" | "email"
+              > &
+                UserAvatarFieldsFragment
+            >;
+          } & PostLikesFieldsFragment &
+          PostConversationFieldsFragment;
+      })
+    | ({ __typename?: "PostByIdInvalidInputError" } & Pick<
+        PostByIdInvalidInputError,
+        "message" | "id"
+      >);
 };
 
 export type PostsAndRepliesQueryVariables = Exact<{
@@ -780,6 +1010,35 @@ export type PostsAndRepliesQuery = { __typename?: "Query" } & {
   >;
 };
 
+export type ReadConversationMutationVariables = Exact<{
+  conversationId: Scalars["String"];
+  messageId: Scalars["String"];
+}>;
+
+export type ReadConversationMutation = { __typename?: "Mutation" } & {
+  readConversation?: Maybe<
+    { __typename?: "Conversation" } & Pick<
+      Conversation,
+      | "id"
+      | "conversationId"
+      | "lastReadMessageId"
+      | "mostRecentEntryId"
+      | "oldestEntryId"
+      | "acceptedInvitation"
+      | "type"
+    > & {
+        participants?: Maybe<
+          Array<
+            { __typename?: "Participants" } & Pick<
+              Participants,
+              "userId" | "lastReadMessageId" | "lastSeenMessageId"
+            >
+          >
+        >;
+      }
+  >;
+};
+
 export type RegisterMutationVariables = Exact<{
   name: Scalars["String"];
   username: Scalars["String"];
@@ -788,13 +1047,14 @@ export type RegisterMutationVariables = Exact<{
 }>;
 
 export type RegisterMutation = { __typename?: "Mutation" } & {
-  register: ({ __typename?: "UserRegisterSuccess" } & {
-    node: { __typename?: "User" } & Pick<User, "id">;
-  }) &
-    ({ __typename?: "UserRegisterInvalidInputError" } & Pick<
-      UserRegisterInvalidInputError,
-      "email" | "username" | "name" | "password" | "message"
-    >);
+  register:
+    | ({ __typename: "UserRegisterSuccess" } & {
+        node: { __typename?: "User" } & Pick<User, "id">;
+      })
+    | ({ __typename: "UserRegisterInvalidInputError" } & Pick<
+        UserRegisterInvalidInputError,
+        "email" | "username" | "name" | "password" | "message"
+      >);
 };
 
 export type RepliesQueryVariables = Exact<{
@@ -828,6 +1088,7 @@ export type SendMessageMutationVariables = Exact<{
   text: Scalars["String"];
   conversationId: Scalars["String"];
   senderId: Scalars["ID"];
+  receiverId: Scalars["String"];
 }>;
 
 export type SendMessageMutation = { __typename?: "Mutation" } & {
@@ -837,9 +1098,38 @@ export type SendMessageMutation = { __typename?: "Mutation" } & {
   > & {
       messagedata: { __typename?: "MessageData" } & Pick<
         MessageData,
-        "text" | "id" | "conversationId" | "senderId"
+        "text" | "id" | "receiverId" | "conversationId" | "senderId"
       >;
     };
+};
+
+export type UpdateLastSeenMessageMutationVariables = Exact<{
+  messageId: Scalars["String"];
+  conversationId: Scalars["String"];
+}>;
+
+export type UpdateLastSeenMessageMutation = { __typename?: "Mutation" } & {
+  updateLastSeenMessage?: Maybe<
+    { __typename?: "Conversation" } & Pick<
+      Conversation,
+      | "id"
+      | "conversationId"
+      | "lastReadMessageId"
+      | "mostRecentEntryId"
+      | "oldestEntryId"
+      | "acceptedInvitation"
+      | "type"
+    > & {
+        participants?: Maybe<
+          Array<
+            { __typename?: "Participants" } & Pick<
+              Participants,
+              "userId" | "lastReadMessageId" | "lastSeenMessageId"
+            >
+          >
+        >;
+      }
+  >;
 };
 
 export type UpdateUserMutationVariables = Exact<{
@@ -896,11 +1186,78 @@ export type UserConversationsQuery = { __typename?: "Query" } & {
     Array<
       { __typename?: "Conversation" } & Pick<
         Conversation,
-        "id" | "conversationId" | "type" | "acceptedInvitation"
+        | "id"
+        | "conversationId"
+        | "lastReadMessageId"
+        | "mostRecentEntryId"
+        | "oldestEntryId"
+        | "acceptedInvitation"
+        | "type"
       > & {
-          members?: Maybe<
+          participants?: Maybe<
             Array<
-              { __typename?: "User" } & Pick<User, "username" | "id" | "avatar">
+              { __typename?: "Participants" } & Pick<
+                Participants,
+                "userId" | "lastReadMessageId" | "lastSeenMessageId"
+              >
+            >
+          >;
+          messages_conversation?: Maybe<
+            Array<
+              { __typename?: "Message" } & Pick<
+                Message,
+                "conversationId" | "id"
+              > & {
+                  messagedata: { __typename?: "MessageData" } & Pick<
+                    MessageData,
+                    "text" | "senderId" | "receiverId" | "conversationId" | "id"
+                  >;
+                }
+            >
+          >;
+        }
+    >
+  >;
+};
+
+export type UserInboxQueryVariables = Exact<{ [key: string]: never }>;
+
+export type UserInboxQuery = { __typename?: "Query" } & {
+  userInbox?: Maybe<
+    Array<
+      { __typename?: "Conversation" } & Pick<
+        Conversation,
+        | "conversationId"
+        | "id"
+        | "lastReadMessageId"
+        | "mostRecentEntryId"
+        | "oldestEntryId"
+        | "type"
+        | "acceptedInvitation"
+      > & {
+          participants?: Maybe<
+            Array<
+              { __typename?: "Participants" } & Pick<
+                Participants,
+                "userId" | "lastReadMessageId" | "lastSeenMessageId"
+              >
+            >
+          >;
+          user: { __typename?: "User" } & Pick<
+            User,
+            "id" | "username" | "avatar"
+          >;
+          messages_conversation?: Maybe<
+            Array<
+              { __typename?: "Message" } & Pick<
+                Message,
+                "conversationId" | "id"
+              > & {
+                  messagedata: { __typename?: "MessageData" } & Pick<
+                    MessageData,
+                    "text" | "senderId" | "receiverId" | "conversationId" | "id"
+                  >;
+                }
             >
           >;
         }
@@ -960,7 +1317,6 @@ export const UserAvatarFieldsFragmentDoc = gql`
 export const UserFollowerFieldsFragmentDoc = gql`
   fragment userFollowerFields on User {
     isFollowed @client
-    isMessaged @client
     followersCount
     followingCount
     followers {
@@ -975,13 +1331,27 @@ export const AcceptInvitationDocument = gql`
     acceptInvitation(conversationId: $conversationId) {
       id
       conversationId
+      lastReadMessageId
+      mostRecentEntryId
+      oldestEntryId
       type
-      acceptedInvitation
-      members {
-        username
-        id
-        avatar
+      participants {
+        userId
+        lastReadMessageId
+        lastSeenMessageId
       }
+      messages_conversation {
+        conversationId
+        id
+        messagedata {
+          text
+          senderId
+          receiverId
+          conversationId
+          id
+        }
+      }
+      acceptedInvitation
     }
   }
 `;
@@ -1163,15 +1533,51 @@ export type ConversationQueryResult = ApolloReactCommon.QueryResult<
   ConversationQueryVariables
 >;
 export const ConversationMessagesDocument = gql`
-  query conversationMessages($conversationId: String!) {
-    conversationMessages(conversationId: $conversationId) {
-      id
-      conversationId
-      messagedata {
+  query conversationMessages(
+    $conversationId: String!
+    $cursorId: String
+    $limit: Int!
+  ) {
+    conversationMessages(
+      conversationId: $conversationId
+      cursorId: $cursorId
+      limit: $limit
+    ) {
+      hasNextPage
+      conversation {
         id
-        text
         conversationId
-        senderId
+        lastReadMessageId
+        mostRecentEntryId
+        oldestEntryId
+        type
+        messages_conversation {
+          conversationId
+          id
+          messagedata {
+            text
+            senderId
+            receiverId
+            id
+            conversationId
+          }
+        }
+        participants {
+          userId
+          lastReadMessageId
+          lastSeenMessageId
+        }
+      }
+      messages {
+        conversationId
+        id
+        messagedata {
+          text
+          senderId
+          receiverId
+          id
+          conversationId
+        }
       }
     }
   }
@@ -1190,6 +1596,8 @@ export const ConversationMessagesDocument = gql`
  * const { data, loading, error } = useConversationMessagesQuery({
  *   variables: {
  *      conversationId: // value for 'conversationId'
+ *      cursorId: // value for 'cursorId'
+ *      limit: // value for 'limit'
  *   },
  * });
  */
@@ -1225,6 +1633,80 @@ export type ConversationMessagesQueryResult = ApolloReactCommon.QueryResult<
   ConversationMessagesQuery,
   ConversationMessagesQueryVariables
 >;
+export const ConversationUpdatedDocument = gql`
+  subscription conversationUpdated($userId: String!) {
+    conversationUpdated(userId: $userId) {
+      conversation {
+        id
+        conversationId
+        lastReadMessageId
+        mostRecentEntryId
+        oldestEntryId
+        acceptedInvitation
+        type
+        participants {
+          userId
+          lastReadMessageId
+          lastSeenMessageId
+        }
+        messages_conversation {
+          conversationId
+          id
+          messagedata {
+            text
+            senderId
+            receiverId
+            conversationId
+            id
+          }
+        }
+      }
+      message {
+        id
+        conversationId
+        messagedata {
+          text
+          receiverId
+          id
+          conversationId
+          senderId
+        }
+      }
+    }
+  }
+`;
+
+/**
+ * __useConversationUpdatedSubscription__
+ *
+ * To run a query within a React component, call `useConversationUpdatedSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useConversationUpdatedSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useConversationUpdatedSubscription({
+ *   variables: {
+ *      userId: // value for 'userId'
+ *   },
+ * });
+ */
+export function useConversationUpdatedSubscription(
+  baseOptions?: ApolloReactHooks.SubscriptionHookOptions<
+    ConversationUpdatedSubscription,
+    ConversationUpdatedSubscriptionVariables
+  >
+) {
+  return ApolloReactHooks.useSubscription<
+    ConversationUpdatedSubscription,
+    ConversationUpdatedSubscriptionVariables
+  >(ConversationUpdatedDocument, baseOptions);
+}
+export type ConversationUpdatedSubscriptionHookResult = ReturnType<
+  typeof useConversationUpdatedSubscription
+>;
+export type ConversationUpdatedSubscriptionResult = ApolloReactCommon.SubscriptionResult<ConversationUpdatedSubscription>;
 export const CreatePostDocument = gql`
   mutation createPost($body: String!, $conversationId: ID, $inReplyToId: ID) {
     createPost(
@@ -1466,6 +1948,84 @@ export type FollowUserMutationResult = ApolloReactCommon.MutationResult<FollowUs
 export type FollowUserMutationOptions = ApolloReactCommon.BaseMutationOptions<
   FollowUserMutation,
   FollowUserMutationVariables
+>;
+export const GetConversationDocument = gql`
+  query getConversation($conversationId: String!) {
+    getConversation(conversationId: $conversationId) {
+      id
+      conversationId
+      lastReadMessageId
+      mostRecentEntryId
+      oldestEntryId
+      acceptedInvitation
+      type
+      participants {
+        userId
+        lastReadMessageId
+        lastSeenMessageId
+      }
+      messages_conversation {
+        conversationId
+        id
+        messagedata {
+          text
+          senderId
+          receiverId
+          conversationId
+          id
+        }
+      }
+    }
+  }
+`;
+
+/**
+ * __useGetConversationQuery__
+ *
+ * To run a query within a React component, call `useGetConversationQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetConversationQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetConversationQuery({
+ *   variables: {
+ *      conversationId: // value for 'conversationId'
+ *   },
+ * });
+ */
+export function useGetConversationQuery(
+  baseOptions?: ApolloReactHooks.QueryHookOptions<
+    GetConversationQuery,
+    GetConversationQueryVariables
+  >
+) {
+  return ApolloReactHooks.useQuery<
+    GetConversationQuery,
+    GetConversationQueryVariables
+  >(GetConversationDocument, baseOptions);
+}
+export function useGetConversationLazyQuery(
+  baseOptions?: ApolloReactHooks.LazyQueryHookOptions<
+    GetConversationQuery,
+    GetConversationQueryVariables
+  >
+) {
+  return ApolloReactHooks.useLazyQuery<
+    GetConversationQuery,
+    GetConversationQueryVariables
+  >(GetConversationDocument, baseOptions);
+}
+export type GetConversationQueryHookResult = ReturnType<
+  typeof useGetConversationQuery
+>;
+export type GetConversationLazyQueryHookResult = ReturnType<
+  typeof useGetConversationLazyQuery
+>;
+export type GetConversationQueryResult = ApolloReactCommon.QueryResult<
+  GetConversationQuery,
+  GetConversationQueryVariables
 >;
 export const LoadMorePostsDocument = gql`
   mutation loadMorePosts($postId: ID!) {
@@ -1910,6 +2470,7 @@ export const MessageSentDocument = gql`
       conversationId
       messagedata {
         text
+        receiverId
         id
         conversationId
         senderId
@@ -1954,13 +2515,27 @@ export const MessageUserDocument = gql`
     messageUser(userId: $userId) {
       id
       conversationId
+      lastReadMessageId
+      mostRecentEntryId
+      oldestEntryId
+      participants {
+        userId
+        lastReadMessageId
+        lastSeenMessageId
+      }
+      messages_conversation {
+        conversationId
+        id
+        messagedata {
+          text
+          senderId
+          receiverId
+          conversationId
+          id
+        }
+      }
       type
       acceptedInvitation
-      members {
-        username
-        id
-        avatar
-      }
     }
   }
 `;
@@ -2151,6 +2726,66 @@ export type PostsAndRepliesQueryResult = ApolloReactCommon.QueryResult<
   PostsAndRepliesQuery,
   PostsAndRepliesQueryVariables
 >;
+export const ReadConversationDocument = gql`
+  mutation readConversation($conversationId: String!, $messageId: String!) {
+    readConversation(conversationId: $conversationId, messageId: $messageId) {
+      id
+      conversationId
+      lastReadMessageId
+      mostRecentEntryId
+      oldestEntryId
+      acceptedInvitation
+      type
+      participants {
+        userId
+        lastReadMessageId
+        lastSeenMessageId
+      }
+    }
+  }
+`;
+export type ReadConversationMutationFn = ApolloReactCommon.MutationFunction<
+  ReadConversationMutation,
+  ReadConversationMutationVariables
+>;
+
+/**
+ * __useReadConversationMutation__
+ *
+ * To run a mutation, you first call `useReadConversationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useReadConversationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [readConversationMutation, { data, loading, error }] = useReadConversationMutation({
+ *   variables: {
+ *      conversationId: // value for 'conversationId'
+ *      messageId: // value for 'messageId'
+ *   },
+ * });
+ */
+export function useReadConversationMutation(
+  baseOptions?: ApolloReactHooks.MutationHookOptions<
+    ReadConversationMutation,
+    ReadConversationMutationVariables
+  >
+) {
+  return ApolloReactHooks.useMutation<
+    ReadConversationMutation,
+    ReadConversationMutationVariables
+  >(ReadConversationDocument, baseOptions);
+}
+export type ReadConversationMutationHookResult = ReturnType<
+  typeof useReadConversationMutation
+>;
+export type ReadConversationMutationResult = ApolloReactCommon.MutationResult<ReadConversationMutation>;
+export type ReadConversationMutationOptions = ApolloReactCommon.BaseMutationOptions<
+  ReadConversationMutation,
+  ReadConversationMutationVariables
+>;
 export const RegisterDocument = gql`
   mutation Register(
     $name: String!
@@ -2302,17 +2937,20 @@ export const SendMessageDocument = gql`
     $text: String!
     $conversationId: String!
     $senderId: ID!
+    $receiverId: String!
   ) {
     sendMessage(
       text: $text
       conversationId: $conversationId
       senderId: $senderId
+      receiverId: $receiverId
     ) {
       id
       conversationId
       messagedata {
         text
         id
+        receiverId
         conversationId
         senderId
       }
@@ -2340,6 +2978,7 @@ export type SendMessageMutationFn = ApolloReactCommon.MutationFunction<
  *      text: // value for 'text'
  *      conversationId: // value for 'conversationId'
  *      senderId: // value for 'senderId'
+ *      receiverId: // value for 'receiverId'
  *   },
  * });
  */
@@ -2361,6 +3000,72 @@ export type SendMessageMutationResult = ApolloReactCommon.MutationResult<SendMes
 export type SendMessageMutationOptions = ApolloReactCommon.BaseMutationOptions<
   SendMessageMutation,
   SendMessageMutationVariables
+>;
+export const UpdateLastSeenMessageDocument = gql`
+  mutation updateLastSeenMessage(
+    $messageId: String!
+    $conversationId: String!
+  ) {
+    updateLastSeenMessage(
+      messageId: $messageId
+      conversationId: $conversationId
+    ) {
+      id
+      conversationId
+      lastReadMessageId
+      mostRecentEntryId
+      oldestEntryId
+      acceptedInvitation
+      type
+      participants {
+        userId
+        lastReadMessageId
+        lastSeenMessageId
+      }
+    }
+  }
+`;
+export type UpdateLastSeenMessageMutationFn = ApolloReactCommon.MutationFunction<
+  UpdateLastSeenMessageMutation,
+  UpdateLastSeenMessageMutationVariables
+>;
+
+/**
+ * __useUpdateLastSeenMessageMutation__
+ *
+ * To run a mutation, you first call `useUpdateLastSeenMessageMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateLastSeenMessageMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateLastSeenMessageMutation, { data, loading, error }] = useUpdateLastSeenMessageMutation({
+ *   variables: {
+ *      messageId: // value for 'messageId'
+ *      conversationId: // value for 'conversationId'
+ *   },
+ * });
+ */
+export function useUpdateLastSeenMessageMutation(
+  baseOptions?: ApolloReactHooks.MutationHookOptions<
+    UpdateLastSeenMessageMutation,
+    UpdateLastSeenMessageMutationVariables
+  >
+) {
+  return ApolloReactHooks.useMutation<
+    UpdateLastSeenMessageMutation,
+    UpdateLastSeenMessageMutationVariables
+  >(UpdateLastSeenMessageDocument, baseOptions);
+}
+export type UpdateLastSeenMessageMutationHookResult = ReturnType<
+  typeof useUpdateLastSeenMessageMutation
+>;
+export type UpdateLastSeenMessageMutationResult = ApolloReactCommon.MutationResult<UpdateLastSeenMessageMutation>;
+export type UpdateLastSeenMessageMutationOptions = ApolloReactCommon.BaseMutationOptions<
+  UpdateLastSeenMessageMutation,
+  UpdateLastSeenMessageMutationVariables
 >;
 export const UpdateUserDocument = gql`
   mutation UpdateUser(
@@ -2502,12 +3207,26 @@ export const UserConversationsDocument = gql`
     userConversations {
       id
       conversationId
-      type
+      lastReadMessageId
+      mostRecentEntryId
+      oldestEntryId
       acceptedInvitation
-      members {
-        username
+      type
+      participants {
+        userId
+        lastReadMessageId
+        lastSeenMessageId
+      }
+      messages_conversation {
+        conversationId
         id
-        avatar
+        messagedata {
+          text
+          senderId
+          receiverId
+          conversationId
+          id
+        }
       }
     }
   }
@@ -2559,6 +3278,86 @@ export type UserConversationsLazyQueryHookResult = ReturnType<
 export type UserConversationsQueryResult = ApolloReactCommon.QueryResult<
   UserConversationsQuery,
   UserConversationsQueryVariables
+>;
+export const UserInboxDocument = gql`
+  query userInbox {
+    userInbox {
+      conversationId
+      id
+      lastReadMessageId
+      mostRecentEntryId
+      oldestEntryId
+      participants {
+        userId
+        lastReadMessageId
+        lastSeenMessageId
+      }
+      user {
+        id
+        username
+        avatar
+      }
+      messages_conversation {
+        conversationId
+        id
+        messagedata {
+          text
+          senderId
+          receiverId
+          conversationId
+          id
+        }
+      }
+      type
+      acceptedInvitation
+    }
+  }
+`;
+
+/**
+ * __useUserInboxQuery__
+ *
+ * To run a query within a React component, call `useUserInboxQuery` and pass it any options that fit your needs.
+ * When your component renders, `useUserInboxQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useUserInboxQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useUserInboxQuery(
+  baseOptions?: ApolloReactHooks.QueryHookOptions<
+    UserInboxQuery,
+    UserInboxQueryVariables
+  >
+) {
+  return ApolloReactHooks.useQuery<UserInboxQuery, UserInboxQueryVariables>(
+    UserInboxDocument,
+    baseOptions
+  );
+}
+export function useUserInboxLazyQuery(
+  baseOptions?: ApolloReactHooks.LazyQueryHookOptions<
+    UserInboxQuery,
+    UserInboxQueryVariables
+  >
+) {
+  return ApolloReactHooks.useLazyQuery<UserInboxQuery, UserInboxQueryVariables>(
+    UserInboxDocument,
+    baseOptions
+  );
+}
+export type UserInboxQueryHookResult = ReturnType<typeof useUserInboxQuery>;
+export type UserInboxLazyQueryHookResult = ReturnType<
+  typeof useUserInboxLazyQuery
+>;
+export type UserInboxQueryResult = ApolloReactCommon.QueryResult<
+  UserInboxQuery,
+  UserInboxQueryVariables
 >;
 export const UserPostsDocument = gql`
   query userPosts($userId: ID!, $offset: Int) {

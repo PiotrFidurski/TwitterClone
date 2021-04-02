@@ -2,16 +2,24 @@ import { gql } from "apollo-server-core";
 
 export default gql`
   extend type Query {
-    directconversation(conversationId: ID!): Conversation! @auth
-    conversationMessages(conversationId: String!): [Message!] @auth
+    conversationMessages(
+      conversationId: String!
+      cursorId: String
+      limit: Int!
+    ): ConversationMessagesResult @auth
     userConversations: [Conversation!] @auth
+    getConversation(conversationId: String!): Conversation @auth
+    userInbox: [Conversation!] @auth
   }
   extend type Mutation {
+    updateLastSeenMessage(
+      messageId: String!
+      conversationId: String!
+    ): Conversation @auth
+    readConversation(conversationId: String!, messageId: String!): Conversation
+      @auth
     messageUser(userId: ID!): Conversation @auth
     acceptInvitation(conversationId: String!): Conversation @auth
-    addPeopleToConversation(conversationId: ID, userIds: [ID!]!): Conversation!
-      @auth
-    createConversation(userIds: [ID!]!): Conversation! @auth
     sendMessage(
       text: String!
       conversationId: String!
@@ -20,7 +28,21 @@ export default gql`
     ): Message! @auth
   }
   extend type Subscription {
-    messageSent(conversationId: String!): Message
+    messageSent(conversationId: String!): Message @auth
+    conversationUpdated(userId: String!): ConversationUpdatedResult @auth
+  }
+  type ConversationMessagesResult {
+    conversation: Conversation!
+    hasNextPage: Boolean!
+    messages: [Message!]
+  }
+  type ConversationUpdatedResult {
+    conversation: Conversation
+    message: Message
+  }
+  type PageInfo {
+    hasPreviousPage: Boolean!
+    hasNextPage: Boolean!
   }
   type Message {
     id: ID!
@@ -34,16 +56,23 @@ export default gql`
     senderId: String!
     receiverId: String!
   }
+
+  type Participants {
+    userId: String!
+    lastReadMessageId: String
+    lastSeenMessageId: String
+  }
+
   type Conversation {
     id: ID!
     conversationId: String!
-    members: [User!]
+    lastReadMessageId: String
+    mostRecentEntryId: String
+    oldestEntryId: String
     type: String
+    messages_conversation: [Message!]
+    user: User!
+    participants: [Participants!]
     acceptedInvitation: [String!]
-    # type could either be group chat 3 or more users, or oneonone chat
-    # if type === oneonone cant add more people if type ===group_dm can add more members
-  }
-  type Member {
-    userId: String!
   }
 `;

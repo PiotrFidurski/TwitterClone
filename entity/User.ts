@@ -12,6 +12,8 @@ interface IUserSchema extends Document {
   bio: string;
   website: string;
   avatar: string;
+  lastSeenMessageId: string;
+  lastReadMessageId: string;
   posts: IPost[];
   followers: Types.Array<Document>;
   following: Types.Array<Document>;
@@ -41,6 +43,8 @@ const schema: Schema<IUser> = new Schema({
   password: {
     type: String,
   },
+  lastSeenMessageId: { type: String },
+  lastReadMessageId: { type: String },
   isAdmin: {
     type: Boolean,
     default: false,

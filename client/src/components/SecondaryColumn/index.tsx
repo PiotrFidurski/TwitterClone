@@ -7,7 +7,7 @@ import { BaseStyles } from "../../styles";
 import styled from "styled-components";
 import { AuthButtons } from "./AuthButtons";
 
-const StyledContainer = styled.div`
+export const StyledContainer = styled.div`
   ${BaseStyles};
   display: block;
   padding-top: 10px;
@@ -18,7 +18,7 @@ const StyledContainer = styled.div`
   flex-shrink: 1;
 `;
 
-const StyledWrapper = styled.div`
+export const StyledWrapper = styled.div`
   ${BaseStyles};
   margin-top: 53px;
   position: sticky;

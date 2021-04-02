@@ -60,9 +60,12 @@ export const ProfilePage: React.FC<Props> = ({ user }) => {
             <Profile user={data!.userByName!.node} />
           </PrimaryColumn>
         )}
-      <SidebarColumn>
-        <SecondaryColumn user={user} />
-      </SidebarColumn>
+
+      {user && user!.username ? (
+        <SidebarColumn>
+          <SecondaryColumn user={user} />
+        </SidebarColumn>
+      ) : null}
     </StyledContainer>
   );
 };

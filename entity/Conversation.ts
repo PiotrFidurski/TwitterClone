@@ -1,9 +1,34 @@
 import { Document, model, Model, Schema, Types } from "mongoose";
 
+// new structure
+// we return object for user {conversations: [Conversation!], messages: [Message!], users:[User!], lastReadMessageId:String = last seen by current user}
+// interface IConversationSchema extends Document {
+//   id: string;
+//   lastReadMessageId: string; this will basically be whatever the current users lastReadMessageId is
+//   conversationId: string;
+//   mostRecentEntryId: string;
+//   oldestEntryId: string;
+//   members: Types.Array<{userId:string; lastReadMessageId:string}>;
+//   type: string;
+//   acceptedInvitation: Types.Array<String>;
+// }
+// we receive this object of data on frontEnd
+// if conversation.members.authUser.lastReadMEssageId !== conversation.mostRecentEntryId = new notification
+// upon clicking the message tab we update MEMBERS.authUser.lastReadMEssageId
+// whenever members.authuser.lastReadMessageId gets update we also update obj.lastReadMessageId
+// whenever obj.lastReadMessageId updates we update conversation.lastReadMessageId
+
 interface IConversationSchema extends Document {
   id: string;
   conversationId: string;
-  members: Types.Array<Document>;
+  lastReadMessageId: string;
+  mostRecentEntryId: string;
+  oldestEntryId: string;
+  participants: Types.Array<{
+    userId: string;
+    lastReadMessageId: string;
+    lastSeenMessageId: string;
+  }>;
   type: string;
   acceptedInvitation: Types.Array<String>;
 }
@@ -14,18 +39,23 @@ export interface IConversationModel extends Model<IConversation> {}
 
 const schema: Schema<IConversation> = new Schema(
   {
+    lastReadMessageId: { type: String },
+    mostRecentEntryId: { type: String },
+    oldestEntryId: { type: String },
     conversationId: {
       type: String,
     },
     type: {
       type: String,
     },
-    members: [
+    participants: [
       {
-        type: Schema.Types.ObjectId,
-        ref: "User",
+        userId: { type: String },
+        lastReadMessageId: { type: String },
+        lastSeenMessageId: { type: String },
       },
     ],
+
     acceptedInvitation: [{ type: String }],
   },
   { timestamps: true }

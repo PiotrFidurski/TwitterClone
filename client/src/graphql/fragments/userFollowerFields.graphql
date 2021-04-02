@@ -1,6 +1,5 @@
 fragment userFollowerFields on User {
   isFollowed @client
-  isMessaged @client
   followersCount
   followingCount
   followers {

@@ -190,7 +190,8 @@ export const Header: React.FC<HeaderProps> & HeaderComposition = ({
 };
 
 const Menu: React.FC = () => {
-  const { post, userId, prevItem } = usePost();
+  const { post, prevItem } = usePost();
+
   const [deletePost] = useMutation<DeletePostMutation>(DeletePostDocument);
   const [followUser] = useMutation<FollowUserMutation>(FollowUserDocument, {
     variables: { id: post!.owner!.id! },
@@ -248,7 +249,7 @@ const Menu: React.FC = () => {
                 <span>Not interested in this Tweet</span>
               </SpanContainer>
             </StyledDropDownItem>
-            {post!.owner!.id === userId && (
+            {data ? (
               <StyledDropDownItem
                 danger
                 id="dropdown-item"
@@ -261,7 +262,8 @@ const Menu: React.FC = () => {
                   <span>Delete</span>
                 </SpanContainer>
               </StyledDropDownItem>
-            )}
+            ) : null}
+
             <NavLink
               id="dropdown-item"
               style={{ textDecoration: "none" }}
@@ -280,7 +282,7 @@ const Menu: React.FC = () => {
                 </SpanContainer>
               </StyledDropDownItem>
             </NavLink>
-            {data!.authUser!.id !== post!.owner!.id ? (
+            {data && data!.authUser!.id !== post!.owner!.id ? (
               <StyledDropDownItem
                 id="dropdown-item"
                 onClick={() => {
@@ -396,7 +398,7 @@ const Footer: React.FC<FooterProps> = ({ marginAuto }) => {
           >
             <StyledLink
               to={
-                data!.authUser!.username
+                data && data!.authUser!.username
                   ? {
                       pathname: "/posts/compose",
                       state: {

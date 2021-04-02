@@ -5,7 +5,6 @@ import { Modals } from "../../components/context/ModalContext/ModalRoot";
 import { LoadingPage } from "../../pages/LoadingPage";
 import { useQuery } from "@apollo/client";
 import { AuthUserDocument } from "../../generated/introspection-result";
-import { UserConversationsDocument } from "../../generated/graphql";
 const NonAuthenticatedRoutes = React.lazy(
   () => import("./NonAuthenticatedRoutes")
 );
@@ -18,7 +17,6 @@ export const Routes = () => {
     fetchPolicy: "network-only",
     nextFetchPolicy: "cache-only",
   });
-  useQuery(UserConversationsDocument);
 
   const isModalAtLocation = !!Modals[location.pathname];
 

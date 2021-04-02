@@ -1,5 +1,5 @@
-query userConversations {
-  userConversations {
+query getConversation($conversationId: String!) {
+  getConversation(conversationId: $conversationId) {
     id
     conversationId
     lastReadMessageId

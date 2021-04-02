@@ -34,6 +34,8 @@ export default gql`
     bio: String
     website: String
     avatar: String
+    lastReadMessageId: String
+    lastSeenMessageId: String
     following: [User!]
     followers: [User!]
     followersCount: Int

@@ -4,6 +4,7 @@ subscription messageSent($conversationId: String!) {
     conversationId
     messagedata {
       text
+      receiverId
       id
       conversationId
       senderId

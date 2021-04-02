@@ -1,29 +1,40 @@
 import * as React from "react";
-import { useMutation, useQuery, useSubscription } from "@apollo/client";
+import {
+  useApolloClient,
+  useMutation,
+  useQuery,
+  useSubscription,
+} from "@apollo/client";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { ReactComponent as SadFace } from "../../components/svgs/SadFace.svg";
 import { ReactComponent as Settings } from "../../components/svgs/settings.svg";
 import {
-  ConversationMessagesQuery,
-  ConversationMessagesDocument,
   User,
   SendMessageMutation,
   SendMessageDocument,
   MessageSentDocument,
-  UserConversationsQuery,
   AcceptInvitationDocument,
   AcceptInvitationMutation,
+  ConversationMessagesQuery,
+  ConversationMessagesDocument,
+  GetConversationQuery,
+  GetConversationDocument,
+  Message,
+  Conversation,
+  UserInboxQuery,
+  UserInboxDocument,
 } from "../../generated/graphql";
 import {
-  Spinner,
   SpanContainer,
   BaseStyles,
   BaseStylesDiv,
   StyledForm,
   AvatarContainer,
+  Spinner,
   StyledAvatar,
   ButtonContainer,
 } from "../../styles";
+import InfiniteScroll from "react-infinite-scroll-component";
 import Editor from "draft-js-plugins-editor";
 import createEmojiMartPlugin from "draft-js-emoji-mart-plugin";
 import styled, { css } from "styled-components";
@@ -46,10 +57,11 @@ const StyledContainer = styled.div<{ height: number }>`
   ${BaseStyles};
   padding: 10px;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: auto;
+  flex-direction: column-reverse;
   min-height: ${(props) => props.height - 109}px;
   max-height: ${(props) => props.height - 109}px;
-  height: 100%;
+  height: 700px;
   width: auto;
 `;
 
@@ -157,214 +169,194 @@ const StyledEmojiPickerContainer = styled.div`
 
 interface Props {
   user: User;
-  members: UserConversationsQuery;
+  conversation: (conversationId: string) => Conversation;
+  // messages: (conversationId: string) => Array<Message>;
+  // conversation: (conversationId: string) => Conversation;
 }
 
-export const Messages: React.FC<Props> = ({ user, members }) => {
+export const Messages: React.FC<Props> = ({ user, conversation }) => {
   const { conversationId } = useParams<{ conversationId: string }>();
-  const location = useLocation();
-  const [accept] = useMutation<AcceptInvitationMutation>(
-    AcceptInvitationDocument
-  );
-  const chatRef = React.useRef<any>(null);
-
-  useSubscription(MessageSentDocument, {
-    variables: { conversationId: conversationId },
-  });
-
-  const [height, setHeight] = React.useState(window.innerHeight);
-
-  let conversationThread: any = React.useMemo(() => [], []);
-  let userThread: any = React.useMemo(() => [], []);
-
-  members &&
-    members.userConversations &&
-    members!.userConversations.forEach(
-      (conversation) =>
-        (conversationThread[conversation.conversationId] = conversation)
-    );
-
-  React.useEffect(() => {
-    conversationThread &&
-      conversationThread![conversationId] &&
-      conversationThread![conversationId]!.members!.forEach(
-        (member: any) => (userThread[member.id] = member)
-      );
-  }, [conversationThread, conversationId, userThread]);
 
   const {
     data,
+    error,
     loading,
-    subscribeToMore,
+    fetchMore,
   } = useQuery<ConversationMessagesQuery>(ConversationMessagesDocument, {
-    variables: { conversationId: conversationId },
-    fetchPolicy: "network-only",
+    variables: {
+      conversationId: conversationId,
+      limit: 25,
+    },
   });
+
+  const [accept] = useMutation<AcceptInvitationMutation>(
+    AcceptInvitationDocument
+  );
+  const { cache } = useApolloClient();
+  const chatRef = React.useRef<any>(null);
+
+  const [height, setHeight] = React.useState(window.innerHeight);
 
   const setHeightToWindowSize = () => {
     setHeight(window.innerHeight);
   };
+  const loadMore = React.useCallback(async () => {
+    if (data!.conversationMessages!.hasNextPage) {
+      await fetchMore({
+        variables: {
+          limit: 10,
+          cursorId: data!.conversationMessages!.messages!.length
+            ? data!.conversationMessages!.messages![0].id
+            : "",
+        },
+        updateQuery: (prev: any, { fetchMoreResult }: any) => {
+          if (!fetchMoreResult) return prev;
+
+          return {
+            ...prev,
+            conversationMessages: {
+              ...prev.conversationMessages,
+              messages: [
+                ...fetchMoreResult!.conversationMessages!.messages,
+                ...prev.conversationMessages.messages,
+              ],
+            },
+          };
+        },
+      });
+    }
+  }, [data, fetchMore]);
 
   React.useEffect(() => {
     if (chatRef && chatRef.current) {
-      const scroll =
-        chatRef.current.scrollHeight - chatRef.current.clientHeight;
-      chatRef && (chatRef!.current!.scrollTo(0, scroll) as any);
+      // const scroll =
+      //   chatRef.current.scrollHeight - chatRef.current.clientHeight;
+      // chatRef && (chatRef!.current!.scrollTo(0, scroll) as any);
     }
     window.addEventListener("resize", setHeightToWindowSize);
     return () => window.removeEventListener("resize", setHeightToWindowSize);
   });
 
   const isItMyLastMsg = (index: number) => {
-    return !!(data && data!.conversationMessages![index + 1]
-      ? data!.conversationMessages![index + 1].messagedata.senderId !==
-        data!.conversationMessages![index].messagedata.senderId
-      : data!.conversationMessages![data!.conversationMessages!.length - 1].id);
+    return data &&
+      data!.conversationMessages!.messages!.length &&
+      data!.conversationMessages!.messages![index + 1]
+      ? data!.conversationMessages!.messages![index + 1].messagedata
+          .senderId !==
+          data!.conversationMessages!.messages![index].messagedata.senderId
+      : data!.conversationMessages!.messages![0].id;
+
+    // return messages && messages.length && messages(conversationId)[index + 1]
+    //   ? messages(conversationId)[index + 1].messagedata.senderId !==
+    //       messages(conversationId)[index].messagedata!.senderId
+    //   : messages(conversationId)[messages(conversationId).length - 1].id;
   };
 
-  React.useEffect(() => {
-    let unsubscribe: any;
-    unsubscribe = subscribeToMore({
-      document: MessageSentDocument,
-      variables: { conversationId: conversationId },
+  // React.useEffect(() => {
+  //   let unsubscribe: any;
+  //   unsubscribe = subscribeToMore({
+  //     document: MessageSentDocument,
+  //     variables: { conversationId: conversationId },
 
-      updateQuery: (prev: any, { subscriptionData }: any) => {
-        if (!subscriptionData.data) return prev;
-        const newMessage = subscriptionData!.data!.messageSent;
-
-        return Object.assign({}, prev, {
-          conversationMessages: [...prev.conversationMessages, newMessage],
-        });
-      },
-    });
-    if (unsubscribe) return () => unsubscribe();
-  }, [subscribeToMore, conversationId]);
-
+  //     updateQuery: (prev: any, { subscriptionData }: any) => {
+  //       if (!subscriptionData.data) return prev;
+  //       console.log(subscriptionData!.data!);
+  //       cache.modify({
+  //         fields: {
+  //           conversationMessages(cachedEntries, { toReference }) {
+  //             const newMessageRef = toReference(
+  //               subscriptionData!.data!.messageSent!.id
+  //             );
+  //             return [...cachedEntries, newMessageRef];
+  //           },
+  //         },
+  //       });
+  //     },
+  //   });
+  //   if (unsubscribe) return () => unsubscribe();
+  // }, [cache, subscribeToMore, conversationId]);
+  if (loading) return <Spinner />;
   const isItMyMessage = (message: { messagedata: { senderId: string } }) =>
     !!(user.id === message.messagedata.senderId);
 
   return (
     <>
-      {conversationThread ? (
-        <Header justifyStart>
-          <BaseStylesDiv flexGrow style={{ alignItems: "center" }}>
-            {conversationThread[conversationId] &&
-              conversationThread[conversationId]!.members!.filter(
-                (member: any) => member.id !== user.id
-              )
-                .slice(
-                  Math.max(
-                    conversationThread[conversationId]!.members!.length - 3,
-                    0
-                  )
-                )
-                .map((user: any, index: any) =>
-                  conversationThread[conversationId]!.members!.filter(
-                    (member: any) => member.id !== user.id
-                  ).length > 1 ? (
-                    <section key={user.id} style={{ display: "contents" }}>
-                      <AvatarContainer
-                        style={
-                          index % 2 !== 0 || index !== 0
-                            ? { transform: "scaleX(-1)" }
-                            : {}
-                        }
-                        displayAsGroup
-                        height="34px"
-                        width={34}
-                      >
-                        <StyledAvatar url={user.avatar} />
-                      </AvatarContainer>
-                      <BaseStylesDiv
-                        style={
-                          index % 2 === 0 || index === 0
-                            ? {
-                                height: "100%",
-                                width: "1px",
-                                backgroundColor: "var(--colors-mainbackground)",
-                              }
-                            : {}
-                        }
-                      ></BaseStylesDiv>
-                    </section>
-                  ) : (
-                    <section key={user.id} style={{ display: "contents" }}>
-                      <AvatarContainer height="34px" width={34} noRightMargin>
-                        <StyledAvatar url={user.avatar} />
-                      </AvatarContainer>
-                    </section>
-                  )
-                )}
-            <BaseStylesDiv
-              flexGrow
-              style={{
-                margin: "0px 0px 0px 10px",
-                width: "0px",
-                textOverflow: "ellipsis",
-                justifyContent: "space-between",
-              }}
-            >
-              <SpanContainer bold biggest>
-                {conversationThread![conversationId] &&
-                  conversationThread!
-                    [conversationId]!.members!.filter(
-                      (member: any) => member.id !== user.id
-                    )
-                    .map((user: any, index: any) => (
-                      <section key={user.id} style={{ display: "contents" }}>
-                        {user.username}
-                        <span>
-                          {index <
-                          conversationThread![conversationId]!.members!.filter(
-                            (member: any) => member.id !== user.id
-                          ).length -
-                            1
-                            ? ","
-                            : ""}
-                        </span>
-                        <span>&nbsp;</span>
-                      </section>
-                    ))}
-              </SpanContainer>
+      <Header justifyStart>
+        {!loading &&
+          data!.conversationMessages! &&
+          data!
+            .conversationMessages!.conversation!.participants!.filter(
+              (member) => member.userId !== user.id
+            )
+            .map((_user) => (
+              <BaseStylesDiv
+                key={_user.userId}
+                flexGrow
+                style={{ alignItems: "center" }}
+              >
+                <AvatarContainer height="34px" width={34} noRightMargin>
+                  <StyledAvatar
+                    url={conversation!(conversationId)!.user.avatar}
+                  />
+                </AvatarContainer>
 
-              <BaseStylesDiv>
-                <Link
-                  to={{
-                    pathname: "/messages/compose",
-                    state: { isModalLoc: location },
+                <BaseStylesDiv
+                  flexGrow
+                  style={{
+                    margin: "0px 0px 0px 10px",
+                    width: "0px",
+                    textOverflow: "ellipsis",
+                    justifyContent: "space-between",
                   }}
                 >
-                  <ButtonContainer
-                    noPadding
-                    style={{
-                      border: 0,
-                      minHeight: "35px",
-                      minWidth: "35px",
-                    }}
-                  >
-                    <div>
-                      <Settings
-                        fill="var(--colors-button)"
-                        width="1.20rem"
-                        height="1.20rem"
-                      />
-                    </div>
-                  </ButtonContainer>
-                </Link>
+                  <SpanContainer bold biggest>
+                    <span>{conversation!(conversationId)!.user.username}</span>
+                  </SpanContainer>
+                  <BaseStylesDiv>
+                    {/* <Link
+                      to={{
+                        pathname: "/messages/compose",
+                        state: { isModalLoc: location },
+                      }}
+                    >
+                      <ButtonContainer
+                        noPadding
+                        style={{
+                          border: 0,
+                          minHeight: "35px",
+                          minWidth: "35px",
+                        }}
+                      >
+                        <div>
+                          <Settings
+                            fill="var(--colors-button)"
+                            width="1.20rem"
+                            height="1.20rem"
+                          />
+                        </div>
+                      </ButtonContainer>
+                    </Link> */}
+                  </BaseStylesDiv>
+                </BaseStylesDiv>
               </BaseStylesDiv>
-            </BaseStylesDiv>
-          </BaseStylesDiv>
-        </Header>
-      ) : null}
-      <StyledContainer height={height} ref={chatRef}>
-        {data ? (
-          data!.conversationMessages!.map((message, index) => (
+            ))}
+      </Header>
+
+      <StyledContainer height={height} ref={chatRef} id="scrollableDiv">
+        <InfiniteScroll
+          scrollableTarget="scrollableDiv"
+          inverse={true}
+          loader={null}
+          dataLength={data!.conversationMessages!.messages!.length}
+          next={loadMore}
+          hasMore={data!.conversationMessages!.hasNextPage}
+        >
+          {data!.conversationMessages!.messages!.map((message, index) => (
             <MessageContainer
               key={message.id}
               isItMyMsg={isItMyMessage(message)}
             >
-              {conversationThread &&
-              conversationThread[conversationId].acceptedInvitation.includes(
+              {conversation(conversationId).acceptedInvitation!.includes(
                 user.id
               ) ? (
                 <MessageWrapper isItMyMsg={isItMyMessage(message)}>
@@ -375,23 +367,21 @@ export const Messages: React.FC<Props> = ({ user, members }) => {
                   </StyledMessage>
                   <SpanContainer smaller grey style={{ marginLeft: "5px" }}>
                     {isItMyLastMsg(index)
-                      ? userThread[message.messagedata.senderId].username
+                      ? conversation!(conversationId)!.user.id !==
+                        message.messagedata!.senderId
+                        ? user.username
+                        : conversation!(conversationId)!.user.username
                       : null}
                   </SpanContainer>
                 </MessageWrapper>
               ) : null}
             </MessageContainer>
-          ))
-        ) : loading ? (
-          <Spinner />
-        ) : null}
+          ))}
+        </InfiniteScroll>
       </StyledContainer>
-      {conversationThread &&
-      conversationThread[conversationId].acceptedInvitation.includes(
-        user.id
-      ) ? (
-        <MessageForm user={user} />
-      ) : (
+      {/* {_conversation.acceptedInvitation!.includes(user!.id!) ? ( */}
+      <MessageForm user={user} />
+      {/* ) : (
         <BaseStylesDiv
           flexColumn
           style={{ position: "absolute", bottom: "20px", left: 0, right: 0 }}
@@ -408,13 +398,23 @@ export const Messages: React.FC<Props> = ({ user, members }) => {
             ></BaseStylesDiv>
           </BaseStylesDiv>
           <BaseStylesDiv flexColumn>
-            <BaseStylesDiv style={{ paddingTop: "20px", alignSelf: "center" }}>
-              <SpanContainer bigger bolder>
+            <BaseStylesDiv
+              style={{
+                paddingTop: "20px",
+                alignSelf: "center",
+                maxWidth: "360px",
+                margin: "0 auto",
+              }}
+            >
+              <SpanContainer bigger bolder breakSpaces>
                 <span>
-                  You've been invited to message with{" "}
-                  {conversationThread[conversationId]!.members!.filter(
-                    (member: any) => member.id !== user.id
-                  ).map((user: any) => user.username)}
+                  {
+                    user.username
+                    // !_conversation.participants!.filter(
+                    //   (member) => member.userId !== user.id
+                    // )[0].username
+                  }
+                  wants to start a conversation with you
                 </span>
               </SpanContainer>
             </BaseStylesDiv>
@@ -428,8 +428,7 @@ export const Messages: React.FC<Props> = ({ user, members }) => {
                 onClick={() => {
                   accept({
                     variables: {
-                      conversationId:
-                        conversationThread[conversationId].conversationId,
+                      conversationId: conversationId,
                     },
                   });
                 }}
@@ -464,8 +463,8 @@ export const Messages: React.FC<Props> = ({ user, members }) => {
               }}
             ></BaseStylesDiv>
           </BaseStylesDiv>
-        </BaseStylesDiv>
-      )}
+        </BaseStylesDiv> */}
+      {/* )} */}
     </>
   );
 };
@@ -474,16 +473,31 @@ const MessageForm: React.FC<{ user: User }> = ({ user }) => {
   const { conversationId } = useParams<{ conversationId: string }>();
   const [sendMessage] = useMutation<SendMessageMutation>(SendMessageDocument);
   const [state, setState] = React.useState(() => EditorState.createEmpty());
+  const { cache } = useApolloClient();
   return (
     <StyledFormArea>
       <Formik
         initialValues={{ text: "" }}
         onSubmit={async (values, { resetForm }) => {
+          const arr = conversationId.split("-");
+
           await sendMessage({
             variables: {
               text: values.text,
               senderId: user.id,
               conversationId: conversationId,
+              receiverId: arr[0] !== user.id ? arr[0] : arr[1],
+            },
+            update: (store, { data }) => {
+              cache.modify({
+                fields: {
+                  userInbox(cachedEntries) {
+                    // find the conversation we are messaging to
+                    // modify conversation_messages to include our message
+                    // return original object shape
+                  },
+                },
+              });
             },
           });
 

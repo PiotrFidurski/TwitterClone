@@ -2,12 +2,26 @@ mutation messageUser($userId: ID!) {
   messageUser(userId: $userId) {
     id
     conversationId
+    lastReadMessageId
+    mostRecentEntryId
+    oldestEntryId
+    participants {
+      userId
+      lastReadMessageId
+      lastSeenMessageId
+    }
+    messages_conversation {
+      conversationId
+      id
+      messagedata {
+        text
+        senderId
+        receiverId
+        conversationId
+        id
+      }
+    }
     type
     acceptedInvitation
-    members {
-      username
-      id
-      avatar
-    }
   }
 }
