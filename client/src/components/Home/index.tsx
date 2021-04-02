@@ -67,6 +67,7 @@ export const Home: React.FC = () => {
                 <Redirect exact from="/settings/profile" to="/login" />
                 <Redirect exact from="/home" to="/login" />
                 <Redirect exact from="/messages" to="/login" />
+                <Redirect exact from="/messages/*" to="/login" />
                 <Route path="/user/:username">
                   <ProfilePage user={defaultUser} />
                 </Route>
