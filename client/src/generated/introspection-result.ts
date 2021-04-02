@@ -62,10 +62,8 @@ export type Query = {
   userPosts?: Maybe<Array<Post>>;
   likedPosts?: Maybe<Array<Post>>;
   postsAndReplies?: Maybe<Array<Post>>;
-  conversationMessages?: Maybe<ConversationMessagesResult>;
-  userConversations?: Maybe<Array<Conversation>>;
-  getConversation?: Maybe<Conversation>;
   userInbox?: Maybe<Array<Conversation>>;
+  conversationMessages?: Maybe<ConversationMessagesResult>;
 };
 
 export type QueryNodeArgs = {
@@ -114,10 +112,6 @@ export type QueryConversationMessagesArgs = {
   conversationId: Scalars["String"];
   cursorId?: Maybe<Scalars["String"]>;
   limit: Scalars["Int"];
-};
-
-export type QueryGetConversationArgs = {
-  conversationId: Scalars["String"];
 };
 
 export type Node = {
@@ -193,13 +187,6 @@ export type PostByIdInvalidInputError = Error & {
   id: Scalars["ID"];
 };
 
-export type ConversationMessagesResult = {
-  __typename?: "ConversationMessagesResult";
-  conversation: Conversation;
-  hasNextPage: Scalars["Boolean"];
-  messages?: Maybe<Array<Message>>;
-};
-
 export type Conversation = {
   __typename?: "Conversation";
   id: Scalars["ID"];
@@ -235,6 +222,13 @@ export type Participants = {
   userId: Scalars["String"];
   lastReadMessageId?: Maybe<Scalars["String"]>;
   lastSeenMessageId?: Maybe<Scalars["String"]>;
+};
+
+export type ConversationMessagesResult = {
+  __typename?: "ConversationMessagesResult";
+  conversation: Conversation;
+  hasNextPage: Scalars["Boolean"];
+  messages?: Maybe<Array<Message>>;
 };
 
 export type Mutation = {
@@ -391,12 +385,7 @@ export type DeleteResourceResponse = {
 export type Subscription = {
   __typename?: "Subscription";
   _?: Maybe<Scalars["String"]>;
-  messageSent?: Maybe<Message>;
   conversationUpdated?: Maybe<ConversationUpdatedResult>;
-};
-
-export type SubscriptionMessageSentArgs = {
-  conversationId: Scalars["String"];
 };
 
 export type SubscriptionConversationUpdatedArgs = {
@@ -413,12 +402,6 @@ export enum Permission {
   OwnsAccount = "ownsAccount",
   OwnsPost = "ownsPost",
 }
-
-export type PageInfo = {
-  __typename?: "PageInfo";
-  hasPreviousPage: Scalars["Boolean"];
-  hasNextPage: Scalars["Boolean"];
-};
 
 export enum CacheControlScope {
   Public = "PUBLIC",
@@ -734,47 +717,6 @@ export type FollowUserMutation = { __typename?: "Mutation" } & {
   >;
 };
 
-export type GetConversationQueryVariables = Exact<{
-  conversationId: Scalars["String"];
-}>;
-
-export type GetConversationQuery = { __typename?: "Query" } & {
-  getConversation?: Maybe<
-    { __typename?: "Conversation" } & Pick<
-      Conversation,
-      | "id"
-      | "conversationId"
-      | "lastReadMessageId"
-      | "mostRecentEntryId"
-      | "oldestEntryId"
-      | "acceptedInvitation"
-      | "type"
-    > & {
-        participants?: Maybe<
-          Array<
-            { __typename?: "Participants" } & Pick<
-              Participants,
-              "userId" | "lastReadMessageId" | "lastSeenMessageId"
-            >
-          >
-        >;
-        messages_conversation?: Maybe<
-          Array<
-            { __typename?: "Message" } & Pick<
-              Message,
-              "conversationId" | "id"
-            > & {
-                messagedata: { __typename?: "MessageData" } & Pick<
-                  MessageData,
-                  "text" | "senderId" | "receiverId" | "conversationId" | "id"
-                >;
-              }
-          >
-        >;
-      }
-  >;
-};
-
 export type LoadMorePostsMutationVariables = Exact<{
   postId: Scalars["ID"];
 }>;
@@ -902,21 +844,6 @@ export type LogoutMutation = { __typename?: "Mutation" } & Pick<
   Mutation,
   "logout"
 >;
-
-export type MessageSentSubscriptionVariables = Exact<{
-  conversationId: Scalars["String"];
-}>;
-
-export type MessageSentSubscription = { __typename?: "Subscription" } & {
-  messageSent?: Maybe<
-    { __typename?: "Message" } & Pick<Message, "id" | "conversationId"> & {
-        messagedata: { __typename?: "MessageData" } & Pick<
-          MessageData,
-          "text" | "receiverId" | "id" | "conversationId" | "senderId"
-        >;
-      }
-  >;
-};
 
 export type MessageUserMutationVariables = Exact<{
   userId: Scalars["ID"];
@@ -1177,47 +1104,6 @@ export type UploadAvatarMutation = { __typename?: "Mutation" } & {
           | { __typename?: "Post" }
         >;
       }
-  >;
-};
-
-export type UserConversationsQueryVariables = Exact<{ [key: string]: never }>;
-
-export type UserConversationsQuery = { __typename?: "Query" } & {
-  userConversations?: Maybe<
-    Array<
-      { __typename?: "Conversation" } & Pick<
-        Conversation,
-        | "id"
-        | "conversationId"
-        | "lastReadMessageId"
-        | "mostRecentEntryId"
-        | "oldestEntryId"
-        | "acceptedInvitation"
-        | "type"
-      > & {
-          participants?: Maybe<
-            Array<
-              { __typename?: "Participants" } & Pick<
-                Participants,
-                "userId" | "lastReadMessageId" | "lastSeenMessageId"
-              >
-            >
-          >;
-          messages_conversation?: Maybe<
-            Array<
-              { __typename?: "Message" } & Pick<
-                Message,
-                "conversationId" | "id"
-              > & {
-                  messagedata: { __typename?: "MessageData" } & Pick<
-                    MessageData,
-                    "text" | "senderId" | "receiverId" | "conversationId" | "id"
-                  >;
-                }
-            >
-          >;
-        }
-    >
   >;
 };
 
@@ -1950,84 +1836,6 @@ export type FollowUserMutationOptions = ApolloReactCommon.BaseMutationOptions<
   FollowUserMutation,
   FollowUserMutationVariables
 >;
-export const GetConversationDocument = gql`
-  query getConversation($conversationId: String!) {
-    getConversation(conversationId: $conversationId) {
-      id
-      conversationId
-      lastReadMessageId
-      mostRecentEntryId
-      oldestEntryId
-      acceptedInvitation
-      type
-      participants {
-        userId
-        lastReadMessageId
-        lastSeenMessageId
-      }
-      messages_conversation {
-        conversationId
-        id
-        messagedata {
-          text
-          senderId
-          receiverId
-          conversationId
-          id
-        }
-      }
-    }
-  }
-`;
-
-/**
- * __useGetConversationQuery__
- *
- * To run a query within a React component, call `useGetConversationQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetConversationQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetConversationQuery({
- *   variables: {
- *      conversationId: // value for 'conversationId'
- *   },
- * });
- */
-export function useGetConversationQuery(
-  baseOptions?: ApolloReactHooks.QueryHookOptions<
-    GetConversationQuery,
-    GetConversationQueryVariables
-  >
-) {
-  return ApolloReactHooks.useQuery<
-    GetConversationQuery,
-    GetConversationQueryVariables
-  >(GetConversationDocument, baseOptions);
-}
-export function useGetConversationLazyQuery(
-  baseOptions?: ApolloReactHooks.LazyQueryHookOptions<
-    GetConversationQuery,
-    GetConversationQueryVariables
-  >
-) {
-  return ApolloReactHooks.useLazyQuery<
-    GetConversationQuery,
-    GetConversationQueryVariables
-  >(GetConversationDocument, baseOptions);
-}
-export type GetConversationQueryHookResult = ReturnType<
-  typeof useGetConversationQuery
->;
-export type GetConversationLazyQueryHookResult = ReturnType<
-  typeof useGetConversationLazyQuery
->;
-export type GetConversationQueryResult = ApolloReactCommon.QueryResult<
-  GetConversationQuery,
-  GetConversationQueryVariables
->;
 export const LoadMorePostsDocument = gql`
   mutation loadMorePosts($postId: ID!) {
     loadMorePosts(postId: $postId) {
@@ -2464,53 +2272,6 @@ export type LogoutMutationOptions = ApolloReactCommon.BaseMutationOptions<
   LogoutMutation,
   LogoutMutationVariables
 >;
-export const MessageSentDocument = gql`
-  subscription messageSent($conversationId: String!) {
-    messageSent(conversationId: $conversationId) {
-      id
-      conversationId
-      messagedata {
-        text
-        receiverId
-        id
-        conversationId
-        senderId
-      }
-    }
-  }
-`;
-
-/**
- * __useMessageSentSubscription__
- *
- * To run a query within a React component, call `useMessageSentSubscription` and pass it any options that fit your needs.
- * When your component renders, `useMessageSentSubscription` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useMessageSentSubscription({
- *   variables: {
- *      conversationId: // value for 'conversationId'
- *   },
- * });
- */
-export function useMessageSentSubscription(
-  baseOptions?: ApolloReactHooks.SubscriptionHookOptions<
-    MessageSentSubscription,
-    MessageSentSubscriptionVariables
-  >
-) {
-  return ApolloReactHooks.useSubscription<
-    MessageSentSubscription,
-    MessageSentSubscriptionVariables
-  >(MessageSentDocument, baseOptions);
-}
-export type MessageSentSubscriptionHookResult = ReturnType<
-  typeof useMessageSentSubscription
->;
-export type MessageSentSubscriptionResult = ApolloReactCommon.SubscriptionResult<MessageSentSubscription>;
 export const MessageUserDocument = gql`
   mutation messageUser($userId: ID!) {
     messageUser(userId: $userId) {
@@ -3202,83 +2963,6 @@ export type UploadAvatarMutationResult = ApolloReactCommon.MutationResult<Upload
 export type UploadAvatarMutationOptions = ApolloReactCommon.BaseMutationOptions<
   UploadAvatarMutation,
   UploadAvatarMutationVariables
->;
-export const UserConversationsDocument = gql`
-  query userConversations {
-    userConversations {
-      id
-      conversationId
-      lastReadMessageId
-      mostRecentEntryId
-      oldestEntryId
-      acceptedInvitation
-      type
-      participants {
-        userId
-        lastReadMessageId
-        lastSeenMessageId
-      }
-      messages_conversation {
-        conversationId
-        id
-        messagedata {
-          text
-          senderId
-          receiverId
-          conversationId
-          id
-        }
-      }
-    }
-  }
-`;
-
-/**
- * __useUserConversationsQuery__
- *
- * To run a query within a React component, call `useUserConversationsQuery` and pass it any options that fit your needs.
- * When your component renders, `useUserConversationsQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useUserConversationsQuery({
- *   variables: {
- *   },
- * });
- */
-export function useUserConversationsQuery(
-  baseOptions?: ApolloReactHooks.QueryHookOptions<
-    UserConversationsQuery,
-    UserConversationsQueryVariables
-  >
-) {
-  return ApolloReactHooks.useQuery<
-    UserConversationsQuery,
-    UserConversationsQueryVariables
-  >(UserConversationsDocument, baseOptions);
-}
-export function useUserConversationsLazyQuery(
-  baseOptions?: ApolloReactHooks.LazyQueryHookOptions<
-    UserConversationsQuery,
-    UserConversationsQueryVariables
-  >
-) {
-  return ApolloReactHooks.useLazyQuery<
-    UserConversationsQuery,
-    UserConversationsQueryVariables
-  >(UserConversationsDocument, baseOptions);
-}
-export type UserConversationsQueryHookResult = ReturnType<
-  typeof useUserConversationsQuery
->;
-export type UserConversationsLazyQueryHookResult = ReturnType<
-  typeof useUserConversationsLazyQuery
->;
-export type UserConversationsQueryResult = ApolloReactCommon.QueryResult<
-  UserConversationsQuery,
-  UserConversationsQueryVariables
 >;
 export const UserInboxDocument = gql`
   query userInbox {
