@@ -17,7 +17,6 @@ import {
   ConversationUpdatedDocument,
   ConversationUpdatedSubscription,
   User,
-  UserInboxQuery,
 } from "../../generated/graphql";
 import {
   SpanContainer,
@@ -80,7 +79,8 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
           (participant) => participant.userId === user.id
         )[0].lastSeenMessageId;
 
-        return lastSeenId !== conversation!.mostRecentEntryId!
+        return lastSeenId !== conversation!.mostRecentEntryId! ||
+          lastSeenId === ""
           ? {
               [conversation.conversationId!]:
                 lastSeenId !== conversation.mostRecentEntryId,
@@ -97,35 +97,34 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
       variables: { userId: user!.id! },
       updateQuery: (prev: any, { subscriptionData }: any) => {
         if (!subscriptionData.data) return prev;
-
+        console.log(subscriptionData!.data!);
         cache.modify({
           fields: {
             userInbox(cachedEntries, { toReference, readField }) {
-              return cachedEntries!.filter((conversation: any) => {
-                if (
-                  conversation!.__ref ===
-                  subscriptionData!.data!.conversationUpdated!.conversation!.id
-                ) {
-                  const ref = toReference(conversation);
-                  const messages_conversation: any = readField(
-                    "messages_conversation",
-                    ref
-                  );
-                  const newItemRef = toReference(
-                    subscriptionData!.data!.conversationUpdated!.conversation
-                  );
-
-                  return {
-                    ...conversation,
-                    messages_conversation: [...messages_conversation]!.splice(
-                      0,
-                      1,
-                      newItemRef
-                    ),
-                  };
-                }
-                return conversation;
-              });
+              // return cachedEntries!.filter((conversation: any) => {
+              //   if (
+              //     conversation!.__ref ===
+              //     subscriptionData!.data!.conversationUpdated!.conversation!.id
+              //   ) {
+              //     const ref = toReference(conversation);
+              //     const messages_conversation: any = readField(
+              //       "messages_conversation",
+              //       ref
+              //     );
+              //     const newItemRef = toReference(
+              //       subscriptionData!.data!.conversationUpdated!.conversation
+              //     );
+              //     return {
+              //       ...conversation,
+              //       messages_conversation: [...messages_conversation]!.splice(
+              //         0,
+              //         1,
+              //         newItemRef
+              //       ),
+              //     };
+              //   }
+              //   return conversation;
+              // });
             },
             conversationMessages(cachedEntries, { toReference }) {
               if (

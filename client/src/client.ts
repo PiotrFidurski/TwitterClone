@@ -13,7 +13,6 @@ import { WebSocketLink } from "@apollo/client/link/ws";
 import {
   AuthUserDocument,
   AuthUserQuery,
-  Conversation,
   Post,
   User,
 } from "./generated/graphql";

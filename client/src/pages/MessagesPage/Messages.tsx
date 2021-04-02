@@ -1,28 +1,16 @@
 import * as React from "react";
-import {
-  useApolloClient,
-  useMutation,
-  useQuery,
-  useSubscription,
-} from "@apollo/client";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { useLocation, useParams } from "react-router-dom";
 import { ReactComponent as SadFace } from "../../components/svgs/SadFace.svg";
-import { ReactComponent as Settings } from "../../components/svgs/settings.svg";
 import {
   User,
   SendMessageMutation,
   SendMessageDocument,
-  MessageSentDocument,
   AcceptInvitationDocument,
   AcceptInvitationMutation,
   ConversationMessagesQuery,
   ConversationMessagesDocument,
-  GetConversationQuery,
-  GetConversationDocument,
-  Message,
   Conversation,
-  UserInboxQuery,
-  UserInboxDocument,
 } from "../../generated/graphql";
 import {
   SpanContainer,
@@ -105,6 +93,11 @@ const StyledMessage = styled.div<{ isItMyMsg: boolean }>`
     border-bottom-right-radius: ${isItMyMsg ? "0px" : "16px"};
     padding: 10px;
     margin: 5px;
+    ${SpanContainer} {
+      > span {
+        color: ${isItMyMsg ? "white !important" : "var(--colors-maintext)"};
+      }
+    }
   `}
 `;
 
@@ -143,6 +136,7 @@ const StyledEditorContainer = styled.div`
   padding: 5.5px;
   flex-direction: column;
   width: 0px;
+  color: var(--colors-maintext);
   margin: 0px 10px;
   line-height: 1.3125;
   height: 100%;
@@ -177,22 +171,20 @@ interface Props {
 export const Messages: React.FC<Props> = ({ user, conversation }) => {
   const { conversationId } = useParams<{ conversationId: string }>();
 
-  const {
-    data,
-    error,
-    loading,
-    fetchMore,
-  } = useQuery<ConversationMessagesQuery>(ConversationMessagesDocument, {
-    variables: {
-      conversationId: conversationId,
-      limit: 25,
-    },
-  });
+  const { data, loading, fetchMore } = useQuery<ConversationMessagesQuery>(
+    ConversationMessagesDocument,
+    {
+      variables: {
+        conversationId: conversationId,
+        limit: 25,
+      },
+    }
+  );
 
   const [accept] = useMutation<AcceptInvitationMutation>(
     AcceptInvitationDocument
   );
-  const { cache } = useApolloClient();
+
   const chatRef = React.useRef<any>(null);
 
   const [height, setHeight] = React.useState(window.innerHeight);
@@ -245,37 +237,10 @@ export const Messages: React.FC<Props> = ({ user, conversation }) => {
           .senderId !==
           data!.conversationMessages!.messages![index].messagedata.senderId
       : data!.conversationMessages!.messages![0].id;
-
-    // return messages && messages.length && messages(conversationId)[index + 1]
-    //   ? messages(conversationId)[index + 1].messagedata.senderId !==
-    //       messages(conversationId)[index].messagedata!.senderId
-    //   : messages(conversationId)[messages(conversationId).length - 1].id;
   };
 
-  // React.useEffect(() => {
-  //   let unsubscribe: any;
-  //   unsubscribe = subscribeToMore({
-  //     document: MessageSentDocument,
-  //     variables: { conversationId: conversationId },
-
-  //     updateQuery: (prev: any, { subscriptionData }: any) => {
-  //       if (!subscriptionData.data) return prev;
-  //       console.log(subscriptionData!.data!);
-  //       cache.modify({
-  //         fields: {
-  //           conversationMessages(cachedEntries, { toReference }) {
-  //             const newMessageRef = toReference(
-  //               subscriptionData!.data!.messageSent!.id
-  //             );
-  //             return [...cachedEntries, newMessageRef];
-  //           },
-  //         },
-  //       });
-  //     },
-  //   });
-  //   if (unsubscribe) return () => unsubscribe();
-  // }, [cache, subscribeToMore, conversationId]);
   if (loading) return <Spinner />;
+
   const isItMyMessage = (message: { messagedata: { senderId: string } }) =>
     !!(user.id === message.messagedata.senderId);
 
@@ -379,9 +344,9 @@ export const Messages: React.FC<Props> = ({ user, conversation }) => {
           ))}
         </InfiniteScroll>
       </StyledContainer>
-      {/* {_conversation.acceptedInvitation!.includes(user!.id!) ? ( */}
-      <MessageForm user={user} />
-      {/* ) : (
+      {conversation(conversationId).acceptedInvitation!.includes(user!.id!) ? (
+        <MessageForm user={user} />
+      ) : (
         <BaseStylesDiv
           flexColumn
           style={{ position: "absolute", bottom: "20px", left: 0, right: 0 }}
@@ -463,8 +428,8 @@ export const Messages: React.FC<Props> = ({ user, conversation }) => {
               }}
             ></BaseStylesDiv>
           </BaseStylesDiv>
-        </BaseStylesDiv> */}
-      {/* )} */}
+        </BaseStylesDiv>
+      )}
     </>
   );
 };

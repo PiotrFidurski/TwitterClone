@@ -29,12 +29,14 @@ import styled from "styled-components";
 import {
   MessageUserDocument,
   UserByNameDocument,
+  UserInboxQueryResult,
 } from "../../../generated/introspection-result";
 import { VirtualizedList } from "../../../components/VirtualizedList";
 import { useMutation, useQuery } from "@apollo/client";
 
 interface Props {
   user: User;
+  inbox: UserInboxQueryResult;
 }
 
 const StyledHeaderContainer = styled.div`
@@ -206,7 +208,7 @@ const tabsData = [
   },
 ];
 
-export const Profile: React.FC<Props> = ({ user }) => {
+export const Profile: React.FC<Props> = ({ user, inbox }) => {
   let location = useLocation();
   const history = useHistory();
   const [message] = useMutation<MessageUserMutation>(MessageUserDocument, {
@@ -228,20 +230,20 @@ export const Profile: React.FC<Props> = ({ user }) => {
   });
 
   const startMessage = async () => {
-    try {
-      const msg = await message({
-        update: (cache, { data }) => {
-          console.log(data);
-        },
+    if (inbox) {
+      inbox!.data!.userInbox!.forEach(async (conversation) => {
+        const convo = conversation!.participants!.some(
+          (participant) => participant.userId === user!.id!
+        );
+        if (convo) {
+          history.push(`/messages`);
+        } else {
+          return;
+        }
       });
-
-      if (msg.data!.messageUser!.__typename) {
-        // history.push(
-        //   `/messages/${msg!.data!.messageUser!.conversations![0]
-        //     .conversationId!}`
-        // );
-      } else {
-      }
+    }
+    try {
+      await message();
     } catch (error) {
       console.log(error);
     }
@@ -288,7 +290,9 @@ export const Profile: React.FC<Props> = ({ user }) => {
           <BaseStylesDiv style={{ minHeight: "40px" }}>
             <BaseStylesDiv>
               <ButtonContainer
-                onClick={() => {}}
+                onClick={() => {
+                  startMessage();
+                }}
                 noMarginLeft
                 noPadding
                 style={{ minWidth: "40px" }}

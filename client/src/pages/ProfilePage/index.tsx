@@ -13,7 +13,7 @@ import { useParams } from "react-router-dom";
 import { useUserByNameQuery } from "../../generated/introspection-result";
 import { Header } from "../../components/Header";
 import { Profile } from "./Profile";
-import { User } from "../../generated/graphql";
+import { User, UserInboxQueryResult } from "../../generated/graphql";
 import { SecondaryColumn } from "../../components/SecondaryColumn";
 
 const StyledContainer = styled.div`
@@ -25,9 +25,10 @@ const StyledContainer = styled.div`
 
 interface Props {
   user: User;
+  userInbox?: UserInboxQueryResult;
 }
 
-export const ProfilePage: React.FC<Props> = ({ user }) => {
+export const ProfilePage: React.FC<Props> = ({ user, userInbox }) => {
   const { username } = useParams<{ username: string }>();
 
   const { data, loading } = useUserByNameQuery({
@@ -57,7 +58,7 @@ export const ProfilePage: React.FC<Props> = ({ user }) => {
         data!.userByName!.__typename === "UserByNameSuccess" && (
           <PrimaryColumn>
             <Header justifyStart>{data!.userByName!.node.name}</Header>
-            <Profile user={data!.userByName!.node} />
+            <Profile user={data!.userByName!.node} inbox={userInbox!} />
           </PrimaryColumn>
         )}
 

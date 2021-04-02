@@ -37,7 +37,7 @@ export const AutheticatedRoutes: React.FC<Props> = ({ user, userInbox }) => {
           <Feed user={user} />
         </Route>
         <Route path="/user/:username">
-          <ProfilePage user={user} />
+          <ProfilePage user={user} userInbox={userInbox} />
         </Route>
         <Route path="/:username/status/:postId">
           <CommentsPage user={user} />

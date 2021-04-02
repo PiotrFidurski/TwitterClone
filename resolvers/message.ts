@@ -4,44 +4,10 @@ import { OwnContext } from "types";
 import Conversation from "../entity/Conversation";
 import Message from "../entity/Message";
 import { withFilter } from "graphql-subscriptions";
-import { RedisPubSub } from "graphql-redis-subscriptions";
+import { redisPubSub } from "../index";
 import { Types } from "mongoose";
 
-const conversationPipeline = [
-  {
-    $lookup: {
-      from: "messages",
-      let: { conversationId: "$conversationId" },
-      pipeline: [
-        {
-          $match: {
-            $expr: {
-              $eq: ["$conversationId", "$$conversationId"],
-            },
-          },
-        },
-        { $sort: { createdAt: 1 } },
-      ],
-      as: "messages_conversation",
-    },
-  },
-];
-
-const redisPubSub = new RedisPubSub({
-  connection: { host: "127.0.0.1", port: 6379 },
-});
-
 export default {
-  // PageInfo: {
-  //   hasNextPage(connection, args) {
-  //     console.log(connection);
-
-  //     return connection.hasNextPage;
-  //   },
-  //   hasPreviousPage(connection, args) {
-  //     return connection.hasPreviousPage;
-  //   },
-  // },
   Query: {
     userInbox: async (_, args, { authenticatedUser }: OwnContext) => {
       // we are grabbing users inbox which consists of
@@ -298,13 +264,17 @@ export default {
           const conversation = await Conversation.create({
             members: [authUser!, userToBeMessaged],
             participants: [
-              { userId: authUser!.id },
-              { userId: userToBeMessaged!.id! },
+              { userId: authUser!.id, lastSeenMessageId: "" },
+              { userId: userToBeMessaged!.id!, lastSeenMessageId: "" },
             ],
             type: "ONE_ON_ONE",
+            lastReadMessageId: "",
+            mostRecentEntryId: "",
+            oldestEntryId: "",
             acceptedInvitation: [authUser!.id],
             conversationId: `${authUser!.id}-${userToBeMessaged!.id}`,
           });
+
           const messages = await Message.find({
             conversationId: { $eq: conversation!.conversationId },
           });
@@ -317,17 +287,66 @@ export default {
                   oldestEntryId: messages[0].id,
                   mostRecentEntryId: messages[messages.length - 1].id,
                   lastReadMessageId: messages[messages.length - 1].id,
-                  "participants.lastReadMessageId":
-                    messages[messages.length - 1].id,
-                  "participants.lastSeenMessageId":
-                    messages[messages.length - 1].id,
                 },
               },
               { new: true }
             );
           }
+          const conversationAggregation = await Conversation.aggregate([
+            {
+              $match: {
+                conversationId: conversation!.conversationId,
+              },
+            },
+            {
+              $lookup: {
+                from: "messages",
+                let: {
+                  conversationId: "$conversationId",
+                },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          { $eq: ["$conversationId", "$$conversationId"] },
+                        ],
+                      },
+                    },
+                  },
+                  { $sort: { _id: -1 } },
+                  { $limit: 3 },
+                ],
+                as: "messages_conversation",
+              },
+            },
+            { $sort: { createdAt: -1 } },
+            { $limit: 10 },
+          ]);
+          console.log(conversationAggregation, conversation);
+          redisPubSub.publish("conversation_updated", {
+            conversationUpdated: {
+              conversation: {
+                id: conversationAggregation[0]!._id,
+                conversationId: conversationAggregation[0]!.conversationId,
+                lastReadMessageId: conversationAggregation[0]!
+                  .lastReadMessageId,
+                mostRecentEntryId: conversationAggregation[0]!
+                  .mostRecentEntryId,
+                oldestEntryId: conversationAggregation[0]!.oldestEntryId,
+                participants: conversationAggregation[0]!.participants,
+                messages_conversation: conversationAggregation[0]!
+                  .messages_conversation,
 
-          return updatedConversation! ? updatedConversation : conversation;
+                type: conversationAggregation[0]!.type,
+                acceptedInvitation: conversationAggregation[0]!
+                  .acceptedInvitation,
+              },
+            },
+          });
+          return updatedConversation!
+            ? conversationAggregation[0]
+            : conversation;
         }
       } catch (error) {
         console.log(error);
@@ -490,12 +509,14 @@ export default {
       subscribe: withFilter(
         () => redisPubSub.asyncIterator("conversation_updated"),
         (payload, variables) => {
-          return (
-            payload.conversationUpdated.message.messagedata.receiverId ===
-              variables.userId ||
-            payload.conversationUpdated.message.messagedata.senderId ===
-              variables.userId
-          );
+          return payload.conversationUpdated.message
+            ? payload.conversationUpdated.message.messagedata.receiverId ===
+                variables.userId ||
+                payload.conversationUpdated.message.messagedata.senderId ===
+                  variables.userId
+            : payload.conversationUpdated.conversation.participants.some(
+                (participant: any) => participant.userId === variables.userId
+              );
         }
       ),
     },

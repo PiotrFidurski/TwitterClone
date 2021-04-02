@@ -1,24 +1,16 @@
-import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { useApolloClient, useMutation } from "@apollo/client";
 import * as React from "react";
 import { useLocation } from "react-router";
 import { Link, Route } from "react-router-dom";
 import styled from "styled-components";
-import { cache } from "../../cache";
 import { Header } from "../../components/Header";
-// import { ReactComponent as NewMessage } from "../../components/svgs/NewMessage.svg";
 import {
   User,
   Conversation,
-  UserConversationsDocument,
-  UserConversationsQuery,
-  ConversationMessagesQuery,
-  ConversationMessagesDocument,
   ReadConversationDocument,
   ReadConversationMutation,
   UpdateLastSeenMessageMutation,
   UpdateLastSeenMessageDocument,
-  UserInboxQuery,
-  Message,
 } from "../../generated/graphql";
 import { UserInboxQueryResult } from "../../generated/introspection-result";
 
@@ -27,7 +19,6 @@ import {
   BaseStyles,
   BaseStylesDiv,
   SpanContainer,
-  Spinner,
   StyledAvatar,
 } from "../../styles";
 import { Messages } from "./Messages";
@@ -167,11 +158,11 @@ export const MessagesPage: React.FC<Props> = ({ user, userInbox }) => {
 const ConversationCmp: React.FC<{
   conversation: Conversation;
   user: User;
-  // messages: (conversationId: string) => Array<Message>;
 }> = ({ conversation, user }) => {
   const [markAsSeen] = useMutation<UpdateLastSeenMessageMutation>(
     UpdateLastSeenMessageDocument
   );
+  const { cache } = useApolloClient();
   const [readConversation] = useMutation<ReadConversationMutation>(
     ReadConversationDocument
   );
@@ -179,24 +170,6 @@ const ConversationCmp: React.FC<{
   const authUser = conversation!.participants!.filter(
     (_user) => _user.userId === user.id
   )[0];
-
-  const otherMember = conversation!.participants!.filter(
-    (_user) => _user.userId !== user.id
-  )[0];
-
-  // React.useEffect(() => {
-  //   if (!loading && data && data!.conversationMessages!) {
-  //     readNotification({
-  //       variables: {
-  //         messageId: data!.conversationMessages!.length
-  //           ? data!.conversationMessages![
-  //               data!.conversationMessages!.length - 1
-  //             ]!.id
-  //           : "",
-  //       },
-  //     });
-  //   }
-  // }, [conversation, readNotification, data, loading]);
 
   return (
     <Link
@@ -221,7 +194,11 @@ const ConversationCmp: React.FC<{
                 ? conversation!.messages_conversation![0].messagedata.id
                 : "",
           },
+          update: (store, { data }) => {
+            console.log(data);
+          },
         });
+        cache.modify({ fields: { userInbox(cachedEntries) {} } });
       }}
       key={conversation.id}
       to={{ pathname: `/messages/${conversation.conversationId}` }}
