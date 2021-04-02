@@ -378,7 +378,8 @@ export const Messages: React.FC<Props> = ({ user, conversation }) => {
                       </SpanContainer>
 
                       <>
-                        {message!.messagedata!.senderId !== user.id ? (
+                        {message!.messagedata!.senderId !== user.id &&
+                        isItMyLastMsg(index) ? (
                           <SpanContainer
                             grey
                             style={{ flexShrink: 0, padding: "0 5px 0 5px" }}
