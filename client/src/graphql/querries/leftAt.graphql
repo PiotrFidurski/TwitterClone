@@ -1,0 +1,7 @@
+query leftAt($userId: String!, $conversationId: String!) {
+  leftAt(userId: $userId, conversationId: $conversationId) {
+    userId
+    conversationId
+    leftAtMessageId
+  }
+}

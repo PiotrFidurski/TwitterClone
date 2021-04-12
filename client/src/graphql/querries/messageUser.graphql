@@ -8,7 +8,6 @@ mutation messageUser($userId: ID!) {
     participants {
       userId
       lastReadMessageId
-      lastSeenMessageId
     }
     messages_conversation {
       conversationId
@@ -22,6 +21,5 @@ mutation messageUser($userId: ID!) {
       }
     }
     type
-    acceptedInvitation
   }
 }

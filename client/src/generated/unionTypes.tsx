@@ -12,6 +12,9 @@ import {
   PostConversationFieldsFragment,
   PostByIdInvalidInputError,
 } from "./graphql";
+import { gql } from "@apollo/client";
+import * as ApolloReactCommon from "@apollo/client";
+import * as ApolloReactHooks from "@apollo/client";
 
 // temporary fix for union types @graphql/codegen issue
 export type UserByNameQuery = { __typename?: "Query" } & {

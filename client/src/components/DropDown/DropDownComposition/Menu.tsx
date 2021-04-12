@@ -16,7 +16,7 @@ export const StyledContentsContainer = styled.div<{
   // -ms-animation-fill-mode: forwards;
   // -o-animation-fill-mode: forwards;
   // animation-fill-mode: forwards;
-  min-height: 100px;
+  min-height: 25px;
   box-shadow: rgb(101 119 134 / 20%) 0px 0px 15px,
     rgb(101 119 134 / 15%) 0px 0px 3px 1px;
   position: ${(props) => props.position};

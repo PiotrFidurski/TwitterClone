@@ -18,6 +18,8 @@ import {
   usePostsAndRepliesQuery,
   User,
   UserByNameQuery,
+  UserInboxDocument,
+  UserInboxQuery,
   UserPostsDocument,
   UserPostsQuery,
   useUserByNameQuery,
@@ -32,7 +34,8 @@ import {
   UserInboxQueryResult,
 } from "../../../generated/introspection-result";
 import { VirtualizedList } from "../../../components/VirtualizedList";
-import { useMutation, useQuery } from "@apollo/client";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { localConversation } from "../../../cache";
 
 interface Props {
   user: User;
@@ -210,10 +213,12 @@ const tabsData = [
 
 export const Profile: React.FC<Props> = ({ user, inbox }) => {
   let location = useLocation();
-  const history = useHistory();
+
   const [message] = useMutation<MessageUserMutation>(MessageUserDocument, {
     variables: { userId: user!.id },
   });
+  const history = useHistory();
+  const { cache } = useApolloClient();
   const { data } = useAuthUserQuery();
   const [followUser] = useFollowUserMutation({
     variables: { id: user!.id! },
@@ -230,26 +235,40 @@ export const Profile: React.FC<Props> = ({ user, inbox }) => {
   });
 
   const startMessage = async () => {
-    if (inbox) {
-      inbox!.data!.userInbox!.forEach((conversation) => {
-        const convo = conversation!.participants!.some(
-          (participant) => participant.userId === user!.id!
-        );
-        if (convo) {
-          history.push(`/messages`);
-        } else {
-          return;
-        }
-      });
-    }
     try {
-      const msg = await message();
+      const res = await message();
 
-      if (msg!.data!.messageUser!.id) {
-        history.push(`/messages`);
-      }
+      cache.modify({
+        fields: {
+          userInbox(
+            cachedEntries = {
+              __typename: "UserinboxResult",
+              conversations: [],
+              users: [],
+            },
+            { toReference }
+          ) {
+            const newRef = toReference(res!.data!.messageUser!.id);
+            const userRef = toReference(user.id);
+
+            if (
+              cachedEntries.conversations.some(
+                (ref: any) => ref!.__ref === newRef!.__ref
+              )
+            ) {
+              return cachedEntries;
+            }
+            return {
+              ...cachedEntries,
+              conversations: [newRef, ...cachedEntries!.conversations],
+              users: [userRef, ...cachedEntries!.users],
+            };
+          },
+        },
+      });
+      history.push(`/messages/${res!.data!.messageUser!.conversationId}`);
     } catch (error) {
-      console.log(error);
+      throw new Error(error);
     }
   };
 

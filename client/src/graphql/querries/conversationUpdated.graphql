@@ -6,12 +6,10 @@ subscription conversationUpdated($userId: String!) {
       lastReadMessageId
       mostRecentEntryId
       oldestEntryId
-      acceptedInvitation
       type
       participants {
         userId
         lastReadMessageId
-        lastSeenMessageId
       }
       messages_conversation {
         conversationId
@@ -35,6 +33,11 @@ subscription conversationUpdated($userId: String!) {
         conversationId
         senderId
       }
+    }
+    receiver {
+      id
+      username
+      avatar
     }
   }
 }

@@ -1,22 +1,31 @@
 import User from "../entity/User";
 import { IResolvers } from "graphql-tools";
 import { OwnContext } from "types";
-import Conversation from "../entity/Conversation";
+import Conversation from "../entity/Conversation/index";
 import Message from "../entity/Message";
 import { withFilter } from "graphql-subscriptions";
 import { redisPubSub } from "../index";
 import { Types } from "mongoose";
+import LastSeenMessage from "../entity/Conversation/LastSeenMessage";
+import LeftConversationAt from "../entity/Conversation/LeftConversationAt";
 
 export default {
   Query: {
     userInbox: async (_, args, { authenticatedUser }: OwnContext) => {
       try {
         const user = await User.findById(authenticatedUser!._id);
-
-        const conversation = await Conversation.aggregate([
+        const unreadMessage = await LastSeenMessage.findOne({
+          userId: { $eq: authenticatedUser!._id },
+        });
+        const conversations = await Conversation.aggregate([
           {
             $match: {
-              "participants.userId": { $in: [user!.id] },
+              participants: {
+                $elemMatch: {
+                  userId: { $eq: user!.id! },
+                  lastReadMessageId: { $ne: "" },
+                },
+              },
             },
           },
           {
@@ -39,58 +48,30 @@ export default {
               as: "messages_conversation",
             },
           },
-          {
-            $lookup: {
-              from: "users",
-              let: {
-                filteredParticipants: {
-                  $filter: {
-                    input: "$participants",
-                    as: "user",
-                    cond: {
-                      $ne: [
-                        "$$user.userId",
-                        { $toString: authenticatedUser!._id },
-                      ],
-                    },
-                  },
-                },
-              },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $and: [
-                        {
-                          $eq: [
-                            {
-                              $arrayElemAt: [
-                                "$$filteredParticipants.userId",
-                                0,
-                              ],
-                            },
-                            { $toString: "$_id" },
-                          ],
-                        },
-                      ],
-                    },
-                  },
-                },
-              ],
-              as: "user",
-            },
-          },
-          { $unwind: "$user" },
           { $sort: { createdAt: -1 } },
         ]);
-        return conversation;
+        let userIds: Array<string> = [];
+        conversations.forEach((conversation) => {
+          const ids = conversation.conversationId.split("-");
+          userIds = [...userIds, ...ids];
+        });
+        const users = await User.find({ _id: { $in: userIds } });
+
+        return {
+          conversations: conversations,
+          users: users,
+          lastSeenMessageId: unreadMessage
+            ? unreadMessage!.lastSeenMessageId
+            : "",
+          userId: unreadMessage ? unreadMessage!.userId : "",
+        };
       } catch (error) {
         throw new Error(error);
       }
     },
     conversationMessages: async (
       _,
-      { cursorId, limit, conversationId },
+      { cursorId, limit, conversationId, leftAtMessageId },
       { authenticatedUser }: OwnContext
     ) => {
       try {
@@ -117,49 +98,11 @@ export default {
               as: "messages_conversation",
             },
           },
-          {
-            $lookup: {
-              from: "users",
-              let: {
-                filteredParticipants: {
-                  $filter: {
-                    input: "$participants",
-                    as: "user",
-                    cond: {
-                      $ne: [
-                        "$$user.userId",
-                        { $toString: authenticatedUser!._id },
-                      ],
-                    },
-                  },
-                },
-              },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $and: [
-                        {
-                          $eq: [
-                            {
-                              $arrayElemAt: [
-                                "$$filteredParticipants.userId",
-                                0,
-                              ],
-                            },
-                            { $toString: "$_id" },
-                          ],
-                        },
-                      ],
-                    },
-                  },
-                },
-              ],
-              as: "user",
-            },
-          },
-          { $unwind: "$user" },
         ]);
+        const leftConvoAt = await LeftConversationAt.findOne({
+          userId: authenticatedUser!._id,
+          conversationId: conversationId,
+        });
         const messages = await Message.aggregate([
           {
             $match: {
@@ -172,9 +115,29 @@ export default {
                       {
                         $lt: ["$_id", Types.ObjectId(cursorId)],
                       },
+                      {
+                        $gt: [
+                          "$_id",
+                          leftAtMessageId
+                            ? Types.ObjectId(leftAtMessageId)
+                            : "",
+                        ],
+                      },
                     ],
                   },
-                  else: { $eq: ["$conversationId", conversationId] },
+                  else: {
+                    $and: [
+                      { $eq: ["$conversationId", conversationId] },
+                      {
+                        $gt: [
+                          "$_id",
+                          leftAtMessageId
+                            ? Types.ObjectId(leftAtMessageId)
+                            : "",
+                        ],
+                      },
+                    ],
+                  },
                 },
               },
             },
@@ -204,27 +167,34 @@ export default {
         throw new Error(error);
       }
     },
+    leftAt: async (_, { userId, conversationId }) => {
+      const leftAt = await LeftConversationAt.findOne({
+        userId: userId,
+        conversationId: conversationId,
+      });
+
+      return leftAt;
+    },
   },
   Mutation: {
     updateLastSeenMessage: async (
       _,
-      { messageId, conversationId },
+      { messageId },
       { authenticatedUser }: OwnContext
     ) => {
-      const conversation = await Conversation.findOneAndUpdate(
+      const updateConv = await LastSeenMessage.findOneAndUpdate(
         {
-          conversationId: conversationId,
-          "participants.userId": { $eq: authenticatedUser!._id },
+          userId: { $eq: authenticatedUser!._id },
         },
         {
           $set: {
-            "participants.$.lastSeenMessageId": messageId,
+            lastSeenMessageId: messageId,
           },
         },
         { new: true }
       );
 
-      return conversation;
+      return updateConv;
     },
     readConversation: async (
       _,
@@ -250,7 +220,21 @@ export default {
       try {
         const authUser = await User.findById(authenticatedUser._id);
         const userToBeMessaged = await User.findById(userId);
-        const hasBeenMessaged = await Conversation.find({
+        const unreadMessage = await LastSeenMessage.findOne({
+          userId: { $eq: authenticatedUser!._id },
+        });
+
+        if (!unreadMessage) {
+          await LastSeenMessage.create({
+            userId: userId!,
+            lastSeenMessageId: "",
+          });
+          await LastSeenMessage.create({
+            userId: authenticatedUser!._id,
+            lastSeenMessageId: "",
+          });
+        }
+        const areInConversation = await Conversation.find({
           $or: [
             {
               conversationId: {
@@ -265,40 +249,59 @@ export default {
           ],
         });
 
-        if (hasBeenMessaged.length) {
-          throw new Error("you already messaged this user.");
+        if (areInConversation.length) {
+          const conversationAggregation = await Conversation.aggregate([
+            { $match: { _id: areInConversation[0]._id } },
+            {
+              $lookup: {
+                from: "messages",
+                let: {
+                  conversationId: "$conversationId",
+                },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          { $eq: ["$conversationId", "$$conversationId"] },
+                        ],
+                      },
+                    },
+                  },
+                  { $sort: { _id: -1 } },
+                  { $limit: 3 },
+                ],
+                as: "messages_conversation",
+              },
+            },
+          ]);
+          return conversationAggregation[0];
         } else {
           const conversation = await Conversation.create({
-            members: [authUser!, userToBeMessaged],
             participants: [
-              { userId: authUser!.id, lastSeenMessageId: "" },
-              { userId: userToBeMessaged!.id!, lastSeenMessageId: "" },
+              {
+                userId: authUser!.id,
+                lastReadMessageId: "",
+              },
+              {
+                userId: userToBeMessaged!.id!,
+                lastReadMessageId: "",
+              },
             ],
             type: "ONE_ON_ONE",
             lastReadMessageId: "",
             mostRecentEntryId: "",
             oldestEntryId: "",
-            acceptedInvitation: [authUser!.id],
             conversationId: `${authUser!.id}-${userToBeMessaged!.id}`,
           });
-
-          const messages = await Message.find({
-            conversationId: { $eq: conversation!.conversationId },
-          });
-          let updatedConversation = null;
-          if (messages.length) {
-            updatedConversation = await Conversation.findOneAndUpdate(
-              { conversationId: conversation.conversationId },
-              {
-                $set: {
-                  oldestEntryId: messages[0].id,
-                  mostRecentEntryId: messages[messages.length - 1].id,
-                  lastReadMessageId: messages[messages.length - 1].id,
-                },
-              },
-              { new: true }
-            );
-          }
+          // // const test = await LeftConversation.findOne({userid:{$eq: authUser!.id}})
+          // if (!test) {
+          //   await LeftConversation.create({
+          //     userId: authUser!.id,
+          //     conversationId: conversation!.conversationId",
+          //
+          //   });
+          // }
           const conversationAggregation = await Conversation.aggregate([
             {
               $match: {
@@ -330,79 +333,11 @@ export default {
             { $sort: { createdAt: -1 } },
             { $limit: 10 },
           ]);
-          console.log(conversationAggregation, conversation);
-          redisPubSub.publish("conversation_updated", {
-            conversationUpdated: {
-              conversation: {
-                id: conversationAggregation[0]!._id,
-                conversationId: conversationAggregation[0]!.conversationId,
-                lastReadMessageId: conversationAggregation[0]!
-                  .lastReadMessageId,
-                mostRecentEntryId: conversationAggregation[0]!
-                  .mostRecentEntryId,
-                oldestEntryId: conversationAggregation[0]!.oldestEntryId,
-                participants: conversationAggregation[0]!.participants,
-                messages_conversation: conversationAggregation[0]!
-                  .messages_conversation,
 
-                type: conversationAggregation[0]!.type,
-                acceptedInvitation: conversationAggregation[0]!
-                  .acceptedInvitation,
-              },
-            },
-          });
-          return updatedConversation!
-            ? conversationAggregation[0]
-            : conversation;
+          return conversationAggregation[0];
         }
       } catch (error) {
         console.log(error);
-        throw new Error(error);
-      }
-    },
-    acceptInvitation: async (
-      _,
-      { conversationId },
-      { authenticatedUser }: OwnContext
-    ) => {
-      try {
-        const conversation = await Conversation.find({
-          conversationId: { $eq: conversationId },
-        }).populate("members");
-        if (
-          conversation[0].participants.some(
-            (user) => user.userId === authenticatedUser!._id
-          )
-        ) {
-          if (
-            conversation.length &&
-            !conversation[0]!.acceptedInvitation.includes(
-              authenticatedUser!._id
-            )
-          ) {
-            return await Conversation.findOneAndUpdate(
-              {
-                conversationId: { $eq: conversationId },
-              },
-              {
-                $set: {
-                  acceptedInvitation: [
-                    ...conversation[0]!.acceptedInvitation,
-                    authenticatedUser._id,
-                  ],
-                },
-              },
-              { new: true }
-            );
-          } else {
-            throw new Error(
-              "Couldn't find the conversation between these users."
-            );
-          }
-        } else {
-          throw new Error("you weren't invited");
-        }
-      } catch (error) {
         throw new Error(error);
       }
     },
@@ -414,20 +349,50 @@ export default {
       try {
         const newMessage = await Message.create({
           conversationId,
-          messagedata: { senderId, text: text, receiverId },
+          messagedata: { senderId, text, receiverId },
         });
+        const receiver = await User.findById(senderId);
+        await LastSeenMessage.findOneAndUpdate(
+          {
+            userId: { $eq: authenticatedUser!._id },
+          },
+          { $set: { lastSeenMessageId: newMessage.id } },
+          { new: true }
+        );
 
-        if (newMessage && newMessage.id) {
-          redisPubSub.publish("message_sent", {
-            messageSent: {
-              id: newMessage._id,
-              conversationId: newMessage.conversationId,
-              messagedata: newMessage.messagedata,
-            },
-          });
+        if (newMessage) {
           const messages = await Message.find({
             conversationId: conversationId,
           });
+          if (messages.length > 1) {
+            await Conversation.findOneAndUpdate(
+              {
+                conversationId: { $eq: conversationId },
+                "participants.userId": { $eq: receiverId },
+              },
+              {
+                $set: {
+                  "participants.$.lastReadMessageId":
+                    messages[messages.length - 2].id,
+                },
+              },
+              { new: true }
+            );
+          } else {
+            await Conversation.findOneAndUpdate(
+              {
+                conversationId: { $eq: conversationId },
+                "participants.userId": { $eq: receiverId },
+              },
+              {
+                $set: {
+                  "participants.$.lastReadMessageId": "standby",
+                },
+              },
+              { new: true }
+            );
+          }
+
           const updatedConversation = await Conversation.findOneAndUpdate(
             {
               conversationId: { $eq: conversationId },
@@ -436,7 +401,6 @@ export default {
             {
               $set: {
                 "participants.$.lastReadMessageId": newMessage!.id!,
-                "participants.$.lastSeenMessageId": newMessage!.id!,
                 mostRecentEntryId: newMessage.id,
                 oldestEntryId: messages[0].id,
                 lastReadMessageId: newMessage!.id!,
@@ -500,10 +464,68 @@ export default {
                 conversationId: newMessage.conversationId,
                 messagedata: newMessage.messagedata,
               },
+              receiver: {
+                id: receiver!.id,
+                avatar: receiver!.avatar,
+                username: receiver!.username,
+              },
             },
           });
         }
         return newMessage;
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
+    leaveConversation: async (
+      _,
+      { conversationId },
+      { authenticatedUser }: OwnContext
+    ) => {
+      try {
+        const user = await User.findById(authenticatedUser!._id);
+        const leave = await LeftConversationAt.findOne({
+          userId: authenticatedUser!._id,
+          conversationId: conversationId,
+        });
+
+        const aboutToLeave = await Conversation.findOne({
+          conversationId: conversationId,
+        });
+        if (leave) {
+          await LeftConversationAt.findOneAndUpdate(
+            { _id: { $eq: leave!._id } },
+            {
+              $set: {
+                leftAtMessageId: aboutToLeave!.participants!.filter(
+                  (user) => user.userId === authenticatedUser!._id
+                )[0].lastReadMessageId,
+              },
+            },
+            { new: true }
+          );
+        } else {
+          await LeftConversationAt.create({
+            userId: authenticatedUser!._id,
+            leftAtMessageId: aboutToLeave!.participants!.filter(
+              (user) => user.userId === authenticatedUser!._id
+            )[0].lastReadMessageId,
+            conversationId: conversationId,
+          });
+        }
+        const conversation = await Conversation.findOneAndUpdate(
+          {
+            conversationId: conversationId,
+            participants: { $elemMatch: { userId: user!.id! } },
+          },
+          {
+            $set: {
+              "participants.$.lastReadMessageId": "",
+            },
+          },
+          { new: true }
+        );
+        return conversation;
       } catch (error) {
         throw new Error(error);
       }
@@ -514,14 +536,10 @@ export default {
       subscribe: withFilter(
         () => redisPubSub.asyncIterator("conversation_updated"),
         (payload, variables) => {
-          return payload.conversationUpdated.message
-            ? payload.conversationUpdated.message.messagedata.receiverId ===
-                variables.userId ||
-                payload.conversationUpdated.message.messagedata.senderId ===
-                  variables.userId
-            : payload.conversationUpdated.conversation.participants.some(
-                (participant: any) => participant.userId === variables.userId
-              );
+          return (
+            payload.conversationUpdated.message.messagedata.receiverId ===
+            variables.userId
+          );
         }
       ),
     },

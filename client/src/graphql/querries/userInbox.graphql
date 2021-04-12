@@ -1,32 +1,34 @@
 query userInbox {
   userInbox {
-    conversationId
-    id
-    lastReadMessageId
-    mostRecentEntryId
-    oldestEntryId
-    participants {
-      userId
-      lastReadMessageId
-      lastSeenMessageId
-    }
-    user {
-      id
-      username
-      avatar
-    }
-    messages_conversation {
+    userId
+    lastSeenMessageId
+    conversations {
       conversationId
       id
-      messagedata {
-        text
-        senderId
-        receiverId
+      lastReadMessageId
+      mostRecentEntryId
+      oldestEntryId
+      participants {
+        userId
+        lastReadMessageId
+      }
+      messages_conversation {
         conversationId
         id
+        messagedata {
+          text
+          senderId
+          receiverId
+          conversationId
+          id
+        }
       }
+      type
     }
-    type
-    acceptedInvitation
+    users {
+      id
+      avatar
+      username
+    }
   }
 }

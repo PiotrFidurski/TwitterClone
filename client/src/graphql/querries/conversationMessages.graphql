@@ -2,11 +2,13 @@ query conversationMessages(
   $conversationId: String!
   $cursorId: String
   $limit: Int!
+  $leftAtMessageId: String
 ) {
   conversationMessages(
     conversationId: $conversationId
     cursorId: $cursorId
     limit: $limit
+    leftAtMessageId: $leftAtMessageId
   ) {
     hasNextPage
     conversation {
@@ -30,7 +32,6 @@ query conversationMessages(
       participants {
         userId
         lastReadMessageId
-        lastSeenMessageId
       }
     }
     messages {

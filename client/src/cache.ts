@@ -1,5 +1,5 @@
-import { InMemoryCache } from "@apollo/client";
-import { Post } from "./generated/graphql";
+import { InMemoryCache, makeVar } from "@apollo/client";
+import { Conversation, Post } from "./generated/graphql";
 import generatedIntrospection from "./generated/introspection-result";
 
 export const cache: InMemoryCache = new InMemoryCache({
@@ -115,6 +115,8 @@ export const cache: InMemoryCache = new InMemoryCache({
                 // return field === item.__ref;
                 const ref = toReference(item);
                 const field = readField("replyCount", ref);
+                // const conversationId = readField("conversationId", ref);
+                // || conversationId === ref!.__ref;
                 return !field;
               });
 
@@ -176,4 +178,17 @@ export const cache: InMemoryCache = new InMemoryCache({
       },
     },
   },
+});
+
+export const localConversation = makeVar<Conversation>({
+  id: "",
+  conversationId: "",
+  __typename: "Conversation",
+  lastReadMessageId: "",
+  messages_conversation: [],
+  mostRecentEntryId: "",
+  oldestEntryId: "",
+  participants: [],
+  type: "",
+  user: {} as any,
 });

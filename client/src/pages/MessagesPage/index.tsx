@@ -1,4 +1,4 @@
-import { useApolloClient, useMutation } from "@apollo/client";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 import * as React from "react";
 import { useLocation } from "react-router";
 import { Link, Route } from "react-router-dom";
@@ -19,6 +19,7 @@ import {
   BaseStyles,
   BaseStylesDiv,
   SpanContainer,
+  Spinner,
   StyledAvatar,
 } from "../../styles";
 import { Messages } from "./Messages";
@@ -87,14 +88,18 @@ interface Props {
 
 export const MessagesPage: React.FC<Props> = ({ user, userInbox }) => {
   const location = useLocation();
-  const { data, loading } = userInbox;
-  const conversation = (conversationId: string): Conversation => {
-    return (!loading &&
-      data &&
-      data!.userInbox! &&
-      data!.userInbox!.filter(
-        (conversation) => conversation.conversationId === conversationId
-      )[0]) as Conversation;
+  const { data } = userInbox;
+
+  const userThread: { [key: string]: User }[] = [];
+  data &&
+    data!.userInbox &&
+    data!.userInbox!.users! &&
+    data!.userInbox!.users!.length &&
+    data!.userInbox!.users!.forEach((_user) => (userThread[_user!.id] = _user));
+
+  const getUser = (conversationId: string) => {
+    const array = conversationId.split("-");
+    return array[0] !== user!.id ? userThread[array[0]] : userThread[array[1]];
   };
 
   return (
@@ -133,10 +138,14 @@ export const MessagesPage: React.FC<Props> = ({ user, userInbox }) => {
           </BaseStylesDiv>
         </Header>
         <StyledConversationDetails>
-          {!loading && data && data!.userInbox
-            ? data!.userInbox!.map((conversation) => (
+          {data &&
+          data!.userInbox &&
+          data!.userInbox!.conversations &&
+          data!.userInbox!.conversations!.length
+            ? data!.userInbox!.conversations!.map((conversation) => (
                 <ConversationCmp
                   user={user}
+                  getUser={getUser}
                   conversation={conversation}
                   key={conversation.id}
                 />
@@ -146,8 +155,8 @@ export const MessagesPage: React.FC<Props> = ({ user, userInbox }) => {
       </StyledConversationWrapper>
       <StyledMessageContainer location={location.pathname}>
         <Route path="/messages/:conversationId">
-          {!loading && data!.userInbox ? (
-            <Messages user={user} conversation={conversation} />
+          {data!.userInbox ? (
+            <Messages user={user} userInbox={userInbox} />
           ) : null}
         </Route>
       </StyledMessageContainer>
@@ -158,46 +167,51 @@ export const MessagesPage: React.FC<Props> = ({ user, userInbox }) => {
 const ConversationCmp: React.FC<{
   conversation: Conversation;
   user: User;
-}> = ({ conversation, user }) => {
-  const [markAsSeen] = useMutation<UpdateLastSeenMessageMutation>(
-    UpdateLastSeenMessageDocument
-  );
-  const { cache } = useApolloClient();
+  getUser: (conversationId: string) => any;
+}> = ({ conversation, user, getUser }) => {
+  const messaging = getUser(conversation!.conversationId);
+
   const [readConversation] = useMutation<ReadConversationMutation>(
     ReadConversationDocument
   );
-
+  const [markAsSeen] = useMutation<UpdateLastSeenMessageMutation>(
+    UpdateLastSeenMessageDocument
+  );
   const authUser = conversation!.participants!.filter(
     (_user) => _user.userId === user.id
   )[0];
+  const location = useLocation();
+  React.useEffect(() => {
+    const handleMarkAsSeen = async () => {
+      await markAsSeen({
+        variables: {
+          messageId: conversation.mostRecentEntryId,
+        },
+      });
+    };
+
+    if (
+      location.pathname === `/messages/${conversation.conversationId}` &&
+      authUser.lastReadMessageId !== ""
+    ) {
+      readConversation({
+        variables: {
+          conversationId: conversation!.conversationId,
+          messageId:
+            conversation!.messages_conversation! &&
+            conversation!.messages_conversation!.length
+              ? conversation!.messages_conversation![0].messagedata.id
+              : "",
+        },
+      });
+      handleMarkAsSeen();
+    }
+    //eslint-disable-next-line
+  }, [location, conversation.mostRecentEntryId, readConversation]);
 
   return (
     <Link
       style={{ textDecoration: "none" }}
-      onClick={() => {
-        markAsSeen({
-          variables: {
-            conversationId: conversation!.conversationId,
-            messageId:
-              conversation!.messages_conversation! &&
-              conversation!.messages_conversation!.length
-                ? conversation!.messages_conversation![0].messagedata.id
-                : "",
-          },
-        });
-        readConversation({
-          variables: {
-            conversationId: conversation!.conversationId,
-            messageId:
-              conversation!.messages_conversation! &&
-              conversation!.messages_conversation!.length
-                ? conversation!.messages_conversation![0].messagedata.id
-                : "",
-          },
-        });
-        cache.modify({ fields: { userInbox(cachedEntries) {} } });
-      }}
-      key={conversation.id}
       to={{ pathname: `/messages/${conversation.conversationId}` }}
     >
       <StyledConversation
@@ -215,11 +229,13 @@ const ConversationCmp: React.FC<{
           }}
         >
           <section style={{ display: "contents" }}>
-            <Link to={{ pathname: `/user/${conversation.user.username}` }}>
-              <AvatarContainer height="49px" width={49} noRightMargin>
-                <StyledAvatar url={conversation.user.avatar} />
-              </AvatarContainer>
-            </Link>
+            {messaging ? (
+              <Link to={{ pathname: `/user/${messaging.username}` }}>
+                <AvatarContainer height="49px" width={49} noRightMargin>
+                  <StyledAvatar url={messaging.avatar} />
+                </AvatarContainer>
+              </Link>
+            ) : null}
 
             <BaseStylesDiv
               flexGrow
@@ -230,9 +246,11 @@ const ConversationCmp: React.FC<{
                 width: "0px",
               }}
             >
-              <SpanContainer bold>
-                <span>{conversation.user.username}</span>
-              </SpanContainer>
+              {messaging ? (
+                <SpanContainer bold>
+                  <span>{messaging!.username}</span>
+                </SpanContainer>
+              ) : null}
               {conversation!.messages_conversation! &&
               conversation!.messages_conversation!.length ? (
                 <SpanContainer grey smaller>

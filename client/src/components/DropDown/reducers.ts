@@ -11,6 +11,45 @@ export interface IAction {
   value?: any;
 }
 
+export const moveLeftReducer = (state: IState, action: IAction) => {
+  switch (action.type) {
+    case "open": {
+      return {
+        ...state,
+        open: !state.open,
+      };
+    }
+    case "close": {
+      return {
+        ...state,
+        open: false,
+      };
+    }
+    case "set_menu_size": {
+      return {
+        ...state,
+        width: action.value.width,
+        height: action.value.height,
+      };
+    }
+    case "set_dimensions": {
+      return {
+        ...state,
+        dimensions: {
+          ...action.value,
+          left: action.value.right - state.width,
+          top: action.value.top + 25,
+        },
+      };
+    }
+    case "set_visibility": {
+      return { ...state, visible: true };
+    }
+    default:
+      return state;
+  }
+};
+
 export const moveUpReducer = (state: IState, action: IAction) => {
   switch (action.type) {
     case "open": {

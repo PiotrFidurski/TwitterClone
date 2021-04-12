@@ -14,9 +14,16 @@ import { ReactComponent as Lists } from "../../components/svgs/Lists.svg";
 import { ReactComponent as Feather } from "../../components/svgs/Feather.svg";
 import { ReactComponent as Logo } from "../../components/svgs/Logo.svg";
 import {
+  ConversationMessagesDocument,
+  ConversationMessagesQuery,
   ConversationUpdatedDocument,
   ConversationUpdatedSubscription,
+  LeftAtDocument,
+  LeftAtQuery,
+  UpdateLastSeenMessageDocument,
+  UpdateLastSeenMessageMutation,
   User,
+  UserInboxQuery,
 } from "../../generated/graphql";
 import {
   SpanContainer,
@@ -32,8 +39,17 @@ import { NavLink } from "../../components/Sidebar/styles";
 import { Location } from "history";
 import { DropdownProvider } from "../../components/DropDown";
 import styled from "styled-components";
-import { useApolloClient, useSubscription } from "@apollo/client";
-import { UserInboxQueryResult } from "../../generated/introspection-result";
+import {
+  useApolloClient,
+  useLazyQuery,
+  useMutation,
+  useSubscription,
+} from "@apollo/client";
+import {
+  UserInboxDocument,
+  UserInboxQueryResult,
+} from "../../generated/introspection-result";
+import { isJSDocReturnTag } from "typescript";
 
 const StyledNotification = styled.div`
   ${BaseStyles};
@@ -62,32 +78,79 @@ interface Props {
 export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
   const { data, loading, subscribeToMore } = userInbox;
   const location = useLocation<{ isModal: Location }>();
+  const [markAsSeen] = useMutation<UpdateLastSeenMessageMutation>(
+    UpdateLastSeenMessageDocument
+  );
+  const [
+    leftAt,
+    { data: leftAtData, loading: leftAtLoading },
+  ] = useLazyQuery<LeftAtQuery>(LeftAtDocument);
+
+  let arr: any = [];
+  let dates: any = [];
+  const handleMarkAsSeen = async () => {
+    data!.userInbox!.conversations!.forEach((conversation) => {
+      const date = new Date(
+        parseInt(conversation!.mostRecentEntryId!.substring(0, 8), 16) * 1000
+      );
+      dates[Math.abs(new Date().getTime() - date.getTime())] = conversation;
+      arr = [...arr, Math.abs(new Date().getTime() - date.getTime())];
+    });
+
+    const result = await markAsSeen({
+      variables: {
+        messageId: dates.length
+          ? dates[Math.min(...arr)].mostRecentEntryId
+          : "",
+      },
+    });
+
+    if (result.data!.updateLastSeenMessage !== null) {
+      cache.modify({
+        fields: {
+          userInbox(
+            cachedEntries = {
+              __typename: "UserinboxResult",
+              userId: "",
+              lastSeenMessageId: "",
+              conversations: [],
+              users: [],
+            }
+          ) {
+            return {
+              ...cachedEntries,
+              lastSeenMessageId: result!.data!.updateLastSeenMessage!
+                .lastSeenMessageId!,
+            };
+          },
+        },
+      });
+    }
+  };
 
   useSubscription<ConversationUpdatedSubscription>(
     ConversationUpdatedDocument,
     { variables: { userId: user!.id! } }
   );
   const { cache } = useApolloClient();
-
-  const notifications =
+  const usersLastSeenTime = new Date(
+    parseInt(data!.userInbox!.lastSeenMessageId!.substring(0, 8), 16) * 1000
+  );
+  const unreadConversations =
     !loading &&
     data &&
     data!.userInbox &&
-    data!.userInbox
-      .map((conversation) => {
-        const lastSeenId = conversation!.participants!.filter(
-          (participant) => participant.userId === user.id
-        )[0].lastSeenMessageId;
+    data!.userInbox!.conversations! &&
+    data!.userInbox!.conversations!.length &&
+    data!
+      .userInbox!.conversations!.map((conversation) => {
+        const conversationMostRecentTime = new Date(
+          parseInt(conversation.mostRecentEntryId!.substring(0, 8), 16) * 1000
+        );
 
-        return lastSeenId !== conversation!.mostRecentEntryId! ||
-          lastSeenId === ""
-          ? {
-              [conversation.conversationId!]:
-                lastSeenId !== conversation.mostRecentEntryId,
-            }
-          : null;
+        return usersLastSeenTime >= conversationMostRecentTime;
       })
-      .filter((value) => value !== null);
+      .filter((value) => value === false);
 
   React.useEffect(() => {
     let unsubscribe: any;
@@ -100,53 +163,51 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
 
         cache.modify({
           fields: {
-            userInbox(cachedEntries, { toReference, readField }) {
+            userInbox(
+              cachedEntries = {
+                __typename: "UserinboxResult",
+                conversations: [],
+                users: [],
+              },
+              { toReference, readField }
+            ) {
+              const newConversationRef = toReference(
+                subscriptionData!.data!.conversationUpdated!.conversation!.id
+              );
+              const newUserRef = toReference(
+                subscriptionData!.data!.conversationUpdated!.receiver.id
+              );
               if (
-                subscriptionData!.data!.conversationUpdated!.message === null
+                cachedEntries!.conversations.some(
+                  (conversation: any) =>
+                    conversation.__ref === newConversationRef!.__ref
+                )
               ) {
-                return [
-                  ...cachedEntries,
-                  subscriptionData!.data!.conversationUpdated!.conversation,
-                ];
-              } else {
-                return cachedEntries!.filter((conversation: any) => {
-                  if (
-                    conversation!.__ref ===
-                    subscriptionData!.data!.conversationUpdated!.conversation!
-                      .id
-                  ) {
-                    const ref = toReference(conversation);
-                    const messages_conversation: any = readField(
-                      "messages_conversation",
-                      ref
-                    );
-                    const newItemRef = toReference(
-                      subscriptionData!.data!.conversationUpdated!.conversation
-                    );
-                    return {
-                      ...conversation,
-                      messages_conversation: [...messages_conversation]!.splice(
-                        0,
-                        1,
-                        newItemRef
-                      ),
-                    };
-                  }
-                  return conversation;
-                });
+                return cachedEntries;
               }
+              return (
+                cachedEntries && {
+                  ...cachedEntries,
+                  conversations: [
+                    ...cachedEntries!.conversations,
+                    newConversationRef,
+                  ],
+                  users: [...cachedEntries!.users, newUserRef],
+                }
+              );
             },
-            conversationMessages(cachedEntries, { toReference }) {
+            conversationMessages(cachedEntries, { readField, toReference }) {
+              const newMessage = toReference(
+                subscriptionData!.data!.conversationUpdated!.message.id
+              );
+
               if (
                 cachedEntries.conversation.__ref ===
                 subscriptionData!.data!.conversationUpdated!.conversation!.id
               ) {
                 return {
                   ...cachedEntries,
-                  messages: [
-                    ...cachedEntries.messages,
-                    subscriptionData!.data!.conversationUpdated!.message,
-                  ],
+                  messages: [...cachedEntries.messages, newMessage],
                 };
               }
             },
@@ -155,7 +216,7 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
       },
     });
     if (unsubscribe) return () => unsubscribe();
-  }, [cache, subscribeToMore, user]);
+  }, []);
 
   return (
     <SideBar>
@@ -178,15 +239,22 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
             <span>Notifications</span>
           </SpanContainer>
         </Link>
-        <Link path="/messages">
-          <Messages />
-          {notifications && notifications.length > 0 ? (
-            <StyledNotification>{notifications.length}</StyledNotification>
-          ) : null}
-          <SpanContainer bold bigger marginLeft marginRight>
-            <span>Messages</span>
-          </SpanContainer>
-        </Link>
+        <div onClick={handleMarkAsSeen}>
+          <Link path="/messages">
+            <Messages />
+            {location.pathname !== "/messages" &&
+            !location.pathname.match(/(\/messages\/)\d\w+.\d\w+/) &&
+            unreadConversations &&
+            unreadConversations.length > 0 ? (
+              <StyledNotification>
+                {unreadConversations.length}
+              </StyledNotification>
+            ) : null}
+            <SpanContainer bold bigger marginLeft marginRight>
+              <span>Messages</span>
+            </SpanContainer>
+          </Link>
+        </div>
         <Link>
           <Bookmarks />
           <SpanContainer bold bigger marginLeft marginRight>

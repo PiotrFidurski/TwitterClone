@@ -1,5 +1,5 @@
-mutation readConversation($conversationId: String!, $messageId: String!) {
-  readConversation(conversationId: $conversationId, messageId: $messageId) {
+mutation leaveConversation($conversationId: String!) {
+  leaveConversation(conversationId: $conversationId) {
     id
     conversationId
     lastReadMessageId
