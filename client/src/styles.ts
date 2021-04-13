@@ -517,6 +517,8 @@ export const fade = keyframes`
 export const Spinner = styled.div<{ bigMargin?: boolean }>`
   position: relative;
   margin: 60px auto;
+  opacity: 1 !important;
+  z-index: 9999;
   margin: ${(props) => props.bigMargin && "135px auto"};
   border-top: 4px solid rgba(244, 93, 34, 0.1);
   border-right: 4px solid rgba(244, 93, 34, 0.1);

@@ -82,6 +82,19 @@ export const InputContainer = styled(Field)`
   font-size: 19px;
 `;
 
+const SpinnerContainer = styled.div`
+  position: absolute;
+  top: 15px;
+  width: 45px;
+  border-radius: 50%;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  flex-basis: auto;
+  left: 50%;
+  background-color: black;
+`;
+
 const MessageContainer = styled.div<{
   isItMyMsg: boolean;
   margin: boolean;
@@ -381,9 +394,14 @@ export const Messages: React.FC<Props> = ({ user, getReceiver }) => {
 
       <StyledContainer height={height} ref={chatRef} id="scrollableDiv">
         <InfiniteScroll
+          style={{ position: "relative" }}
           scrollableTarget="scrollableDiv"
           inverse={true}
-          loader={null}
+          loader={
+            <SpinnerContainer>
+              <Spinner />
+            </SpinnerContainer>
+          }
           dataLength={data!.conversationMessages!.messages!.length}
           next={loadMore}
           hasMore={data!.conversationMessages!.hasNextPage}
@@ -397,84 +415,6 @@ export const Messages: React.FC<Props> = ({ user, getReceiver }) => {
               receiver={receiver}
               user={user}
             />
-            // <MessageContainer
-            //   key={message.id}
-            //   isItMyLastMsg={isItMyLastMsg(index)}
-            //   margin={
-            //     message.messagedata!.senderId !== user.id &&
-            //     !isItMyLastMsg(index)
-            //   }
-            //   isItMyMsg={isItMyMessage(message)}
-            // >
-            //   <>
-            //     {message.messagedata!.senderId !== user.id &&
-            //     isItMyLastMsg(index) ? (
-            //       <Link
-            //         to={{
-            //           pathname: `/user/${receiver.username}`,
-            //         }}
-            //       >
-            //         <AvatarContainer
-            //           height="40px"
-            //           width={40}
-            //           style={{ marginBottom: "15px" }}
-            //         >
-            //           <StyledAvatar url={receiver.avatar} />
-            //         </AvatarContainer>
-            //       </Link>
-            //     ) : null}
-            //     <MessageWrapper isItMyMsg={isItMyMessage(message)}>
-            //       <StyledMessage isItMyMsg={isItMyMessage(message)}>
-            //         <SpanContainer breakSpaces>
-            //           <span>{message.messagedata.text}</span>
-            //         </SpanContainer>
-            //       </StyledMessage>
-
-            //       <BaseStylesDiv>
-            //         <SpanContainer smaller grey style={{ marginLeft: "5px" }}>
-            //           <span>
-            //             {isItMyLastMsg(index)
-            //               ? receiver.id !== message.messagedata!.senderId
-            //                 ? null
-            //                 : __user.username
-            //               : null}
-            //           </span>
-            //         </SpanContainer>
-
-            //         <>
-            //           {message!.messagedata!.senderId !== user.id &&
-            //           isItMyLastMsg(index) ? (
-            //             <SpanContainer
-            //               grey
-            //               style={{
-            //                 flexShrink: 0,
-            //                 padding: "0 5px 0 5px",
-            //               }}
-            //             >
-            //               <span>·</span>
-            //             </SpanContainer>
-            //           ) : null}
-            //           {isItMyLastMsg(index) ? (
-            //             <SpanContainer grey smaller>
-            //               <span>
-            //                 {format(
-            //                   new Date(
-            //                     parseInt(
-            //                       message!.id.toString().substring(0, 8),
-            //                       16
-            //                     ) * 1000
-            //                   ),
-            //                   "MMM dd, yyyy, hh:mm aaa",
-            //                   {}
-            //                 )}
-            //               </span>
-            //             </SpanContainer>
-            //           ) : null}
-            //         </>
-            //       </BaseStylesDiv>
-            //     </MessageWrapper>
-            //   </>
-            // </MessageContainer>
           ))}
         </InfiniteScroll>
       </StyledContainer>
