@@ -81,10 +81,6 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
   const [markAsSeen] = useMutation<UpdateLastSeenMessageMutation>(
     UpdateLastSeenMessageDocument
   );
-  const [
-    leftAt,
-    { data: leftAtData, loading: leftAtLoading },
-  ] = useLazyQuery<LeftAtQuery>(LeftAtDocument);
 
   let arr: any = [];
   let dates: any = [];
@@ -183,7 +179,31 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
                     conversation.__ref === newConversationRef!.__ref
                 )
               ) {
-                return cachedEntries;
+                return {
+                  ...cachedEntries,
+                  conversations: cachedEntries!.conversations!.filter(
+                    (conversation: any) => {
+                      if (conversation!.__ref === newConversationRef!.__ref) {
+                        const ref = toReference(conversation);
+                        const newMessageRef = toReference(
+                          subscriptionData!.data!.conversationUpdated!.message
+                            .id
+                        );
+                        const messages_conversation: any = readField(
+                          "messages_conversation",
+                          ref
+                        );
+                        return {
+                          ...conversation,
+                          messages_conversation: [
+                            ...messages_conversation!,
+                          ].splice(0, 0, newMessageRef),
+                        };
+                      }
+                      return conversation;
+                    }
+                  ),
+                };
               }
               return (
                 cachedEntries && {

@@ -22,6 +22,7 @@ import {
   Spinner,
   StyledAvatar,
 } from "../../styles";
+import { convertDateToTime } from "../../utils/functions";
 import { Messages } from "./Messages";
 
 const StyledContainer = styled.div`
@@ -187,6 +188,27 @@ const ConversationCmp: React.FC<{
         variables: {
           messageId: conversation.mostRecentEntryId,
         },
+        update(cache, { data }) {
+          cache.modify({
+            fields: {
+              userInbox(
+                cachedEntries = {
+                  __typename: "UserinboxResult",
+                  userId: "",
+                  lastSeenMessageId: "",
+                  conversations: [],
+                  users: [],
+                }
+              ) {
+                return {
+                  ...cachedEntries,
+                  lastSeenMessageId: data!.updateLastSeenMessage!
+                    .lastSeenMessageId!,
+                };
+              },
+            },
+          });
+        },
       });
     };
 
@@ -246,14 +268,28 @@ const ConversationCmp: React.FC<{
                 width: "0px",
               }}
             >
-              {messaging ? (
-                <SpanContainer bold>
-                  <span>{messaging!.username}</span>
-                </SpanContainer>
-              ) : null}
+              <BaseStylesDiv>
+                <BaseStylesDiv
+                  flexGrow
+                  style={{ justifyContent: "space-between" }}
+                >
+                  <SpanContainer bold>
+                    <span>{messaging!.username}</span>
+                  </SpanContainer>
+                  <SpanContainer grey>
+                    <span>
+                      {conversation!.messages_conversation!.length
+                        ? convertDateToTime(
+                            conversation!.messages_conversation![0]
+                          )
+                        : null}
+                    </span>
+                  </SpanContainer>
+                </BaseStylesDiv>
+              </BaseStylesDiv>
               {conversation!.messages_conversation! &&
               conversation!.messages_conversation!.length ? (
-                <SpanContainer grey smaller>
+                <SpanContainer grey>
                   <span>
                     {conversation!.messages_conversation![0].messagedata!.text!}
                   </span>

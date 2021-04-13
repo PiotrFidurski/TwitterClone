@@ -114,7 +114,7 @@ export const sortReplies = (data: RepliesQuery | undefined, post: Post) => {
   return array;
 };
 
-export const convertDateToTime = (post: Post) => {
+export const convertDateToTime = (entity: { id: string }) => {
   const replaceString: { [key: string]: string } = {
     "/ /g": "",
     hours: "h",
@@ -126,7 +126,7 @@ export const convertDateToTime = (post: Post) => {
   };
 
   const time = new Date(
-    parseInt(post!.id.toString().substring(0, 8), 16) * 1000
+    parseInt(entity!.id.toString().substring(0, 8), 16) * 1000
   );
   const date =
     Number(

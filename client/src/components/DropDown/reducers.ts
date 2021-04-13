@@ -38,7 +38,7 @@ export const moveLeftReducer = (state: IState, action: IAction) => {
         dimensions: {
           ...action.value,
           left: action.value.right - state.width,
-          top: action.value.top + 25,
+          top: action.value.top + 10,
         },
       };
     }

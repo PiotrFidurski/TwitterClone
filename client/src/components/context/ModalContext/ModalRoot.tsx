@@ -8,6 +8,7 @@ import { useModalContext } from "./";
 import { DeletePostModal } from "../../Modals/DeletePostModal";
 import { UnfollowUserModal } from "../../Modals/UnfollowUserModal";
 import { LoginModal } from "../../Modals/LoginModal";
+import { LeaveConversationModal } from "../../Modals/LeaveConversationModal";
 
 interface Props {
   _key: string;
@@ -29,6 +30,7 @@ export const AlertModals: {
   deletePostAlert: DeletePostModal,
   unfollowUserAlert: UnfollowUserModal,
   loginAlert: LoginModal,
+  leaveConversationAlert: LeaveConversationModal,
 };
 
 export const ModalRoot: React.FC<Props> = React.memo(({ _key, props }) => {

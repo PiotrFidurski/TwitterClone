@@ -2,7 +2,10 @@ import * as React from "react";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 import { Link, useHistory, useLocation, useParams } from "react-router-dom";
 import { ReactComponent as SadFace } from "../../components/svgs/SadFace.svg";
+import { ReactComponent as LeaveConversation } from "../../components/svgs/leaveConversation.svg";
 import { ReactComponent as Caret } from "../../components/svgs/Caret.svg";
+import { ReactComponent as Mute } from "../../components/svgs/mute.svg";
+import { ReactComponent as Block } from "../../components/svgs/block.svg";
 import { v4 } from "uuid";
 import {
   User,
@@ -10,11 +13,8 @@ import {
   SendMessageDocument,
   ConversationMessagesQuery,
   ConversationMessagesDocument,
-  Conversation,
   LeaveConversationDocument,
   LeaveConversationMutation,
-  UserInboxQuery,
-  UserInboxDocument,
   LeftAtQuery,
   LeftAtDocument,
 } from "../../generated/graphql";
@@ -45,6 +45,7 @@ import {
 import { StyledDropDownItem } from "../../components/DropDown/DropDownComposition/Menu";
 import { Header } from "../../components/Header";
 import { AnyARecord } from "dns";
+import { useModalContext } from "../../components/context/ModalContext";
 
 const emojiPlugin = createEmojiMartPlugin({
   data,
@@ -195,7 +196,7 @@ export const Messages: React.FC<Props> = ({ user, userInbox }) => {
     LeftAtDocument,
     { variables: { userId: user!.id!, conversationId: conversationId } }
   );
-
+  const { openModal } = useModalContext();
   const history = useHistory();
   const { cache } = useApolloClient();
   const { data, loading, fetchMore } = useQuery<ConversationMessagesQuery>(
@@ -305,16 +306,6 @@ export const Messages: React.FC<Props> = ({ user, userInbox }) => {
     return () => window.removeEventListener("resize", setHeightToWindowSize);
   }, []);
 
-  const isItMyLastMsg = (index: number) => {
-    return !!(data &&
-    data!.conversationMessages!.messages!.length &&
-    data!.conversationMessages!.messages![index + 1]
-      ? data!.conversationMessages!.messages![index + 1].messagedata
-          .senderId !==
-        data!.conversationMessages!.messages![index].messagedata.senderId
-      : data!.conversationMessages!.messages![index].id);
-  };
-
   if (loading && !data) return <Spinner />;
 
   return __user === undefined ? (
@@ -375,9 +366,29 @@ export const Messages: React.FC<Props> = ({ user, userInbox }) => {
               </DropdownProvider.Toggle>
               <DropdownProvider.Menu>
                 <BaseStylesDiv flexColumn>
-                  <StyledDropDownItem danger onClick={handleLeaveConversation}>
+                  <StyledDropDownItem
+                    danger
+                    onClick={() => {
+                      openModal("leaveConversationAlert", {
+                        leaveConversation: handleLeaveConversation,
+                      });
+                    }}
+                  >
+                    <LeaveConversation />
                     <SpanContainer>
                       <span>Leave Conversation</span>
+                    </SpanContainer>
+                  </StyledDropDownItem>
+                  <StyledDropDownItem>
+                    <Mute />
+                    <SpanContainer>
+                      <span>Mute notifications</span>
+                    </SpanContainer>
+                  </StyledDropDownItem>
+                  <StyledDropDownItem>
+                    <Block />
+                    <SpanContainer>
+                      <span>Block @{__user.username}</span>
                     </SpanContainer>
                   </StyledDropDownItem>
                 </BaseStylesDiv>
