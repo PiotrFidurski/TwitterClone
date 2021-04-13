@@ -10,14 +10,39 @@ mutation sendMessage(
     senderId: $senderId
     receiverId: $receiverId
   ) {
-    id
-    conversationId
-    messagedata {
-      text
+    message {
       id
-      receiverId
       conversationId
-      senderId
+      messagedata {
+        text
+        id
+        receiverId
+        conversationId
+        senderId
+      }
+    }
+    conversation {
+      conversationId
+      id
+      lastReadMessageId
+      mostRecentEntryId
+      oldestEntryId
+      participants {
+        userId
+        lastReadMessageId
+      }
+      messages_conversation {
+        conversationId
+        id
+        messagedata {
+          text
+          senderId
+          receiverId
+          conversationId
+          id
+        }
+      }
+      type
     }
   }
 }

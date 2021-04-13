@@ -17,6 +17,9 @@ import {
   LeaveConversationMutation,
   LeftAtQuery,
   LeftAtDocument,
+  Conversation,
+  UserInboxDocument,
+  UserInboxQuery,
 } from "../../generated/graphql";
 import {
   SpanContainer,
@@ -497,7 +500,10 @@ export const Messages: React.FC<Props> = ({ user, userInbox }) => {
           ))}
         </InfiniteScroll>
       </StyledContainer>
-      <MessageForm user={user} />
+      <MessageForm
+        user={user}
+        conversation={data!.conversationMessages!.conversation!}
+      />
     </>
   );
 };
@@ -600,7 +606,10 @@ const Message: React.FC<{
   );
 };
 
-const MessageForm: React.FC<{ user: User }> = ({ user }) => {
+const MessageForm: React.FC<{ user: User; conversation: Conversation }> = ({
+  user,
+  conversation,
+}) => {
   const { conversationId } = useParams<{ conversationId: string }>();
 
   const [sendMessage] = useMutation<SendMessageMutation>(SendMessageDocument);
@@ -623,35 +632,86 @@ const MessageForm: React.FC<{ user: User }> = ({ user }) => {
             optimisticResponse: {
               __typename: "Mutation",
               sendMessage: {
-                __typename: "Message",
-                conversationId: conversationId,
-                id: `${v4()}sending...`,
-                messagedata: {
-                  __typename: "MessageData",
+                __typename: "SendMessageResult",
+                message: {
+                  __typename: "Message",
                   conversationId: conversationId,
-                  senderId: user.id,
-                  receiverId: "",
-                  text: values.text,
-                  id: conversationId,
+                  id: `${v4()}sending...`,
+                  messagedata: {
+                    __typename: "MessageData",
+                    conversationId: conversationId,
+                    senderId: user.id,
+                    receiverId: "aa",
+                    text: values.text,
+                    id: conversationId,
+                  },
+                },
+                conversation: {
+                  ...conversation,
                 },
               },
             } as SendMessageMutation,
             update: (cache, { data }) => {
               cache.modify({
-                broadcast: false,
                 fields: {
+                  userInbox(
+                    cachedEntries = {
+                      __typename: "UserinboxResult",
+                      conversations: [],
+                      users: [],
+                    },
+                    { toReference, readField }
+                  ) {
+                    return {
+                      ...cachedEntries,
+                      __typename: "UserInboxResult",
+                      lastSeenMessageId: data!.sendMessage!.message!.id!,
+
+                      conversations: [...cachedEntries!.conversations!].filter(
+                        (conversationRef: any) => {
+                          if (conversationRef!.__ref === conversation.id) {
+                            const ref = toReference(conversationRef);
+                            console.log(conversationRef);
+                            const newMessageRef = toReference(
+                              data!.sendMessage!.message!.id
+                            );
+                            const messages_conversation: any = readField(
+                              "messages_conversation",
+                              ref
+                            );
+                            return {
+                              ...conversationRef,
+                              messages_conversation: [
+                                ...messages_conversation!,
+                              ].splice(0, 0, newMessageRef),
+                              mostRecentEntryId: data!.sendMessage!.message!
+                                .id!,
+                            };
+                          }
+
+                          return conversationRef;
+                        }
+                      ),
+                    };
+                  },
                   conversationMessages(
                     cachedEntries,
                     { readField, toReference }
                   ) {
                     const ref = toReference(cachedEntries.conversation);
                     const conversationId = readField("conversationId", ref);
-                    if (conversationId !== data!.sendMessage!.conversationId) {
+                    if (
+                      conversationId !==
+                      data!.sendMessage!.message!.conversationId
+                    ) {
                       return cachedEntries;
                     }
                     return {
                       ...cachedEntries,
-                      messages: [...cachedEntries.messages, data!.sendMessage!],
+                      messages: [
+                        ...cachedEntries.messages,
+                        data!.sendMessage!.message!,
+                      ],
                     };
                   },
                 },

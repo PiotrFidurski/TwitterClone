@@ -14,16 +14,11 @@ import { ReactComponent as Lists } from "../../components/svgs/Lists.svg";
 import { ReactComponent as Feather } from "../../components/svgs/Feather.svg";
 import { ReactComponent as Logo } from "../../components/svgs/Logo.svg";
 import {
-  ConversationMessagesDocument,
-  ConversationMessagesQuery,
   ConversationUpdatedDocument,
   ConversationUpdatedSubscription,
-  LeftAtDocument,
-  LeftAtQuery,
   UpdateLastSeenMessageDocument,
   UpdateLastSeenMessageMutation,
   User,
-  UserInboxQuery,
 } from "../../generated/graphql";
 import {
   SpanContainer,
@@ -39,17 +34,8 @@ import { NavLink } from "../../components/Sidebar/styles";
 import { Location } from "history";
 import { DropdownProvider } from "../../components/DropDown";
 import styled from "styled-components";
-import {
-  useApolloClient,
-  useLazyQuery,
-  useMutation,
-  useSubscription,
-} from "@apollo/client";
-import {
-  UserInboxDocument,
-  UserInboxQueryResult,
-} from "../../generated/introspection-result";
-import { isJSDocReturnTag } from "typescript";
+import { useApolloClient, useMutation, useSubscription } from "@apollo/client";
+import { UserInboxQueryResult } from "../../generated/introspection-result";
 
 const StyledNotification = styled.div`
   ${BaseStyles};
@@ -236,8 +222,8 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
       },
     });
     if (unsubscribe) return () => unsubscribe();
-  }, []);
-
+  }, [subscribeToMore]);
+  console.log(userInbox);
   return (
     <SideBar>
       <Nav>

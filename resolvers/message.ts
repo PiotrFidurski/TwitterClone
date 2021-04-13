@@ -223,12 +223,16 @@ export default {
         const unreadMessage = await LastSeenMessage.findOne({
           userId: { $eq: authenticatedUser!._id },
         });
-
-        if (!unreadMessage) {
+        const unreadMessageForUser = await LastSeenMessage.findOne({
+          userId: { $eq: userId },
+        });
+        if (!unreadMessageForUser) {
           await LastSeenMessage.create({
             userId: userId!,
             lastSeenMessageId: "",
           });
+        }
+        if (!unreadMessage) {
           await LastSeenMessage.create({
             userId: authenticatedUser!._id,
             lastSeenMessageId: "",
@@ -294,14 +298,7 @@ export default {
             oldestEntryId: "",
             conversationId: `${authUser!.id}-${userToBeMessaged!.id}`,
           });
-          // // const test = await LeftConversation.findOne({userid:{$eq: authUser!.id}})
-          // if (!test) {
-          //   await LeftConversation.create({
-          //     userId: authUser!.id,
-          //     conversationId: conversation!.conversationId",
-          //
-          //   });
-          // }
+
           const conversationAggregation = await Conversation.aggregate([
             {
               $match: {
@@ -471,8 +468,11 @@ export default {
               },
             },
           });
+          return {
+            message: newMessage,
+            conversation: conversationAggregation[0],
+          };
         }
-        return newMessage;
       } catch (error) {
         throw new Error(error);
       }

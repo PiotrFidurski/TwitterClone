@@ -181,6 +181,7 @@ const ConversationCmp: React.FC<{
   const authUser = conversation!.participants!.filter(
     (_user) => _user.userId === user.id
   )[0];
+
   const location = useLocation();
   React.useEffect(() => {
     const handleMarkAsSeen = async () => {
@@ -189,6 +190,7 @@ const ConversationCmp: React.FC<{
           messageId: conversation.mostRecentEntryId,
         },
         update(cache, { data }) {
+          console.log(data, conversation);
           cache.modify({
             fields: {
               userInbox(
@@ -200,11 +202,13 @@ const ConversationCmp: React.FC<{
                   users: [],
                 }
               ) {
-                return {
-                  ...cachedEntries,
-                  lastSeenMessageId: data!.updateLastSeenMessage!
-                    .lastSeenMessageId!,
-                };
+                if (data!.updateLastSeenMessage !== null) {
+                  return {
+                    ...cachedEntries,
+                    lastSeenMessageId: data!.updateLastSeenMessage!
+                      .lastSeenMessageId!,
+                  };
+                }
               },
             },
           });

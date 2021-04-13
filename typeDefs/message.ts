@@ -21,7 +21,7 @@ export default gql`
       conversationId: String!
       senderId: ID!
       receiverId: String
-    ): Message! @auth
+    ): SendMessageResult! @auth
     leaveConversation(conversationId: String!): Conversation @auth
   }
   extend type Subscription {
@@ -52,6 +52,10 @@ export default gql`
     conversation: Conversation
     message: Message
     receiver: User
+  }
+  type SendMessageResult {
+    message: Message!
+    conversation: Conversation
   }
   type Message {
     id: ID!

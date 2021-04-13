@@ -255,7 +255,7 @@ export type Mutation = {
   updateLastSeenMessage?: Maybe<UnreadMessage>;
   readConversation?: Maybe<Conversation>;
   messageUser?: Maybe<Conversation>;
-  sendMessage: Message;
+  sendMessage: SendMessageResult;
   leaveConversation?: Maybe<Conversation>;
 };
 
@@ -406,6 +406,12 @@ export type UnreadMessage = {
   __typename?: 'UnreadMessage';
   lastSeenMessageId?: Maybe<Scalars['String']>;
   userId?: Maybe<Scalars['String']>;
+};
+
+export type SendMessageResult = {
+  __typename?: 'SendMessageResult';
+  message: Message;
+  conversation?: Maybe<Conversation>;
 };
 
 export type Subscription = {
@@ -999,12 +1005,29 @@ export type SendMessageMutationVariables = Exact<{
 export type SendMessageMutation = (
   { __typename?: 'Mutation' }
   & { sendMessage: (
-    { __typename?: 'Message' }
-    & Pick<Message, 'id' | 'conversationId'>
-    & { messagedata: (
-      { __typename?: 'MessageData' }
-      & Pick<MessageData, 'text' | 'id' | 'receiverId' | 'conversationId' | 'senderId'>
-    ) }
+    { __typename?: 'SendMessageResult' }
+    & { message: (
+      { __typename?: 'Message' }
+      & Pick<Message, 'id' | 'conversationId'>
+      & { messagedata: (
+        { __typename?: 'MessageData' }
+        & Pick<MessageData, 'text' | 'id' | 'receiverId' | 'conversationId' | 'senderId'>
+      ) }
+    ), conversation?: Maybe<(
+      { __typename?: 'Conversation' }
+      & Pick<Conversation, 'conversationId' | 'id' | 'lastReadMessageId' | 'mostRecentEntryId' | 'oldestEntryId' | 'type'>
+      & { participants?: Maybe<Array<(
+        { __typename?: 'Participants' }
+        & Pick<Participants, 'userId' | 'lastReadMessageId'>
+      )>>, messages_conversation?: Maybe<Array<(
+        { __typename?: 'Message' }
+        & Pick<Message, 'conversationId' | 'id'>
+        & { messagedata: (
+          { __typename?: 'MessageData' }
+          & Pick<MessageData, 'text' | 'senderId' | 'receiverId' | 'conversationId' | 'id'>
+        ) }
+      )>> }
+    )> }
   ) }
 );
 
@@ -2250,14 +2273,39 @@ export const SendMessageDocument = gql`
     senderId: $senderId
     receiverId: $receiverId
   ) {
-    id
-    conversationId
-    messagedata {
-      text
+    message {
       id
-      receiverId
       conversationId
-      senderId
+      messagedata {
+        text
+        id
+        receiverId
+        conversationId
+        senderId
+      }
+    }
+    conversation {
+      conversationId
+      id
+      lastReadMessageId
+      mostRecentEntryId
+      oldestEntryId
+      participants {
+        userId
+        lastReadMessageId
+      }
+      messages_conversation {
+        conversationId
+        id
+        messagedata {
+          text
+          senderId
+          receiverId
+          conversationId
+          id
+        }
+      }
+      type
     }
   }
 }
