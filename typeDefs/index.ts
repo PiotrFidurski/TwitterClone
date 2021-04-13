@@ -5,4 +5,4 @@ import node from "./node";
 import resource from "./resource";
 import message from "./message";
 
-export const typeDefs = [root, node, resource, user, post, message];
+export default [root, node, resource, user, post, message];

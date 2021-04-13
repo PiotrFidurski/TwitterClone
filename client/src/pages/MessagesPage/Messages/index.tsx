@@ -1,11 +1,11 @@
 import * as React from "react";
-import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { Link, useHistory, useLocation, useParams } from "react-router-dom";
-import { ReactComponent as SadFace } from "../../components/svgs/SadFace.svg";
-import { ReactComponent as LeaveConversation } from "../../components/svgs/leaveConversation.svg";
-import { ReactComponent as Caret } from "../../components/svgs/Caret.svg";
-import { ReactComponent as Mute } from "../../components/svgs/mute.svg";
-import { ReactComponent as Block } from "../../components/svgs/block.svg";
+import { ReactComponent as SadFace } from "../../../components/svgs/SadFace.svg";
+import { ReactComponent as LeaveConversation } from "../../../components/svgs/leaveConversation.svg";
+import { ReactComponent as Caret } from "../../../components/svgs/Caret.svg";
+import { ReactComponent as Mute } from "../../../components/svgs/mute.svg";
+import { ReactComponent as Block } from "../../../components/svgs/block.svg";
 import { v4 } from "uuid";
 import {
   User,
@@ -18,9 +18,7 @@ import {
   LeftAtQuery,
   LeftAtDocument,
   Conversation,
-  UserInboxDocument,
-  UserInboxQuery,
-} from "../../generated/graphql";
+} from "../../../generated/graphql";
 import {
   SpanContainer,
   BaseStyles,
@@ -31,7 +29,7 @@ import {
   StyledAvatar,
   ButtonContainer,
   JustifyCenter,
-} from "../../styles";
+} from "../../../styles";
 import { format } from "date-fns";
 import InfiniteScroll from "react-infinite-scroll-component";
 import Editor from "draft-js-plugins-editor";
@@ -40,15 +38,17 @@ import styled, { css } from "styled-components";
 import { Field, Formik } from "formik";
 import { EditorState, DraftHandleValue, ContentState } from "draft-js";
 import data from "emoji-mart/data/all.json";
-import { DropdownProvider, useDropdownCtxt } from "../../components/DropDown";
+import {
+  DropdownProvider,
+  useDropdownCtxt,
+} from "../../../components/DropDown";
 import {
   moveLeftReducer,
   moveUpAndLeftReducer,
-} from "../../components/DropDown/reducers";
-import { StyledDropDownItem } from "../../components/DropDown/DropDownComposition/Menu";
-import { Header } from "../../components/Header";
-import { AnyARecord } from "dns";
-import { useModalContext } from "../../components/context/ModalContext";
+} from "../../../components/DropDown/reducers";
+import { StyledDropDownItem } from "../../../components/DropDown/DropDownComposition/Menu";
+import { Header } from "../../../components/Header";
+import { useModalContext } from "../../../components/context/ModalContext";
 
 const emojiPlugin = createEmojiMartPlugin({
   data,
@@ -186,22 +186,31 @@ const StyledEmojiPickerContainer = styled.div`
 
 interface Props {
   user: User;
-  userInbox: any;
+  getReceiver: (conversationId: string) => User;
 }
 
-export const Messages: React.FC<Props> = ({ user, userInbox }) => {
+export const Messages: React.FC<Props> = ({ user, getReceiver }) => {
   const { conversationId } = useParams<{ conversationId: string }>();
+
+  const chatRef = React.useRef<any>(null);
+
+  const receiver = getReceiver(conversationId);
+
+  const [height, setHeight] = React.useState(window.innerHeight);
+
+  const { openModal } = useModalContext();
+
+  const history = useHistory();
+
   const [leaveConversation] = useMutation<LeaveConversationMutation>(
     LeaveConversationDocument,
     { variables: { conversationId: conversationId } }
   );
-  const { data: leftAtData, loading: leftAtLoading } = useQuery<LeftAtQuery>(
-    LeftAtDocument,
-    { variables: { userId: user!.id!, conversationId: conversationId } }
-  );
-  const { openModal } = useModalContext();
-  const history = useHistory();
-  const { cache } = useApolloClient();
+
+  const { data: leftAtData } = useQuery<LeftAtQuery>(LeftAtDocument, {
+    variables: { userId: user!.id!, conversationId: conversationId },
+  });
+
   const { data, loading, fetchMore } = useQuery<ConversationMessagesQuery>(
     ConversationMessagesDocument,
     {
@@ -216,28 +225,9 @@ export const Messages: React.FC<Props> = ({ user, userInbox }) => {
     }
   );
 
-  const userThread: { [key: string]: User }[] = React.useMemo(() => [], []);
-
-  React.useEffect(() => {
-    if (!loading && data) {
-      userInbox!.data!.userInbox!.users!.forEach(
-        (_user: any) => (userThread[_user!.id] = _user)
-      );
-    }
-  }, [data, loading, userInbox, userThread]);
-
-  const __user = userInbox!.data!.userInbox!.users!.filter((_user: any) => {
-    const ids = conversationId.split("-");
-    const participant = ids[0] === user.id ? ids[1] : ids[0];
-    return _user.id === participant;
-  })[0];
-
-  const chatRef = React.useRef<any>(null);
-
-  const [height, setHeight] = React.useState(window.innerHeight);
   const handleLeaveConversation = () => {
     leaveConversation({
-      update: (_, { data: _data }) => {
+      update: (cache, { data: _data }) => {
         cache.modify({
           fields: {
             userInbox(cachedEntries) {
@@ -263,9 +253,11 @@ export const Messages: React.FC<Props> = ({ user, userInbox }) => {
             ) {
               return {
                 ...cachedEntry,
-                leftAtMessageId: data!.conversationMessages!.messages![
-                  data!.conversationMessages!.messages!.length - 1
-                ].id,
+                leftAtMessageId: data!.conversationMessages!.messages!.length
+                  ? data!.conversationMessages!.messages![
+                      data!.conversationMessages!.messages!.length - 1
+                    ].id
+                  : "",
               };
             },
           },
@@ -274,10 +266,8 @@ export const Messages: React.FC<Props> = ({ user, userInbox }) => {
       },
     });
   };
-  const setHeightToWindowSize = () => {
-    setHeight(window.innerHeight);
-  };
-  const loadMore = React.useCallback(async () => {
+
+  const loadMore = React.useCallback(async (): Promise<any> => {
     if (data!.conversationMessages!.hasNextPage) {
       await fetchMore({
         variables: {
@@ -286,32 +276,20 @@ export const Messages: React.FC<Props> = ({ user, userInbox }) => {
             ? data!.conversationMessages!.messages![0].id
             : "",
         },
-        updateQuery: (prev: any, { fetchMoreResult }: any) => {
-          if (!fetchMoreResult) return prev;
-
-          return {
-            ...prev,
-            conversationMessages: {
-              ...prev.conversationMessages,
-              messages: [
-                ...fetchMoreResult!.conversationMessages!.messages,
-                ...prev.conversationMessages.messages,
-              ],
-            },
-          };
-        },
       });
     }
   }, [data, fetchMore]);
 
   React.useEffect(() => {
+    const setHeightToWindowSize = () => setHeight(window.innerHeight);
+
     window.addEventListener("resize", setHeightToWindowSize);
     return () => window.removeEventListener("resize", setHeightToWindowSize);
   }, []);
 
   if (loading && !data) return <Spinner />;
 
-  return __user === undefined ? (
+  return receiver === undefined ? (
     <BaseStylesDiv flexGrow flexColumn style={{ paddingTop: "50%" }}>
       <JustifyCenter>
         <SpanContainer bolder bigger textCenter breakSpaces>
@@ -328,11 +306,11 @@ export const Messages: React.FC<Props> = ({ user, userInbox }) => {
         <BaseStylesDiv flexGrow style={{ alignItems: "center" }}>
           <Link
             to={{
-              pathname: `/user/${__user.username}`,
+              pathname: `/user/${receiver.username}`,
             }}
           >
             <AvatarContainer height="34px" width={34} noRightMargin>
-              <StyledAvatar url={__user.avatar} />
+              <StyledAvatar url={receiver.avatar} />
             </AvatarContainer>
           </Link>
 
@@ -346,7 +324,7 @@ export const Messages: React.FC<Props> = ({ user, userInbox }) => {
             }}
           >
             <SpanContainer bold biggest>
-              <span>{__user.username}</span>
+              <span>{receiver.username}</span>
             </SpanContainer>
             <DropdownProvider position="absolute" reducer={moveLeftReducer}>
               <DropdownProvider.Toggle>
@@ -391,7 +369,7 @@ export const Messages: React.FC<Props> = ({ user, userInbox }) => {
                   <StyledDropDownItem>
                     <Block />
                     <SpanContainer>
-                      <span>Block @{__user.username}</span>
+                      <span>Block @{receiver.username}</span>
                     </SpanContainer>
                   </StyledDropDownItem>
                 </BaseStylesDiv>
@@ -406,9 +384,9 @@ export const Messages: React.FC<Props> = ({ user, userInbox }) => {
           scrollableTarget="scrollableDiv"
           inverse={true}
           loader={null}
-          dataLength={data ? data!.conversationMessages!.messages!.length : 0}
+          dataLength={data!.conversationMessages!.messages!.length}
           next={loadMore}
-          hasMore={data ? data!.conversationMessages!.hasNextPage : false}
+          hasMore={data!.conversationMessages!.hasNextPage}
         >
           {data!.conversationMessages!.messages!.map((message, index) => (
             <Message
@@ -416,7 +394,7 @@ export const Messages: React.FC<Props> = ({ user, userInbox }) => {
               message={message}
               key={message.id}
               messages={data!.conversationMessages!.messages!}
-              __user={__user}
+              receiver={receiver}
               user={user}
             />
             // <MessageContainer
@@ -433,7 +411,7 @@ export const Messages: React.FC<Props> = ({ user, userInbox }) => {
             //     isItMyLastMsg(index) ? (
             //       <Link
             //         to={{
-            //           pathname: `/user/${__user.username}`,
+            //           pathname: `/user/${receiver.username}`,
             //         }}
             //       >
             //         <AvatarContainer
@@ -441,7 +419,7 @@ export const Messages: React.FC<Props> = ({ user, userInbox }) => {
             //           width={40}
             //           style={{ marginBottom: "15px" }}
             //         >
-            //           <StyledAvatar url={__user.avatar} />
+            //           <StyledAvatar url={receiver.avatar} />
             //         </AvatarContainer>
             //       </Link>
             //     ) : null}
@@ -456,7 +434,7 @@ export const Messages: React.FC<Props> = ({ user, userInbox }) => {
             //         <SpanContainer smaller grey style={{ marginLeft: "5px" }}>
             //           <span>
             //             {isItMyLastMsg(index)
-            //               ? __user.id !== message.messagedata!.senderId
+            //               ? receiver.id !== message.messagedata!.senderId
             //                 ? null
             //                 : __user.username
             //               : null}
@@ -512,9 +490,9 @@ const Message: React.FC<{
   message: any;
   messages: any;
   index: number;
-  __user: any;
+  receiver: User;
   user: any;
-}> = ({ message, index, __user, user, messages }) => {
+}> = ({ message, index, receiver, user, messages }) => {
   const isItMyLastMsg = (index: number) => {
     return !!(messages!.length && messages![index + 1]
       ? messages![index + 1].messagedata.senderId !==
@@ -537,7 +515,7 @@ const Message: React.FC<{
         {message.messagedata!.senderId !== user.id && isItMyLastMsg(index) ? (
           <Link
             to={{
-              pathname: `/user/${__user.username}`,
+              pathname: `/user/${receiver.username}`,
             }}
           >
             <AvatarContainer
@@ -545,7 +523,7 @@ const Message: React.FC<{
               width={40}
               style={{ marginBottom: "15px" }}
             >
-              <StyledAvatar url={__user.avatar} />
+              <StyledAvatar url={receiver.avatar} />
             </AvatarContainer>
           </Link>
         ) : null}
@@ -560,9 +538,9 @@ const Message: React.FC<{
             <SpanContainer smaller grey style={{ marginLeft: "5px" }}>
               <span>
                 {isItMyLastMsg(index)
-                  ? __user.id !== message.messagedata!.senderId
+                  ? receiver.id !== message.messagedata!.senderId
                     ? null
-                    : __user.username
+                    : receiver.username
                   : null}
               </span>
             </SpanContainer>

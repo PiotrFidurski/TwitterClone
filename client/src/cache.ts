@@ -8,6 +8,20 @@ export const cache: InMemoryCache = new InMemoryCache({
   typePolicies: {
     Query: {
       fields: {
+        conversationMessages: {
+          keyArgs: ["conversationId", "leftAtMessageId"],
+          read(existing) {
+            return existing;
+          },
+          merge(existing = { messages: [] }, incoming = {}, { mergeObjects }) {
+            return {
+              ...existing,
+              hasNextPage: incoming.hasNextPage,
+              conversation: incoming.conversation,
+              messages: [...incoming.messages, ...existing.messages],
+            };
+          },
+        },
         conversation: {
           keyArgs: ["conversationId", "postId"],
           read(existing, { toReference, readField, args }: any) {

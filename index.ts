@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { ApolloServer } from "apollo-server-express";
-import { typeDefs } from "./typeDefs";
+import typeDefs from "./typeDefs";
 import resolvers from "./resolvers";
 import AuthDirective from "./customDirectives/AuthDirective";
 import { app, serverConfig, sessionMiddleware } from "./config/expressServer";

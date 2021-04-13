@@ -16,8 +16,6 @@ import { ReactComponent as Logo } from "../../components/svgs/Logo.svg";
 import {
   ConversationUpdatedDocument,
   ConversationUpdatedSubscription,
-  UpdateLastSeenMessageDocument,
-  UpdateLastSeenMessageMutation,
   User,
 } from "../../generated/graphql";
 import {
@@ -34,8 +32,9 @@ import { NavLink } from "../../components/Sidebar/styles";
 import { Location } from "history";
 import { DropdownProvider } from "../../components/DropDown";
 import styled from "styled-components";
-import { useApolloClient, useMutation, useSubscription } from "@apollo/client";
+import { useApolloClient, useSubscription } from "@apollo/client";
 import { UserInboxQueryResult } from "../../generated/introspection-result";
+import { useReadAllUnseenMessages } from "../../hooks/useReadAllUnseenMessages";
 
 const StyledNotification = styled.div`
   ${BaseStyles};
@@ -63,61 +62,24 @@ interface Props {
 
 export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
   const { data, loading, subscribeToMore } = userInbox;
+
   const location = useLocation<{ isModal: Location }>();
-  const [markAsSeen] = useMutation<UpdateLastSeenMessageMutation>(
-    UpdateLastSeenMessageDocument
+
+  const handleMarkAsSeen = useReadAllUnseenMessages(
+    data!.userInbox!.conversations!
   );
-
-  let arr: any = [];
-  let dates: any = [];
-  const handleMarkAsSeen = async () => {
-    data!.userInbox!.conversations!.forEach((conversation) => {
-      const date = new Date(
-        parseInt(conversation!.mostRecentEntryId!.substring(0, 8), 16) * 1000
-      );
-      dates[Math.abs(new Date().getTime() - date.getTime())] = conversation;
-      arr = [...arr, Math.abs(new Date().getTime() - date.getTime())];
-    });
-
-    const result = await markAsSeen({
-      variables: {
-        messageId: dates.length
-          ? dates[Math.min(...arr)].mostRecentEntryId
-          : "",
-      },
-    });
-
-    if (result.data!.updateLastSeenMessage !== null) {
-      cache.modify({
-        fields: {
-          userInbox(
-            cachedEntries = {
-              __typename: "UserinboxResult",
-              userId: "",
-              lastSeenMessageId: "",
-              conversations: [],
-              users: [],
-            }
-          ) {
-            return {
-              ...cachedEntries,
-              lastSeenMessageId: result!.data!.updateLastSeenMessage!
-                .lastSeenMessageId!,
-            };
-          },
-        },
-      });
-    }
-  };
 
   useSubscription<ConversationUpdatedSubscription>(
     ConversationUpdatedDocument,
     { variables: { userId: user!.id! } }
   );
+
   const { cache } = useApolloClient();
+
   const usersLastSeenTime = new Date(
     parseInt(data!.userInbox!.lastSeenMessageId!.substring(0, 8), 16) * 1000
   );
+
   const unreadConversations =
     !loading &&
     data &&
@@ -222,8 +184,9 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
       },
     });
     if (unsubscribe) return () => unsubscribe();
+    // eslint-disable-next-line
   }, [subscribeToMore]);
-  console.log(userInbox);
+
   return (
     <SideBar>
       <Nav>

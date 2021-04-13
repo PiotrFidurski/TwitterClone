@@ -1,10 +1,5 @@
 import * as React from "react";
-import {
-  User,
-  UserInboxQuery,
-  UserInboxQueryHookResult,
-  UserInboxQueryResult,
-} from "../../generated/graphql";
+import { User, UserInboxQueryResult } from "../../generated/graphql";
 import { Feed } from "../../components/Feed";
 import { StyledRoutesWrapper } from "../../styles";
 import { Switch, Redirect, Route, useLocation } from "react-router-dom";
