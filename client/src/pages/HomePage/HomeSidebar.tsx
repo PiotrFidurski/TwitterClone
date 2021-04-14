@@ -88,11 +88,14 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
     data!.userInbox!.conversations!.length &&
     data!
       .userInbox!.conversations!.map((conversation) => {
-        const conversationMostRecentTime = new Date(
-          parseInt(conversation.mostRecentEntryId!.substring(0, 8), 16) * 1000
-        );
+        if (conversation.mostRecentEntryId) {
+          const conversationMostRecentTime = new Date(
+            parseInt(conversation.mostRecentEntryId!.substring(0, 8), 16) * 1000
+          );
 
-        return usersLastSeenTime >= conversationMostRecentTime;
+          return usersLastSeenTime >= conversationMostRecentTime;
+        }
+        return null;
       })
       .filter((value) => value === false);
 

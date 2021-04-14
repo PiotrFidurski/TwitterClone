@@ -14,12 +14,14 @@ export const useReadAllUnseenMessages = (
   let arr: Array<number> = [];
   let dates: Array<{ [key: string]: Conversation }> = [];
   conversations!.forEach((conversation) => {
-    const date = new Date(
-      parseInt(conversation!.mostRecentEntryId!.substring(0, 8), 16) * 1000
-    );
-    const key = Math.abs(new Date().getTime() - date.getTime()).toString();
-    dates[key] = conversation;
-    arr = [...arr, Math.abs(new Date().getTime() - date.getTime())];
+    if (conversation.mostRecentEntryId) {
+      const date = new Date(
+        parseInt(conversation!.mostRecentEntryId!.substring(0, 8), 16) * 1000
+      );
+      const key = Math.abs(new Date().getTime() - date.getTime()).toString();
+      dates[key] = conversation;
+      arr = [...arr, Math.abs(new Date().getTime() - date.getTime())];
+    }
   });
 
   const handleUnreadMessages = async () => {
