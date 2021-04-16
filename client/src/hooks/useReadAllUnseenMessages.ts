@@ -27,9 +27,10 @@ export const useReadAllUnseenMessages = (
   const handleUnreadMessages = async () => {
     return await markAsSeen({
       variables: {
-        messageId: dates.length
-          ? dates[Math.min(...arr)].mostRecentEntryId
-          : "",
+        messageId:
+          dates.length && dates[Math.min(...arr)]
+            ? dates[Math.min(...arr)].mostRecentEntryId
+            : "",
       },
       update(cache, { data }) {
         cache.modify({

@@ -10,7 +10,44 @@ import {
   BaseStylesDiv,
   BaseStyles,
 } from "../../../styles";
+import { Twemoji } from "../Conversation";
+import { parse } from "twemoji-parser";
+import Grapheme from "grapheme-splitter";
+import eRegex from "emoji-regex";
 
+// interface TwemojiProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+//   text: string;
+//   className?: string;
+// }
+
+// const splitter = new Grapheme();
+
+// export const Twemoji: React.FC<TwemojiProps> = ({
+//   text,
+//   className = "",
+//   ...props
+// }) => {
+//   const regex = /\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]/i;
+//   const chars = splitter.splitGraphemes(text);
+//   let arr = chars.map((e) => {
+//     if (e.match(regex)) {
+//       return e;
+//     }
+//   });
+//   let arrTwo = chars.map((e) => {
+//     if (!e.match(regex)) {
+//       return e;
+//     }
+//   });
+
+//   const parsedChars = chars.map((e) =>
+//     e.match(regex) ? (
+//       <img alt="" {...props} className="emoji" src={parse(e)[0].url} />
+//     ) : null
+//   );
+
+//   return <span>{parsedChars}</span>;
+// };
 const StyledContainer = styled.div<{
   isItMyMsg: boolean;
   margin: boolean;
@@ -100,7 +137,9 @@ export const Message: React.FC<Props> = ({ ...props }) => {
       <StyledWrapper isItMyMsg={isMine(message)}>
         <StyledMessage isItMyMsg={isMine(message)}>
           <SpanContainer breakSpaces>
-            <span>{message.messagedata.text}</span>
+            <span>
+              <Twemoji>{message!.messagedata!.text!}</Twemoji>
+            </span>
           </SpanContainer>
         </StyledMessage>
         <BaseStylesDiv>

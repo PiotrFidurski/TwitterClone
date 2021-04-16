@@ -15,9 +15,12 @@ import {
   SpanContainer,
   BaseStyles,
 } from "../../styles";
+// import Twemoji from "react-twemoji";
+import twemoji from "twemoji";
 import { convertDateToTime } from "../../utils/functions";
 import styled from "styled-components";
 import { useReadAllUnseenMessages } from "../../hooks/useReadAllUnseenMessages";
+import { LabelContainer } from "../../components/FormComponents/TextFormField";
 
 const StyledContainer = styled.div<{ recentMessage: boolean }>`
   ${BaseStyles};
@@ -135,7 +138,9 @@ export const Conversation: React.FC<Props> = ({
             conversation!.messages_conversation!.length ? (
               <SpanContainer grey>
                 <span>
-                  {conversation!.messages_conversation![0].messagedata!.text!}
+                  <Twemoji>
+                    {conversation!.messages_conversation![0].messagedata!.text!}
+                  </Twemoji>
                 </span>
               </SpanContainer>
             ) : null}
@@ -145,3 +150,19 @@ export const Conversation: React.FC<Props> = ({
     </Link>
   );
 };
+
+export const Twemoji: React.FC = React.memo(
+  ({ children }) => {
+    const ref = React.useRef<string | HTMLElement>("");
+
+    function parseTwemoji() {
+      const node = ref.current;
+      twemoji.parse(node);
+    }
+
+    React.useLayoutEffect(() => parseTwemoji(), [children]);
+
+    return React.createElement("span", { ref }, children);
+  },
+  (prevProps, nextProps) => prevProps === nextProps
+);

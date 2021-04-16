@@ -120,7 +120,19 @@ span.emoji-mart-emoji span {
 .emoji-mart-category-label span {
   background-color: var(--colors-background) !important;
 }
-
+.emoji {
+  width: 20px;
+  height: 20px;
+  margin-right: 2px;
+  margin-left: 2px;
+}
+.style-emoji {
+  background-size: 1em 1em;
+  padding: 0;
+  background-position: center center;
+  background-repeat: no-repeat;
+  -webkit-text-fill-color: transparent;
+}
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {

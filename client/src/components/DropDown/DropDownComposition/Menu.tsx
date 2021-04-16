@@ -45,14 +45,18 @@ export const StyledFixedDiv = styled.div`
   left: 0px;
 `;
 
-export const StyledDropDownItem = styled.div<{ danger?: boolean }>`
+export const StyledDropDownItem = styled.div<{
+  danger?: boolean;
+  noPadding?: boolean;
+}>`
   ${BaseStyles};
   justify-content: flex-start;
   overflow: hidden;
+  overflow-y: auto;
   align-items: center;
   min-width: 220px;
   flex-grow: 1;
-  padding: 15px;
+  padding: ${(props) => (props.noPadding ? "0" : "15px")};
   color: ${(props) =>
     props.danger ? "rgb(224, 36, 94)" : "var(--colors-maintext)"};
   ${SpanContainer} {
