@@ -2,7 +2,6 @@ import { gql } from "apollo-server-core";
 
 export default gql`
   extend type Query {
-    suggestedUsers: [User!]
     authUser: User! @auth
     userByName(username: String!): UserByNameResult!
     randomUsers(userId: String!): [User!]
@@ -24,7 +23,7 @@ export default gql`
     ): UserUpdateResult @auth(requires: [ownsAccount])
     uploadAvatar(file: Upload!, userId: ID!): UpdateResourceResponse
       @auth(requires: [ownsAccount])
-    followUser(id: ID!): UpdateResourceResponse @auth
+    followUser(userId: ID!): FollowUserResult @auth
   }
   type User implements Node {
     id: ID!
@@ -80,5 +79,11 @@ export default gql`
     name: String
     bio: String
     website: String
+    userId: String
+  }
+  union FollowUserResult = UpdateResourceResponse | FollowUserInvalidInputError
+  type FollowUserInvalidInputError implements Error {
+    message: String!
+    userId: String
   }
 `;

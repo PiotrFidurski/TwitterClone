@@ -1,0 +1,67 @@
+query messages(
+  $conversationId: String!
+  $cursorId: String
+  $limit: Int!
+  $leftAtMessageId: String
+) {
+  messages(
+    conversationId: $conversationId
+    cursorId: $cursorId
+    limit: $limit
+    leftAtMessageId: $leftAtMessageId
+  ) {
+    __typename
+    ... on MessagesConnection {
+      pageInfo {
+        hasPreviousPage
+        hasNextPage
+        startCursor
+        endCursor
+      }
+      conversation {
+        id
+        conversationId
+        lastReadMessageId
+        mostRecentEntryId
+        oldestEntryId
+        type
+        messages_conversation {
+          conversationId
+          id
+          messagedata {
+            text
+            senderId
+            receiverId
+            id
+            conversationId
+          }
+        }
+        participants {
+          userId
+          lastReadMessageId
+        }
+      }
+      edges {
+        cursor
+        node {
+          conversationId
+          id
+          messagedata {
+            text
+            senderId
+            receiverId
+            id
+            conversationId
+          }
+        }
+      }
+    }
+    ... on MessagesInvalidInputError {
+      message
+      conversationId
+      cursorId
+      limit
+      leftAtMessageId
+    }
+  }
+}

@@ -4,7 +4,7 @@ const typeDefs = gql`
   extend type User {
     isFollowed: Boolean
   }
-  extend type Post {
+  extend type Tweet {
     isLiked: Boolean
   }
 `;

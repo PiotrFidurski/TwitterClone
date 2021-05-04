@@ -2,60 +2,37 @@ import { gql } from "apollo-server-core";
 
 export default gql`
   extend type Query {
-    userInbox: UserinboxResult @auth
-    conversationMessages(
+    messages(
       conversationId: String!
       cursorId: String
       limit: Int!
       leftAtMessageId: String
-    ): ConversationMessagesResult @auth
-    leftAt(userId: String!, conversationId: String!): LeftConversationAt @auth
+    ): MessagesResult! @auth
   }
   extend type Mutation {
-    updateLastSeenMessage(messageId: String!): UnreadMessage @auth
-    readConversation(conversationId: String!, messageId: String!): Conversation
-      @auth
-    messageUser(userId: ID!): Conversation @auth
     sendMessage(
       text: String!
       conversationId: String!
       senderId: ID!
       receiverId: String
     ): SendMessageResult! @auth
-    leaveConversation(conversationId: String!): Conversation @auth
   }
   extend type Subscription {
     conversationUpdated(userId: String!): ConversationUpdatedResult @auth
   }
-  type UserinboxResult {
-    conversations: [Conversation!]
-    users: [User!]
-    lastSeenMessageId: String
-    userId: String
-  }
-  type UnreadMessage {
-    lastSeenMessageId: String
-    userId: String
-  }
-  type LeftConversationAt {
-    userId: String
-    conversationId: String
-    leftAtMessageId: String
-  }
-  type ConversationMessagesResult {
+  type MessagesConnection {
     conversation: Conversation!
-    hasNextPage: Boolean!
-    messages: [Message!]
-    id: ID!
+    edges: [MessageEdge!]
+    pageInfo: PageInfo!
+  }
+  type MessageEdge {
+    cursor: String!
+    node: Message!
   }
   type ConversationUpdatedResult {
     conversation: Conversation
     message: Message
-    receiver: User
-  }
-  type SendMessageResult {
-    message: Message!
-    conversation: Conversation
+    sender: User
   }
   type Message {
     id: ID!
@@ -70,20 +47,24 @@ export default gql`
     receiverId: String!
   }
 
-  type Participants {
-    userId: String!
-    lastReadMessageId: String
+  union MessagesResult = MessagesConnection | MessagesInvalidInputError
+  type MessagesInvalidInputError implements Error {
+    message: String!
+    conversationId: String
+    cursorId: String
+    limit: Int
+    leftAtMessageId: String
   }
-
-  type Conversation {
-    id: ID!
+  union SendMessageResult = SendMessageSuccess | SendMessageInvalidInputError
+  type SendMessageSuccess {
+    newmessage: MessageEdge!
+    conversation: Conversation!
+  }
+  type SendMessageInvalidInputError implements Error {
+    message: String!
+    text: String!
     conversationId: String!
-    lastReadMessageId: String
-    mostRecentEntryId: String
-    oldestEntryId: String
-    type: String
-    messages_conversation: [Message!]
-    user: User
-    participants: [Participants!]
+    senderId: ID!
+    receiverId: String!
   }
 `;

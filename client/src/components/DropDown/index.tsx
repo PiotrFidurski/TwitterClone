@@ -2,7 +2,7 @@ import * as React from "react";
 import { useModalContext } from "../context/ModalContext";
 import { Menu } from "./DropDownComposition/Menu";
 import { Toggle } from "./DropDownComposition/Toggle";
-import { IAction, IState, moveUpReducer } from "./reducers";
+import { IAction, IState, baseReducer } from "./reducers";
 
 const useCalculatedDimensions = (
   callback: (value: any) => void,
@@ -78,7 +78,7 @@ const useCalculatedDimensions = (
   return ref;
 };
 
-export const useDropDown = ({ reducer = moveUpReducer } = {}) => {
+export const useDropDown = ({ reducer = baseReducer } = {}) => {
   const { open: modalOpen } = useModalContext();
 
   const [state, dispatch] = React.useReducer(reducer, {
@@ -139,7 +139,7 @@ interface DropdownComposition {
 }
 
 export const DropdownProvider: React.FC<DropdownProviderProps> &
-  DropdownComposition = ({ reducer = moveUpReducer, children, position }) => {
+  DropdownComposition = ({ reducer = baseReducer, children, position }) => {
   const { state, open, ref, close, menuRef, dispatch } = useDropDown({
     reducer,
   });

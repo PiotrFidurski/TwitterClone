@@ -78,7 +78,7 @@ const UserToFollow: React.FC<UserToFollowProps> = React.memo(
     const { openModal } = useModalContext();
 
     const [followUser] = useMutation<FollowUserMutation>(FollowUserDocument, {
-      variables: { id: userToFollow.id },
+      variables: { userId: userToFollow.id },
 
       optimisticResponse: {
         __typename: "Mutation",

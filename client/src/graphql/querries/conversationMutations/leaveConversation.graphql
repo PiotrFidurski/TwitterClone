@@ -1,0 +1,27 @@
+mutation leaveConversation($conversationId: String!) {
+  leaveConversation(conversationId: $conversationId) {
+    __typename
+    ... on UpdateResourceResponse {
+      status
+      node {
+        ... on Conversation {
+          id
+          conversationId
+          lastReadMessageId
+          mostRecentEntryId
+          oldestEntryId
+          type
+          participants {
+            userId
+            lastReadMessageId
+          }
+        }
+      }
+    }
+    ... on LeaveConversationInvalidInputError {
+      message
+      conversationId
+      __typename
+    }
+  }
+}

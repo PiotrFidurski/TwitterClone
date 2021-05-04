@@ -11,8 +11,8 @@ export interface ILastSeenMessage extends ILastSeenMessageSchema {}
 export interface ILastSeenMessageModel extends Model<ILastSeenMessage> {}
 
 const schema: Schema<ILastSeenMessage> = new Schema({
-  lastSeenMessageId: { type: String },
-  userId: { type: String },
+  lastSeenMessageId: String,
+  userId: String,
 });
 
 export default model<ILastSeenMessage, ILastSeenMessageModel>(

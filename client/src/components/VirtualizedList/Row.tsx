@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useParams } from "react-router-dom";
-import { Post as PostType } from "../../generated/graphql";
+import { Tweet as TweetType } from "../../generated/graphql";
 import { BaseStylesDiv, Connector } from "../../styles";
 import { DropdownProvider } from "../DropDown";
 import { moveUpAndLeftReducer } from "../DropDown/reducers";
@@ -8,13 +8,13 @@ import {
   StyledPostWrapper,
   StyledDetailsContainer,
 } from "../PostComposition/styles";
-import { Header, Post } from "../PostComposition";
-import { PostProvider } from "../PostContext";
+import { Header, Tweet } from "../PostComposition";
+import { TweetProvider } from "../TweetContext";
 
 interface Props {
   index: number;
   data: {
-    array: PostType[];
+    array: TweetType[];
     setRowHeight: (index: number, size: number) => void;
     userId: string;
     showBorder: boolean;
@@ -28,9 +28,13 @@ export const Row: React.FC<Props> = React.memo(
     const { data, index, style } = props;
 
     const { array, setRowHeight, userId, showBorder, showConnector } = data;
-    const { postId } = useParams<{ postId: string }>();
+
+    const { tweetId } = useParams<{ tweetId: string }>();
+
     const rowRef = React.useRef<HTMLDivElement>(null);
+
     const listLength = array.length;
+
     const updateSize = React.useCallback(() => {
       if (rowRef && rowRef.current)
         setRowHeight(index, rowRef.current.clientHeight);
@@ -39,12 +43,12 @@ export const Row: React.FC<Props> = React.memo(
     React.useEffect(() => {
       updateSize();
 
-      if (postId) {
+      if (tweetId) {
         setTimeout(() => {
           updateSize();
         }, 30);
       }
-    }, [updateSize, postId, listLength]);
+    }, [updateSize, tweetId, listLength]);
 
     React.useEffect(() => {
       let movementMs: any = null;
@@ -76,46 +80,46 @@ export const Row: React.FC<Props> = React.memo(
         }}
       >
         <div ref={rowRef}>
-          <PostProvider
-            post={array![index]}
-            prevItem={array![index - 1]}
+          <TweetProvider
+            tweet={array![index]}
+            prevTweet={array![index - 1]}
             userId={userId}
           >
-            <Post
+            <Tweet
               showBorder={showBorder ? showBorder : !array[index].replyCount}
             >
-              <Post.ShowThread />
+              <Tweet.ShowThread />
               <StyledPostWrapper>
-                <Post.Threaded />
+                <Tweet.Threaded />
                 <BaseStylesDiv>
-                  <Post.Avatar>
+                  <Tweet.Avatar>
                     {showConnector && array[index].replyCount ? (
                       <Connector />
                     ) : null}
-                  </Post.Avatar>
+                  </Tweet.Avatar>
                   <StyledDetailsContainer>
-                    <Post.Header displayDate>
+                    <Tweet.Header displayDate>
                       <DropdownProvider
                         position="absolute"
                         reducer={moveUpAndLeftReducer}
                       >
                         <Header.Menu />
                       </DropdownProvider>
-                    </Post.Header>
-                    <Post.ReplyingTo />
-                    <Post.Body />
-                    <Post.Footer />
+                    </Tweet.Header>
+                    <Tweet.ReplyingTo />
+                    <Tweet.Body />
+                    <Tweet.Footer />
                   </StyledDetailsContainer>
                 </BaseStylesDiv>
               </StyledPostWrapper>
-            </Post>
-            {postId &&
+            </Tweet>
+            {tweetId &&
               !!array[index].replyCount &&
-              array[index].inReplyToId !== postId &&
+              array[index].inReplyToId !== tweetId &&
               !array.some((el: any) => el.inReplyToId === array![index].id) && (
-                <Post.LoadMore post={array![index]} />
+                <Tweet.LoadMore tweet={array![index]} />
               )}
-          </PostProvider>
+          </TweetProvider>
         </div>
       </div>
     );

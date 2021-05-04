@@ -12,9 +12,9 @@ export interface ILeftConversationAt extends ILeftConversationAtSchema {}
 export interface ILeftConversationAtModel extends Model<ILeftConversationAt> {}
 
 const schema: Schema<ILeftConversationAt> = new Schema({
-  leftAtMessageId: { type: String },
-  userId: { type: String },
-  conversationId: { type: String },
+  leftAtMessageId: String,
+  userId: String,
+  conversationId: String,
 });
 
 export default model<ILeftConversationAt, ILeftConversationAtModel>(

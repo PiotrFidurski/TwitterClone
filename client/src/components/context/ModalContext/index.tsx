@@ -25,7 +25,6 @@ export const ModalProvider: React.FC = React.memo(({ children }) => {
   }, []);
 
   const closeModal = React.useCallback(() => {
-    // setAlertDialog({ _key: "", props: {} });
     setOpen(false);
     if (!state && !alertDialog._key) {
       return history.push("/home");

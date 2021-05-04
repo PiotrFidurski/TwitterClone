@@ -1,0 +1,33 @@
+query userLikedTweets($userId: ID!, $after: ID) {
+  userLikedTweets(userId: $userId, after: $after) {
+    __typename
+    ... on TweetConnection {
+      count
+      pageInfo {
+        hasPreviousPage
+        hasNextPage
+        startCursor
+        endCursor
+      }
+      edges {
+        id
+        body
+        conversationId
+        inReplyToId
+        ...tweetLikesFields
+        owner {
+          id
+          username
+          name
+          email
+          ...userAvatarFields
+        }
+      }
+    }
+    ... on TweetsInvalidInputError {
+      message
+      after
+      userId
+    }
+  }
+}

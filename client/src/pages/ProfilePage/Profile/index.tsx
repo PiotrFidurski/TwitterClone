@@ -5,6 +5,7 @@ import {
   StyledAvatar,
   BaseStyles,
   Spinner,
+  JustifyCenter,
 } from "../../../styles";
 import { AvatarContainer, ButtonContainer } from "../../../styles";
 import * as S from "./styles";
@@ -14,15 +15,16 @@ import {
   MessageUserMutation,
   useAuthUserQuery,
   useFollowUserMutation,
-  useLikedPostsQuery,
-  usePostsAndRepliesQuery,
   User,
-  UserByNameQuery,
-  UserInboxDocument,
-  UserInboxQuery,
-  UserPostsDocument,
-  UserPostsQuery,
-  useUserByNameQuery,
+  GetUserByNameQuery,
+  UserByNameSuccess,
+  MessageUserSuccess,
+  UserTweetsQuery,
+  UserTweetsDocument,
+  UserTweetsAndRepliesQuery,
+  UserTweetsAndRepliesDocument,
+  UserLikedTweetsQuery,
+  UserLikedTweetsDocument,
 } from "../../../generated/graphql";
 import { ReactComponent as Message } from "../../../components/svgs/Messages.svg";
 import { useHistory, useLocation, useParams } from "react-router-dom";
@@ -30,16 +32,13 @@ import { StyledLink } from "../../../styles";
 import styled from "styled-components";
 import {
   MessageUserDocument,
-  UserByNameDocument,
-  UserInboxQueryResult,
+  GetUserByNameDocument,
 } from "../../../generated/introspection-result";
 import { VirtualizedList } from "../../../components/VirtualizedList";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
-import { localConversation } from "../../../cache";
 
 interface Props {
   user: User;
-  inbox: UserInboxQueryResult;
 }
 
 const StyledHeaderContainer = styled.div`
@@ -59,47 +58,108 @@ const StyledContainer = styled.div`
   flex-grow: 1;
 `;
 
-const Tweets = () => {
+const UserTweets = () => {
   const { username } = useParams<{ username: string }>();
 
-  const { data: userData, loading: userLoading } = useQuery(
-    UserByNameDocument,
+  const { data: userData, loading: userLoading } = useQuery<GetUserByNameQuery>(
+    GetUserByNameDocument,
     {
-      variables: { username: username! },
+      variables: { username },
     }
   );
-
-  const { data, loading, fetchMore } = useQuery<UserPostsQuery>(
-    UserPostsDocument,
+  const userId =
+    userData?.userByName.__typename === "UserByNameSuccess" &&
+    userData.userByName.node.id;
+  const { data, loading, fetchMore } = useQuery<UserTweetsQuery>(
+    UserTweetsDocument,
     {
-      variables: { userId: userData! && userData!.userByName!.node!.id! },
+      variables: {
+        userId,
+      },
     }
   );
 
   const loadMore = async (): Promise<any> => {
     try {
+      const after =
+        data?.userTweets.__typename === "TweetConnection" &&
+        data.userTweets.pageInfo.endCursor;
       await fetchMore({
         variables: {
-          userId: userData!.userByName!.node!.id!,
-          offset: data!.userPosts!.length!,
-        },
-        updateQuery: (prev: any, { fetchMoreResult }) => {
-          if (!fetchMoreResult) return prev;
-          return {
-            userPosts: [...prev.userPosts!, ...fetchMoreResult!.userPosts!],
-          };
+          userId,
+          after,
         },
       });
-    } catch (error) {}
+    } catch (error) {
+      return error;
+    }
   };
 
   if (loading || userLoading) return <Spinner />;
 
-  return data! ? (
+  return userData?.userByName?.__typename === "UserByNameSuccess" &&
+    data?.userTweets.__typename === "TweetConnection" ? (
     <VirtualizedList
-      data={data!.userPosts!}
-      itemCount={data!.userPosts!.length}
-      userId={userData!.userByName.node!.id!}
+      data={data!.userTweets?.edges!}
+      userId={userData!.userByName!.node.id!}
+      loadMore={loadMore}
+      hasNextPage={data!.userTweets?.pageInfo!.hasNextPage}
+      showBorder={true}
+      showConnector={false}
+    />
+  ) : data?.userTweets.__typename === "TweetsInvalidInputError" ? (
+    <BaseStylesDiv flexGrow>
+      <JustifyCenter>
+        <SpanContainer bigger bolder>
+          <span>{data.userTweets.message}</span>
+        </SpanContainer>
+      </JustifyCenter>
+    </BaseStylesDiv>
+  ) : null;
+};
+
+const UserTweetsAndReplies = () => {
+  const { username } = useParams<{ username: string }>();
+
+  const { data: userData } = useQuery<GetUserByNameQuery>(
+    GetUserByNameDocument,
+    {
+      variables: { username },
+    }
+  );
+
+  const { data, loading, fetchMore } = useQuery<UserTweetsAndRepliesQuery>(
+    UserTweetsAndRepliesDocument,
+    {
+      variables: {
+        userId: (userData?.userByName as UserByNameSuccess).node.id,
+      },
+    }
+  );
+
+  const loadMore = async (): Promise<any> => {
+    try {
+      const after =
+        data?.userTweetsAndReplies.__typename === "TweetConnection" &&
+        data.userTweetsAndReplies.pageInfo.endCursor;
+      await fetchMore({
+        variables: {
+          userId: (userData?.userByName as UserByNameSuccess).node.id,
+          after,
+        },
+      });
+    } catch (error) {
+      return error;
+    }
+  };
+
+  if (loading) return <Spinner />;
+  return userData?.userByName?.__typename === "UserByNameSuccess" &&
+    data?.userTweetsAndReplies.__typename === "TweetConnection" ? (
+    <VirtualizedList
+      data={data!.userTweetsAndReplies!.edges!}
+      userId={userData!.userByName!.node.id}
+      hasNextPage={data!.userTweetsAndReplies!.pageInfo.hasNextPage!}
       loadMore={loadMore}
       showBorder={true}
       showConnector={false}
@@ -107,121 +167,86 @@ const Tweets = () => {
   ) : null;
 };
 
-const TweetsAndReplies = () => {
+const UserLikedTweets = () => {
   const { username } = useParams<{ username: string }>();
-
-  const { data: userData }: any = useUserByNameQuery({
-    variables: { username: username! },
-  });
-
-  const { data, loading, fetchMore } = usePostsAndRepliesQuery({
-    variables: { userId: userData!.userByName!.node!.id! },
-  });
-
-  const loadMore = async (): Promise<any> => {
-    try {
-      await fetchMore({
-        variables: {
-          userId: userData!.userByName!.node!.id!,
-          offset: data!.postsAndReplies!.length!,
-        },
-        updateQuery: (prev: any, { fetchMoreResult }: any) => {
-          if (!fetchMoreResult) return prev;
-          return {
-            postsAndReplies: [
-              ...prev.postsAndReplies!,
-              ...fetchMoreResult!.postsAndReplies!,
-            ],
-          };
-        },
-      });
-    } catch (error) {}
-  };
-
-  if (loading) return <Spinner />;
-  return (
-    <VirtualizedList
-      data={data!.postsAndReplies!}
-      itemCount={data!.postsAndReplies!.length}
-      userId={userData!.userByName!.node!.id}
-      loadMore={loadMore}
-      showBorder={true}
-      showConnector={false}
-    />
-  );
-};
-
-const LikedPosts = () => {
-  const { username } = useParams<{ username: string }>();
-  const { data: userData }: any = useQuery<UserByNameQuery>(
-    UserByNameDocument,
+  const { data: userData } = useQuery<GetUserByNameQuery>(
+    GetUserByNameDocument,
     {
-      variables: { username: username! },
+      variables: { username },
     }
   );
-  const { data, loading, fetchMore } = useLikedPostsQuery({
-    variables: { userId: userData!.userByName!.node!.id! },
-  });
+  const { data, loading, fetchMore } = useQuery<UserLikedTweetsQuery>(
+    UserLikedTweetsDocument,
+    {
+      variables: {
+        userId: (userData?.userByName as UserByNameSuccess).node.id,
+      },
+    }
+  );
   const loadMore = async (): Promise<any> => {
     try {
+      const after =
+        data?.userLikedTweets.__typename === "TweetConnection" &&
+        data.userLikedTweets.pageInfo.endCursor;
       await fetchMore({
         variables: {
-          userId: userData!.userByName!.node!.id!,
-          offset: data!.likedPosts!.length!,
-        },
-        updateQuery: (prev: any, { fetchMoreResult }) => {
-          if (!fetchMoreResult) return prev;
-          return {
-            likedPosts: [...prev.likedPosts!, ...fetchMoreResult!.likedPosts!],
-          };
+          userId: (userData?.userByName as UserByNameSuccess).node.id,
+          after,
         },
       });
-    } catch (error) {}
+    } catch (error) {
+      return error;
+    }
   };
 
   if (loading) return <Spinner />;
-  return (
+
+  return userData?.userByName?.__typename === "UserByNameSuccess" &&
+    data?.userLikedTweets.__typename === "TweetConnection" ? (
     <VirtualizedList
-      data={data!.likedPosts!}
-      itemCount={data!.likedPosts!.length}
-      userId={userData!.userByName!.node!.id!}
+      data={data!.userLikedTweets!.edges!}
+      userId={userData!.userByName!.node.id}
       loadMore={loadMore}
+      hasNextPage={data!.userLikedTweets!.pageInfo.hasNextPage!}
       showBorder={true}
       showConnector={false}
     />
-  );
+  ) : null;
 };
 
 const tabsData = [
   {
     title: "Tweets",
-    body: <Tweets />,
+    body: <UserTweets />,
   },
   {
     title: "Tweets & Replies",
-    body: <TweetsAndReplies />,
+    body: <UserTweetsAndReplies />,
   },
   {
     title: "Media",
-    body: <Tweets />,
+    body: <UserTweets />,
   },
   {
     title: "Likes",
-    body: <LikedPosts />,
+    body: <UserLikedTweets />,
   },
 ];
 
-export const Profile: React.FC<Props> = ({ user, inbox }) => {
+export const Profile: React.FC<Props> = ({ user }) => {
   let location = useLocation();
 
   const [message] = useMutation<MessageUserMutation>(MessageUserDocument, {
     variables: { userId: user!.id },
   });
   const history = useHistory();
+
   const { cache } = useApolloClient();
+
   const { data } = useAuthUserQuery();
+
   const [followUser] = useFollowUserMutation({
-    variables: { id: user!.id! },
+    variables: { userId: user!.id! },
     optimisticResponse: {
       __typename: "Mutation",
       followUser: {
@@ -237,6 +262,7 @@ export const Profile: React.FC<Props> = ({ user, inbox }) => {
   const startMessage = async () => {
     try {
       const res = await message();
+      const data = res.data?.messageUser as MessageUserSuccess;
 
       cache.modify({
         fields: {
@@ -248,12 +274,12 @@ export const Profile: React.FC<Props> = ({ user, inbox }) => {
             },
             { toReference }
           ) {
-            const newRef = toReference(res!.data!.messageUser!.id);
+            const newRef = toReference(data!.node!.id);
             const userRef = toReference(user.id);
 
             if (
               cachedEntries.conversations.some(
-                (ref: any) => ref!.__ref === newRef!.__ref
+                (ref: any) => ref!.__ref === newRef?.__ref
               )
             ) {
               return cachedEntries;
@@ -266,7 +292,7 @@ export const Profile: React.FC<Props> = ({ user, inbox }) => {
           },
         },
       });
-      history.push(`/messages/${res!.data!.messageUser!.conversationId}`);
+      history.push(`/messages/${data!.node?.conversationId}`);
     } catch (error) {
       throw new Error(error);
     }
@@ -277,7 +303,7 @@ export const Profile: React.FC<Props> = ({ user, inbox }) => {
   };
 
   return (
-    <div style={{ position: "relative" }}>
+    <BaseStylesDiv flexColumn>
       <S.Background />
       <StyledHeaderContainer>
         <AvatarContainer
@@ -290,13 +316,13 @@ export const Profile: React.FC<Props> = ({ user, inbox }) => {
         >
           <StyledAvatar url={user.avatar!} />
         </AvatarContainer>
-        {data && data!.authUser!.id === user.id ? (
+        {data!.authUser?.id === user.id ? (
           <StyledLink
             style={{ flexGrow: 0 }}
             to={{
               pathname: `/settings/profile`,
               state: {
-                isModalLoc: location,
+                isModalLocaction: location,
                 user,
               },
             }}
@@ -405,6 +431,6 @@ export const Profile: React.FC<Props> = ({ user, inbox }) => {
         </StyledContainer>
       </BaseStylesDiv>
       <Tabs data={tabsData} />
-    </div>
+    </BaseStylesDiv>
   );
 };

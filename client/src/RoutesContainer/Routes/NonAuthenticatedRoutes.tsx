@@ -5,9 +5,7 @@ import { BaseStylesDiv } from "../../styles";
 import { LoginPage } from "../../pages/LoginPage";
 import { SignUpPage } from "../../pages/SignUpPage";
 
-interface Props {}
-
-const NonAuthenticatedRoutes: React.FC<Props> = () => {
+const NonAuthenticatedRoutes: React.FC = () => {
   return (
     <BaseStylesDiv flexGrow>
       <Switch>

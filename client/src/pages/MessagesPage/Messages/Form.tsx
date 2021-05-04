@@ -1,42 +1,26 @@
 import * as React from "react";
 import { useMutation } from "@apollo/client";
-import {
-  EditorState,
-  ContentState,
-  convertToRaw,
-  Modifier,
-  Editor,
-} from "draft-js";
-import { Picker } from "emoji-mart";
+import { EditorState, ContentState } from "draft-js";
 import { Formik } from "formik";
 import { useParams } from "react-router-dom";
 import { v4 } from "uuid";
 import { DropdownProvider } from "../../../components/DropDown";
 import { StyledDropDownItem } from "../../../components/DropDown/DropDownComposition/Menu";
-import { moveUpAndLeftReducer } from "../../../components/DropDown/reducers";
+import { emojiPickerReducer } from "../../../components/DropDown/reducers";
 import { ReactComponent as SadFace } from "../../../components/svgs/SadFace.svg";
 import {
   User,
   Conversation,
   SendMessageMutation,
   SendMessageDocument,
+  MessagesConnection,
+  SendMessageSuccess,
 } from "../../../generated/graphql";
-import {
-  StyledForm,
-  BaseStylesDiv,
-  BaseStyles,
-  HoverContainer,
-  Absolute,
-  SpanContainer,
-} from "../../../styles";
+import { StyledForm, BaseStylesDiv, BaseStyles } from "../../../styles";
 import styled from "styled-components";
-import { ChatEditor } from "./ChatEditor";
-import { emojidata } from "../emojidata";
-import json from "../../../components/assets/emoji/emojis.json";
-import CompositeDecorator, {
-  emojiDecorator,
-} from "../../../components/CreatePost/CompositeDecorator";
-import { TextFormField } from "../../../components/FormComponents/TextFormField";
+import { ChatEditor } from "./Editor";
+import { EmojiPicker } from "../../../components/TwemojiPicker/EmojiPicker";
+import { EmojiDecorator } from "./EmojiDecorator";
 
 const StyledFormArea = styled.div`
   ${BaseStyles};
@@ -99,25 +83,25 @@ const StyledEmojiPickerContainer = styled.div`
   }
 `;
 
-export const Form: React.FC<{ user: User; conversation: Conversation }> = ({
-  user,
-  conversation,
-}) => {
+export const Form: React.FC<{
+  user: User;
+  conversation: Conversation;
+  connection: MessagesConnection;
+}> = ({ user, conversation }) => {
   const { conversationId } = useParams<{ conversationId: string }>();
 
   const [sendMessage] = useMutation<SendMessageMutation>(SendMessageDocument);
   const [state, setState] = React.useState(() =>
-    EditorState.createEmpty(emojiDecorator)
+    EditorState.createEmpty(EmojiDecorator)
   );
-  // console.log(convertToRaw(state.getCurrentContent()).entityMap);
-  // console.log(convertToRaw(state.getCurrentContent()).blocks);
+
   return (
     <StyledFormArea>
       <Formik
         initialValues={{ text: "" }}
         onSubmit={async (values, { resetForm }) => {
           const arr = conversationId.split("-");
-
+          let tempId = `${v4()}sending...`;
           sendMessage({
             variables: {
               text: values.text,
@@ -128,18 +112,22 @@ export const Form: React.FC<{ user: User; conversation: Conversation }> = ({
             optimisticResponse: {
               __typename: "Mutation",
               sendMessage: {
-                __typename: "SendMessageResult",
-                message: {
-                  __typename: "Message",
-                  conversationId: conversationId,
-                  id: `${v4()}sending...`,
-                  messagedata: {
-                    __typename: "MessageData",
+                __typename: "SendMessageSuccess",
+                newmessage: {
+                  __typename: "MessageEdge",
+                  cursor: tempId,
+                  node: {
+                    __typename: "Message",
                     conversationId: conversationId,
-                    senderId: user.id,
-                    receiverId: "aa",
-                    text: values.text,
-                    id: conversationId,
+                    id: tempId,
+                    messagedata: {
+                      __typename: "MessageData",
+                      conversationId: conversationId,
+                      senderId: user.id,
+                      receiverId: arr[0] !== user.id ? arr[0] : arr[1],
+                      text: values.text,
+                      id: conversationId,
+                    },
                   },
                 },
                 conversation: {
@@ -148,6 +136,7 @@ export const Form: React.FC<{ user: User; conversation: Conversation }> = ({
               },
             } as SendMessageMutation,
             update: (cache, { data }) => {
+              const sendMessageSuccess = data?.sendMessage as SendMessageSuccess;
               cache.modify({
                 fields: {
                   userInbox(
@@ -161,15 +150,14 @@ export const Form: React.FC<{ user: User; conversation: Conversation }> = ({
                     return {
                       ...cachedEntries,
                       __typename: "UserInboxResult",
-                      lastSeenMessageId: data!.sendMessage!.message!.id!,
-
+                      lastSeenMessageId: sendMessageSuccess.newmessage!.node
+                        .id!,
                       conversations: [...cachedEntries!.conversations!].filter(
                         (conversationRef: any) => {
                           if (conversationRef!.__ref === conversation.id) {
                             const ref = toReference(conversationRef);
-                            console.log(conversationRef);
                             const newMessageRef = toReference(
-                              data!.sendMessage!.message!.id
+                              sendMessageSuccess.newmessage!.node
                             );
                             const messages_conversation: any = readField(
                               "messages_conversation",
@@ -180,33 +168,35 @@ export const Form: React.FC<{ user: User; conversation: Conversation }> = ({
                               messages_conversation: [
                                 ...messages_conversation!,
                               ].splice(0, 0, newMessageRef),
-                              mostRecentEntryId: data!.sendMessage!.message!
-                                .id!,
+                              mostRecentEntryId: sendMessageSuccess.newmessage!
+                                .node.id!,
                             };
                           }
-
                           return conversationRef;
                         }
                       ),
                     };
                   },
-                  conversationMessages(
-                    cachedEntries,
-                    { readField, toReference }
-                  ) {
+                  messages(cachedEntries, { readField, toReference }) {
                     const ref = toReference(cachedEntries.conversation);
                     const conversationId = readField("conversationId", ref);
                     if (
                       conversationId !==
-                      data!.sendMessage!.message!.conversationId
+                      sendMessageSuccess.newmessage!.node.conversationId
                     ) {
                       return cachedEntries;
                     }
+                    const newRef = toReference(
+                      sendMessageSuccess.newmessage.node
+                    );
                     return {
                       ...cachedEntries,
-                      messages: [
-                        ...cachedEntries.messages,
-                        data!.sendMessage!.message!,
+                      edges: [
+                        ...cachedEntries.edges,
+                        {
+                          cursor: sendMessageSuccess.newmessage!.node!.id!,
+                          node: newRef,
+                        },
                       ],
                     };
                   },
@@ -236,7 +226,7 @@ export const Form: React.FC<{ user: User; conversation: Conversation }> = ({
               <ChatBox>
                 <DropdownProvider
                   position="absolute"
-                  reducer={moveUpAndLeftReducer}
+                  reducer={emojiPickerReducer}
                 >
                   <StyledEditorContainer>
                     <ChatEditor
@@ -264,20 +254,11 @@ export const Form: React.FC<{ user: User; conversation: Conversation }> = ({
                   </DropdownProvider.Toggle>
                   <DropdownProvider.Menu>
                     <StyledDropDownItem noPadding>
-                      <TwitchEmojiPicker
-                        setFieldValue={setFieldValue}
+                      <EmojiPicker
                         setState={setState}
                         state={state}
+                        setFieldValue={setFieldValue}
                       />
-                      {/* <Picker
-                        theme="auto"
-                        style={{
-                          backgroundColor: "var(--colors-background)",
-                        }}
-                        perLine={7}
-                        color="var(--colors-button)"
-                        showPreview={false}
-                      /> */}
                     </StyledDropDownItem>
                   </DropdownProvider.Menu>
                 </DropdownProvider>
@@ -289,199 +270,5 @@ export const Form: React.FC<{ user: User; conversation: Conversation }> = ({
         }}
       </Formik>
     </StyledFormArea>
-  );
-};
-
-const StyledBody = styled.div`
-  max-height: 300px;
-  ${BaseStyles};
-
-  padding: 10px 15px;
-  flex-wrap: wrap;
-`;
-
-const StyledPanelButton = styled.div`
-  background: none;
-  border: none;
-  cursor: pointer;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -khtml-user-select: none;
-  -ms-user-select: none;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  transition: all 0.2s;
-`;
-
-const StyledContainer = styled.div`
-  ${BaseStylesDiv};
-  flex-direction: column;
-  flex-grow: 1;
-`;
-
-function insertCharacter(characterToInsert: any, editorState: EditorState) {
-  const currentContent = editorState.getCurrentContent(),
-    currentSelection = editorState.getSelection();
-
-  const newContent = Modifier.insertText(
-    currentContent,
-    currentSelection,
-    characterToInsert
-  );
-  return EditorState.push(editorState, newContent, "insert-characters");
-}
-
-let allEmojis: Array<{
-  name: string;
-  unicode: string;
-  char: string;
-}> = [];
-
-json.forEach((e) => (allEmojis = [...allEmojis, ...e.emojis]));
-
-const TwitchEmojiPicker: React.FC<{
-  setFieldValue: any;
-  setState: any;
-  state: EditorState;
-}> = ({ setState, state }) => {
-  const [categoryIdx, setCurrentCategory] = React.useState(0);
-  const [searchEmoji, setSearchEmoji] = React.useState("");
-  const onEmojiSelect = (emoji: any) => {
-    const newState = insertCharacter(emoji.char, state);
-
-    setState(
-      EditorState.push(state, newState.getCurrentContent(), "insert-characters")
-    );
-
-    // setFieldValue("text", state.getCurrentContent().getPlainText("\u0001"));
-  };
-
-  const foundEmojis = React.useMemo(() => {
-    if (!searchEmoji.length) {
-      return null;
-    }
-    return allEmojis!
-      .filter((e) => {
-        if (e.name.toLowerCase().includes(searchEmoji.toLowerCase())) {
-          return true;
-        }
-        return false;
-      })
-      .slice(0, 50);
-  }, [searchEmoji]);
-
-  function createEmoji(unicode: string, title: string) {
-    return (
-      <svg width="20" height="20">
-        <use href={`/sprite.svg#${unicode}`}>
-          <title>{title}</title>
-        </use>
-      </svg>
-    );
-  }
-
-  function createCategories() {
-    return json.map((item, index) => (
-      <BaseStylesDiv
-        key={index}
-        flexGrow
-        style={
-          categoryIdx === index
-            ? {
-                justifyContent: "space-between",
-                width: "32px",
-                height: "32px",
-                borderBottom: "2.5px solid var(--colors-button)",
-              }
-            : { justifyContent: "space-between", width: "32px", height: "32px" }
-        }
-      >
-        <HoverContainer stretch>
-          <Absolute
-            noMargin
-            style={{ borderRadius: "4px" }}
-            onClick={() => setCurrentCategory(index)}
-          />
-          {createEmoji(item.unicode, item.name)}
-        </HoverContainer>
-      </BaseStylesDiv>
-    ));
-  }
-
-  function createEmojis(index: number) {
-    return foundEmojis! && foundEmojis!.length > 0
-      ? foundEmojis!.map((item, index) => (
-          <StyledPanelButton
-            key={index}
-            onClick={(e: any) => onEmojiSelect(item)}
-          >
-            <BaseStylesDiv style={{ width: "29px", height: "29px" }}>
-              <HoverContainer stretch>
-                <Absolute noMargin style={{ borderRadius: "4px" }} />
-                {createEmoji(item.unicode, item.name)}
-              </HoverContainer>
-            </BaseStylesDiv>
-          </StyledPanelButton>
-        ))
-      : json[index].emojis.map((item, index) => (
-          <StyledPanelButton
-            key={index}
-            onClick={(e: any) => onEmojiSelect(item)}
-          >
-            <BaseStylesDiv style={{ width: "29px", height: "29px" }}>
-              <HoverContainer stretch>
-                <Absolute noMargin style={{ borderRadius: "4px" }} />
-                {createEmoji(item.unicode, item.name)}
-              </HoverContainer>
-            </BaseStylesDiv>
-          </StyledPanelButton>
-        ));
-  }
-
-  return (
-    <BaseStylesDiv style={{ maxWidth: "300px", minHeight: "470px" }}>
-      <StyledContainer>
-        <BaseStylesDiv
-          flexGrow
-          style={{
-            borderBottom: "1px solid var(--colors-border)",
-            padding: "10px 7px 5px 7px",
-          }}
-        >
-          <TextFormField
-            name="search"
-            autoComplete="off"
-            onChange={(e: any) => setSearchEmoji(e.target.value)}
-          />
-        </BaseStylesDiv>
-        <BaseStylesDiv
-          flexGrow
-          style={{
-            borderBottom: "1px solid var(--colors-border)",
-            padding: "5px 7px 10px 7px",
-          }}
-        >
-          {createCategories()}
-        </BaseStylesDiv>
-        <BaseStylesDiv
-          style={{
-            borderBottom: "1px solid var(--colors-border)",
-            padding: "10px 15px",
-          }}
-        >
-          <SpanContainer bigger bolder>
-            <span>
-              {searchEmoji &&
-              searchEmoji.length &&
-              foundEmojis &&
-              foundEmojis!.length > 0
-                ? "Search result"
-                : json[categoryIdx].name}
-            </span>
-          </SpanContainer>
-        </BaseStylesDiv>
-        <StyledBody>{createEmojis(categoryIdx)}</StyledBody>
-      </StyledContainer>
-    </BaseStylesDiv>
   );
 };

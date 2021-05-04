@@ -1,0 +1,26 @@
+query feed($after: String) {
+  feed(after: $after) {
+    pageInfo {
+      hasPreviousPage
+      hasNextPage
+      startCursor
+      endCursor
+    }
+    count
+    edges {
+      id
+      body
+      conversationId
+      inReplyToId
+      ...tweetLikesFields
+      owner {
+        id
+        username
+        name
+        email
+        ...userAvatarFields
+        ...userFollowerFields
+      }
+    }
+  }
+}

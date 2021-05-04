@@ -1,9 +1,0 @@
-mutation likePost($id: ID!) {
-  likePost(id: $id) {
-    node {
-      ... on Post {
-        ...postLikesFields
-      }
-    }
-  }
-}

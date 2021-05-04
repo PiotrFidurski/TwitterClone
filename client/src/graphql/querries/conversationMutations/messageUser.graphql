@@ -1,0 +1,37 @@
+mutation messageUser($userId: ID!) {
+  messageUser(userId: $userId) {
+    __typename
+    ... on MessageUserSuccess {
+      node {
+        ... on Conversation {
+          id
+          conversationId
+          lastReadMessageId
+          mostRecentEntryId
+          oldestEntryId
+          participants {
+            userId
+            lastReadMessageId
+          }
+          messages_conversation {
+            conversationId
+            id
+            messagedata {
+              text
+              senderId
+              receiverId
+              conversationId
+              id
+            }
+          }
+          type
+        }
+      }
+    }
+    ... on MessageUserInvalidInputError {
+      message
+      userId
+      __typename
+    }
+  }
+}

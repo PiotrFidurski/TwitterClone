@@ -8,6 +8,7 @@ import {
 import { BaseStyles } from "../../styles";
 import styled from "styled-components";
 import { useLocation } from "react-router-dom";
+import { useDropdownCtxt } from "../DropDown";
 
 const StyledContainer = styled.div`
   ${BaseStyles};
@@ -42,6 +43,9 @@ export const Editor: React.FC<EditorProps> = ({
 }) => {
   const focusRef = React.useRef<DraftEditor | null>(null);
   const location = useLocation();
+  const {
+    state: { open: emojiPickerOpen },
+  } = useDropdownCtxt();
 
   const handleChange = (state: EditorState) => {
     setFieldValue("body", state.getCurrentContent().getPlainText());
@@ -49,10 +53,13 @@ export const Editor: React.FC<EditorProps> = ({
   };
 
   React.useEffect(() => {
-    if (focusRef.current && location.pathname !== "/home") {
-      focusRef.current.focus();
+    if (location.pathname === "/posts/compose") {
+      focusRef?.current?.focus();
     }
-  }, [location]);
+    if (!emojiPickerOpen) {
+      focusRef?.current?.focus();
+    }
+  }, [location, emojiPickerOpen]);
 
   const handleReturn = (
     e: React.SyntheticEvent<any, KeyboardEvent>,

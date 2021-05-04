@@ -14,9 +14,8 @@ import { User } from "../../generated/introspection-result";
 import { Header } from "../../components/Header";
 import { Conversation } from "./Conversation";
 import { useQuery } from "@apollo/client";
-import { AuthUserDocument, PostDocument } from "../../generated/graphql";
+import { TweetDocument, TweetQuery } from "../../generated/graphql";
 import { SecondaryColumn } from "../../components/SecondaryColumn";
-import { AuthButtons } from "../../components/SecondaryColumn/AuthButtons";
 
 interface Props {
   user: User;
@@ -35,34 +34,33 @@ const StyledContainer = styled.div`
 `;
 
 export const CommentsPage: React.FC<Props> = ({ user }) => {
-  const { postId } = useParams<{ postId: string }>();
+  const { tweetId } = useParams<{ tweetId: string }>();
 
-  const { data, loading } = useQuery(PostDocument, {
-    variables: { postId: postId! },
-    skip: !postId,
+  const { data, loading } = useQuery<TweetQuery>(TweetDocument, {
+    variables: { tweetId },
   });
 
   React.useEffect(() => window.scrollTo({ top: 0 }), []);
   if (loading) return <></>;
 
-  if (!data || data!.post!.__typename === "PostByIdInvalidInputError") {
-    return postId ? (
-      <BaseStylesDiv flexGrow>
-        <JustifyCenter>
-          <SpanContainer bigger bolder>
-            Sorry, that page doesn’t exist!
-          </SpanContainer>
-        </JustifyCenter>
-      </BaseStylesDiv>
-    ) : null;
-  }
-
   return (
-    <StyledContainer id="feed">
+    <StyledContainer>
       <PrimaryColumn>
-        <Header justifyStart>Tweet</Header>
-        {data && data!.post && data!.post!.__typename === "PostByIdSuccess" && (
-          <Conversation post={data!.post!.node!} user={user} />
+        {data?.tweet.__typename === "TweetInvalidInputError" ? (
+          <BaseStylesDiv flexGrow>
+            <JustifyCenter>
+              <SpanContainer bigger bolder>
+                {data.tweet.message}
+              </SpanContainer>
+            </JustifyCenter>
+          </BaseStylesDiv>
+        ) : (
+          <>
+            <Header justifyStart>Tweet</Header>
+            {data?.tweet.__typename === "TweetSuccess" ? (
+              <Conversation tweet={data!.tweet!.node} user={user} />
+            ) : null}
+          </>
         )}
       </PrimaryColumn>
       {user && user.username ? (

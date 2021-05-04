@@ -15,12 +15,10 @@ import {
   SpanContainer,
   BaseStyles,
 } from "../../styles";
-// import Twemoji from "react-twemoji";
-import twemoji from "twemoji";
 import { convertDateToTime } from "../../utils/functions";
 import styled from "styled-components";
-import { useReadAllUnseenMessages } from "../../hooks/useReadAllUnseenMessages";
-import { LabelContainer } from "../../components/FormComponents/TextFormField";
+import { useMarkMessagesAsSeen } from "../../hooks/useMarkMessagesAsSeen";
+import { Twemoji } from "../../components/TwemojiPicker/Twemoji";
 
 const StyledContainer = styled.div<{ recentMessage: boolean }>`
   ${BaseStyles};
@@ -29,7 +27,7 @@ const StyledContainer = styled.div<{ recentMessage: boolean }>`
   overflow: hidden;
   border-bottom: 1px solid var(--colors-border);
   background-color: ${(props) =>
-    props.recentMessage! ? "rgb(33 50 66)" : "transparent"};
+    props.recentMessage! ? "var(--colors-thirdbackground)" : "transparent"};
   :hover {
     cursor: pointer;
     background-color: var(--colors-background);
@@ -64,9 +62,9 @@ export const Conversation: React.FC<Props> = ({
   getReceiver,
   userInbox,
 }) => {
-  const receiver = getReceiver(conversation!.conversationId);
+  const receiver = getReceiver(conversation!.conversationId!);
 
-  const handleMarkAsSeen = useReadAllUnseenMessages(
+  const handleMarkAsSeen = useMarkMessagesAsSeen(
     userInbox!.data!.userInbox!.conversations!
   );
 
@@ -150,19 +148,3 @@ export const Conversation: React.FC<Props> = ({
     </Link>
   );
 };
-
-export const Twemoji: React.FC = React.memo(
-  ({ children }) => {
-    const ref = React.useRef<string | HTMLElement>("");
-
-    function parseTwemoji() {
-      const node = ref.current;
-      twemoji.parse(node);
-    }
-
-    React.useLayoutEffect(() => parseTwemoji(), [children]);
-
-    return React.createElement("span", { ref }, children);
-  },
-  (prevProps, nextProps) => prevProps === nextProps
-);

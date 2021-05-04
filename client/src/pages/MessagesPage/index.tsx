@@ -20,6 +20,7 @@ interface Props {
 
 export const MessagesPage: React.FC<Props> = ({ user, userInbox }) => {
   const location = useLocation();
+
   const { data, loading } = userInbox;
 
   const getReceiver = (conversationId: string) => {

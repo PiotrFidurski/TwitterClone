@@ -1,19 +1,20 @@
 import * as React from "react";
-import { Connector, Spinner } from "../../../styles";
+import { Connector, JustifyCenter, Spinner } from "../../../styles";
 import { DetailsInfo } from "./styles";
 import { BaseStylesDiv, SpanContainer } from "../../../styles";
 import {
   ConversationQuery,
-  Post as PostType,
+  ConversationSuccess,
+  Tweet as TweetType,
   User,
 } from "../../../generated/graphql";
 import { Comments } from "./Comments";
-import { PostProvider } from "../../../components/PostContext";
+import { TweetProvider } from "../../../components/TweetContext";
 import {
   StyledDetailsContainer,
   StyledPostWrapper,
 } from "../../../components/PostComposition/styles";
-import { Header, Post } from "../../../components/PostComposition";
+import { Header, Tweet } from "../../../components/PostComposition";
 import { DisplayMoreButton } from "../../../components/PostComposition/DisplayMoreButton";
 import { DropdownProvider } from "../../../components/DropDown";
 import { moveUpAndLeftReducer } from "../../../components/DropDown/reducers";
@@ -21,15 +22,15 @@ import { useQuery } from "@apollo/client";
 import { ConversationDocument } from "../../../generated/introspection-result";
 
 interface Props {
-  post: PostType;
+  tweet: TweetType;
   user: User;
 }
 
-export const Conversation: React.FC<Props> = ({ post, user }) => {
+export const Conversation: React.FC<Props> = ({ tweet, user }) => {
   const { data, loading } = useQuery<ConversationQuery>(ConversationDocument, {
     variables: {
-      conversationId: post!.conversationId!,
-      postId: post!.id,
+      conversationId: tweet.conversationId,
+      tweetId: tweet!.id,
     },
   });
 
@@ -37,89 +38,107 @@ export const Conversation: React.FC<Props> = ({ post, user }) => {
 
   return (
     <React.Fragment>
-      {!loading &&
-        data &&
-        data.conversation!.map((post, index) => (
-          <PostProvider
-            key={post.id}
-            post={post}
-            prevItem={data!.conversation![index - 1]}
+      {data?.conversation.__typename === "ConversationInvalidInputError" ? (
+        <BaseStylesDiv flexGrow>
+          <JustifyCenter>
+            <SpanContainer bigger bolder>
+              <span>{data.conversation.message}</span>
+            </SpanContainer>
+          </JustifyCenter>
+        </BaseStylesDiv>
+      ) : null}
+      {data?.conversation.__typename === "ConversationSuccess"
+        ? data?.conversation.edges?.map((tweet, index) => (
+            <TweetProvider
+              key={tweet.id}
+              tweet={tweet}
+              prevTweet={
+                (data!.conversation! as ConversationSuccess)!.edges![index - 1]
+              }
+              userId={user!.id!}
+            >
+              <Tweet>
+                <StyledPostWrapper>
+                  <Tweet.Threaded>
+                    <Connector isReply />
+                  </Tweet.Threaded>
+                  <BaseStylesDiv>
+                    <Tweet.Avatar>
+                      {tweet!.replyCount! ? <Connector /> : null}
+                    </Tweet.Avatar>
+                    <StyledDetailsContainer>
+                      <Tweet.Header>
+                        <DropdownProvider
+                          position="absolute"
+                          reducer={moveUpAndLeftReducer}
+                        >
+                          <Header.Menu />
+                        </DropdownProvider>
+                      </Tweet.Header>
+                      <Tweet.Body />
+                      <Tweet.Footer />
+                    </StyledDetailsContainer>
+                  </BaseStylesDiv>
+                </StyledPostWrapper>
+              </Tweet>
+            </TweetProvider>
+          ))
+        : null}
+      <>
+        {tweet.inReplyToId &&
+        data?.conversation.__typename === "ConversationSuccess" &&
+        !data!.conversation!.edges?.some(
+          (el) => el.id === tweet.inReplyToId
+        ) ? (
+          <DisplayMoreButton tweet={tweet} isTweetView>
+            tweet not available
+          </DisplayMoreButton>
+        ) : null}
+        {data && data?.conversation.__typename === "ConversationSuccess" ? (
+          <TweetProvider
+            tweet={tweet}
             userId={user!.id!}
+            prevTweet={
+              data!.conversation!.edges![data!.conversation!.edges!.length - 1]
+            }
           >
-            <Post>
-              <StyledPostWrapper>
-                <Post.Threaded>
-                  <Connector isReply />
-                </Post.Threaded>
+            <Tweet showBorder={true}>
+              <StyledPostWrapper disableHover>
+                <Tweet.Threaded />
                 <BaseStylesDiv>
-                  <Post.Avatar>
-                    {post!.replyCount! ? <Connector /> : null}
-                  </Post.Avatar>
+                  <Tweet.Avatar />
                   <StyledDetailsContainer>
-                    <Post.Header>
+                    <Tweet.Header displayDate={false} flexColumn>
                       <DropdownProvider
                         position="absolute"
                         reducer={moveUpAndLeftReducer}
                       >
                         <Header.Menu />
                       </DropdownProvider>
-                    </Post.Header>
-                    <Post.Body />
-                    <Post.Footer />
+                    </Tweet.Header>
                   </StyledDetailsContainer>
                 </BaseStylesDiv>
+                <Tweet.ReplyingTo />
+                <Tweet.Body biggest />
+                <DetailsInfo>
+                  <SpanContainer bold marginRight>
+                    {tweet!.likesCount!}
+                  </SpanContainer>
+                  <SpanContainer grey>Likes</SpanContainer>
+                </DetailsInfo>
+                <BaseStylesDiv
+                  style={{
+                    marginRight: "20px",
+                  }}
+                >
+                  <Tweet.Footer marginAuto />
+                </BaseStylesDiv>
               </StyledPostWrapper>
-            </Post>
-          </PostProvider>
-        ))}
-      <>
-        {post.inReplyToId &&
-        !data!.conversation!.some((el) => el.id === post.inReplyToId) ? (
-          <DisplayMoreButton post={post} isPostView>
-            post not available
-          </DisplayMoreButton>
+            </Tweet>
+          </TweetProvider>
         ) : null}
-        <PostProvider
-          post={post}
-          userId={user!.id!}
-          prevItem={data!.conversation![data!.conversation!.length - 1]}
-        >
-          <Post showBorder={true}>
-            <StyledPostWrapper disableHover>
-              <Post.Threaded />
-              <BaseStylesDiv>
-                <Post.Avatar />
-                <StyledDetailsContainer>
-                  <Post.Header displayDate={false} flexColumn>
-                    <DropdownProvider
-                      position="absolute"
-                      reducer={moveUpAndLeftReducer}
-                    >
-                      <Header.Menu />
-                    </DropdownProvider>
-                  </Post.Header>
-                </StyledDetailsContainer>
-              </BaseStylesDiv>
-              <Post.ReplyingTo />
-              <Post.Body biggest />
-              <DetailsInfo>
-                <SpanContainer bold marginRight>
-                  {post!.likesCount!}
-                </SpanContainer>
-                <SpanContainer grey>Likes</SpanContainer>
-              </DetailsInfo>
-              <BaseStylesDiv
-                style={{
-                  marginRight: "20px",
-                }}
-              >
-                <Post.Footer marginAuto />
-              </BaseStylesDiv>
-            </StyledPostWrapper>
-          </Post>
-        </PostProvider>
       </>
-      <Comments post={post} userId={user!.id!} />
+      <Comments tweet={tweet} userId={user!.id!} />
     </React.Fragment>
   );
 };

@@ -26,34 +26,17 @@ import {
   Absolute,
   BaseStylesDiv,
   ButtonContainer,
-  BaseStyles,
 } from "../../styles";
-import { NavLink } from "../../components/Sidebar/styles";
+import { NavLink, StyledNotification } from "../../components/Sidebar/styles";
 import { Location } from "history";
 import { DropdownProvider } from "../../components/DropDown";
-import styled from "styled-components";
 import { useApolloClient, useSubscription } from "@apollo/client";
 import { UserInboxQueryResult } from "../../generated/introspection-result";
-import { useReadAllUnseenMessages } from "../../hooks/useReadAllUnseenMessages";
-
-const StyledNotification = styled.div`
-  ${BaseStyles};
-  position: absolute;
-  top: 3px;
-  display: flex !important;
-  justify-content: center;
-  text-align: center;
-  border-radius: 9999px;
-  height: 20px;
-  width: 20px;
-  font-size: 11px;
-  align-items: center;
-  box-shadow: 0px 1px 0px 1px #15202b;
-  color: white;
-  left: 28px;
-  background-color: var(--colors-button);
-  right: 0px;
-`;
+import { useMarkMessagesAsSeen } from "../../hooks/useMarkMessagesAsSeen";
+import { useLogout } from "../../hooks/useLogout";
+import { inboxSubscription } from "./inboxSubscription";
+import { conversationNotifications } from "./conversationNotifications";
+import { sidebarReducer } from "../../components/DropDown/reducers";
 
 interface Props {
   user: User;
@@ -61,11 +44,11 @@ interface Props {
 }
 
 export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
-  const { data, loading, subscribeToMore } = userInbox;
-
+  const { data, subscribeToMore } = userInbox;
+  const logout = useLogout();
   const location = useLocation<{ isModal: Location }>();
 
-  const handleMarkAsSeen = useReadAllUnseenMessages(
+  const handleMarkAsSeen = useMarkMessagesAsSeen(
     data!.userInbox!.conversations!
   );
 
@@ -76,116 +59,15 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
 
   const { cache } = useApolloClient();
 
-  const usersLastSeenTime = new Date(
-    parseInt(data!.userInbox!.lastSeenMessageId!.substring(0, 8), 16) * 1000
+  const unreadConversations = conversationNotifications(
+    data!.userInbox!.lastSeenMessageId!,
+    data!.userInbox!.conversations!
   );
-
-  const unreadConversations =
-    !loading &&
-    data &&
-    data!.userInbox &&
-    data!.userInbox!.conversations! &&
-    data!.userInbox!.conversations!.length &&
-    data!
-      .userInbox!.conversations!.map((conversation) => {
-        if (conversation.mostRecentEntryId) {
-          const conversationMostRecentTime = new Date(
-            parseInt(conversation.mostRecentEntryId!.substring(0, 8), 16) * 1000
-          );
-
-          return usersLastSeenTime >= conversationMostRecentTime;
-        }
-        return null;
-      })
-      .filter((value) => value === false);
 
   React.useEffect(() => {
     let unsubscribe: any;
 
-    unsubscribe = subscribeToMore({
-      document: ConversationUpdatedDocument,
-      variables: { userId: user!.id! },
-      updateQuery: (prev: any, { subscriptionData }: any) => {
-        if (!subscriptionData.data) return prev;
-
-        cache.modify({
-          fields: {
-            userInbox(
-              cachedEntries = {
-                __typename: "UserinboxResult",
-                conversations: [],
-                users: [],
-              },
-              { toReference, readField }
-            ) {
-              const newConversationRef = toReference(
-                subscriptionData!.data!.conversationUpdated!.conversation!.id
-              );
-              const newUserRef = toReference(
-                subscriptionData!.data!.conversationUpdated!.receiver.id
-              );
-              if (
-                cachedEntries!.conversations.some(
-                  (conversation: any) =>
-                    conversation.__ref === newConversationRef!.__ref
-                )
-              ) {
-                return {
-                  ...cachedEntries,
-                  conversations: cachedEntries!.conversations!.filter(
-                    (conversation: any) => {
-                      if (conversation!.__ref === newConversationRef!.__ref) {
-                        const ref = toReference(conversation);
-                        const newMessageRef = toReference(
-                          subscriptionData!.data!.conversationUpdated!.message
-                            .id
-                        );
-                        const messages_conversation: any = readField(
-                          "messages_conversation",
-                          ref
-                        );
-                        return {
-                          ...conversation,
-                          messages_conversation: [
-                            ...messages_conversation!,
-                          ].splice(0, 0, newMessageRef),
-                        };
-                      }
-                      return conversation;
-                    }
-                  ),
-                };
-              }
-              return (
-                cachedEntries && {
-                  ...cachedEntries,
-                  conversations: [
-                    ...cachedEntries!.conversations,
-                    newConversationRef,
-                  ],
-                  users: [...cachedEntries!.users, newUserRef],
-                }
-              );
-            },
-            conversationMessages(cachedEntries, { readField, toReference }) {
-              const newMessage = toReference(
-                subscriptionData!.data!.conversationUpdated!.message.id
-              );
-
-              if (
-                cachedEntries.conversation.__ref ===
-                subscriptionData!.data!.conversationUpdated!.conversation!.id
-              ) {
-                return {
-                  ...cachedEntries,
-                  messages: [...cachedEntries.messages, newMessage],
-                };
-              }
-            },
-          },
-        });
-      },
-    });
+    unsubscribe = subscribeToMore(inboxSubscription(cache, user));
     if (unsubscribe) return () => unsubscribe();
     // eslint-disable-next-line
   }, [subscribeToMore]);
@@ -253,7 +135,7 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
             Profile
           </SpanContainer>
         </Link>
-        <DropdownProvider position="fixed">
+        <DropdownProvider position="fixed" reducer={sidebarReducer}>
           <DropdownProvider.Toggle>
             <BaseStylesDiv>
               <HoverContainer style={{ padding: "10px" }}>
@@ -276,28 +158,34 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
                     pathname: "/i/display",
                     state: {
                       ...location.state,
-                      isModalLoc: location,
+                      isModalLocaction: location,
                     },
                   }}
                 >
                   <StyledDropDownItem>
                     <Display />
                     <Brush style={{ position: "absolute" }} />
-                    <SpanContainer color="white">
+                    <SpanContainer>
                       <span>Display</span>
                     </SpanContainer>
                   </StyledDropDownItem>
                 </NavLink>
                 <StyledDropDownItem>
                   <Lists />
-                  <SpanContainer color="white">
+                  <SpanContainer>
                     <span>Keyboard shortcuts</span>
                   </SpanContainer>
                 </StyledDropDownItem>
                 <StyledDropDownItem>
                   <Settings />
-                  <SpanContainer color="white">
+                  <SpanContainer>
                     <span>Settings and privacy</span>
+                  </SpanContainer>
+                </StyledDropDownItem>
+                <StyledDropDownItem onClick={logout}>
+                  <Settings />
+                  <SpanContainer>
+                    <span>Log Out @{user.username}</span>
                   </SpanContainer>
                 </StyledDropDownItem>
               </BaseStylesDiv>
@@ -309,7 +197,7 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
             pathname: "/posts/compose",
             state: {
               ...location.state,
-              isModalLoc: location,
+              isModalLocaction: location,
             },
           }}
         >

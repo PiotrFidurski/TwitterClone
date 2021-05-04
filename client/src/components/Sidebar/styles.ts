@@ -4,7 +4,6 @@ import {
   ButtonContainer,
   SpanContainer,
   HoverContainer,
-  BaseStylesDiv,
 } from "../../styles";
 import { Link } from "react-router-dom";
 import { StyledDropDownItem } from "../DropDown/DropDownComposition/Menu";
@@ -106,4 +105,22 @@ export const NavLink = styled(Link)`
     padding: 10px;
     border-radius: 9999px;
   }
+`;
+export const StyledNotification = styled.div`
+  ${BaseStyles};
+  position: absolute;
+  top: 3px;
+  display: flex !important;
+  justify-content: center;
+  text-align: center;
+  border-radius: 9999px;
+  height: 20px;
+  width: 20px;
+  font-size: 11px;
+  align-items: center;
+  box-shadow: -1px 1px 1px 1px var(--colors-mainbackground);
+  color: white;
+  left: 28px;
+  background-color: var(--colors-button);
+  right: 0px;
 `;

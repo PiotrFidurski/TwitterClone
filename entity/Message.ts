@@ -18,15 +18,13 @@ export interface IMessageModel extends Model<IMessage> {}
 
 const schema: Schema<IMessage> = new Schema(
   {
-    conversationId: {
-      type: String,
-    },
+    conversationId: String,
     messagedata: {
-      id: { type: String },
-      text: { type: String },
-      conversationId: { type: String },
-      senderId: { type: String },
-      receiverId: { type: String },
+      id: String,
+      text: String,
+      conversationId: String,
+      senderId: String,
+      receiverId: String,
     },
   },
   { timestamps: true }

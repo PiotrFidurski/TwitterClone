@@ -1,0 +1,19 @@
+mutation seeMessage($messageId: String!) {
+  seeMessage(messageId: $messageId) {
+    __typename
+    ... on UpdateResourceResponse {
+      status
+      node {
+        ... on LastSeenMessage {
+          id
+          userId
+          lastSeenMessageId
+        }
+      }
+    }
+    ... on SeeMessageInvalidInputError {
+      message
+      messageId
+    }
+  }
+}

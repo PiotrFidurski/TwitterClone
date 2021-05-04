@@ -1,0 +1,26 @@
+mutation repliesToTweet($tweetId: ID!) {
+  repliesToTweet(tweetId: $tweetId) {
+    __typename
+    ... on RepliesToTweetSuccess {
+      edges {
+        id
+        body
+        conversationId
+        inReplyToId
+        ...tweetLikesFields
+        owner {
+          id
+          username
+          name
+          email
+          ...userAvatarFields
+          ...userFollowerFields
+        }
+      }
+    }
+    ... on RepliesToTweetInvalidInputError {
+      message
+      tweetId
+    }
+  }
+}

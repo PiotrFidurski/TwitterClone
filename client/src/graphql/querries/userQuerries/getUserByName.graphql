@@ -1,0 +1,22 @@
+query getUserByName($username: String!) {
+  userByName(username: $username) {
+    __typename
+    ... on UserByNameSuccess {
+      node {
+        id
+        email
+        username
+        name
+        bio
+        website
+        ...userFollowerFields
+        ...userAvatarFields
+      }
+    }
+    ... on UserByNameInvalidInputError {
+      message
+      username
+      __typename
+    }
+  }
+}

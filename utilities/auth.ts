@@ -5,7 +5,7 @@ import { OwnContext } from "../types";
 
 export const createAccessToken = (user: IUser) => {
   return sign({ _id: user.id }, process.env.ACCESS_TOKEN_SECRET!, {
-    expiresIn: "500m",
+    expiresIn: "15m",
   });
 };
 
@@ -14,7 +14,7 @@ export const createRefreshToken = (user: IUser) => {
     { _id: user.id, tokenVersion: user.tokenVersion },
     process.env.REFRESH_TOKEN_SECRET!,
     {
-      expiresIn: "7d",
+      expiresIn: "5h",
     }
   );
 };
@@ -34,8 +34,6 @@ export const revokeRefreshTokens = async (user: IUser) => {
 
 export const authenticate = (context: OwnContext) => {
   if (context.connection) {
-    if (context.connection.context) {
-    }
     if (context.connection.context.userId) {
       return true;
     } else {

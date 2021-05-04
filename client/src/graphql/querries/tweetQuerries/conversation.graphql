@@ -1,0 +1,27 @@
+query conversation($conversationId: ID!, $tweetId: ID!) {
+  conversation(conversationId: $conversationId, tweetId: $tweetId) {
+    __typename
+    ... on ConversationSuccess {
+      edges {
+        id
+        body
+        conversationId
+        inReplyToId
+        ...tweetLikesFields
+        owner {
+          id
+          username
+          name
+          email
+          ...userAvatarFields
+          ...userFollowerFields
+        }
+      }
+    }
+    ... on ConversationInvalidInputError {
+      message
+      tweetId
+      conversationId
+    }
+  }
+}

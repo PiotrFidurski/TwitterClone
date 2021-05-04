@@ -1,0 +1,21 @@
+query leftAt($userId: String!, $conversationId: String!) {
+  leftAt(userId: $userId, conversationId: $conversationId) {
+    __typename
+    ... on LeftAtSuccess {
+      node {
+        ... on LeftConversationAt {
+          userId
+          conversationId
+          leftAtMessageId
+          __typename
+        }
+      }
+    }
+    ... on LeftAtInvalidInputError {
+      __typename
+      message
+      userId
+      conversationId
+    }
+  }
+}

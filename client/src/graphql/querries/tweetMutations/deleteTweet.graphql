@@ -1,0 +1,7 @@
+mutation deleteTweet($tweetId: ID!) {
+  deleteTweet(tweetId: $tweetId) {
+    ... on DeleteResourceResponse {
+      status
+    }
+  }
+}

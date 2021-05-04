@@ -13,20 +13,15 @@ import {
 } from "../schemaValidation/user";
 import formatErrors from "../utilities/formatErrors";
 import { Types } from "mongoose";
-import { userPipeline } from "../utilities/resolverUtils";
+import {
+  checkForValidObjectIds,
+  resolve,
+  userPipeline,
+} from "../utilities/resolverUtils";
 const cloudinary = require("cloudinary").v2;
 
 export default {
   Query: {
-    suggestedUsers: async () => {
-      try {
-        const users = await User.aggregate([...userPipeline]);
-
-        return users;
-      } catch (error) {
-        return error;
-      }
-    },
     authUser: async (_, args, { authenticatedUser }: OwnContext) => {
       const user = await User.aggregate([
         {
@@ -132,6 +127,7 @@ export default {
     },
     updateUser: async (_, { userId, name, bio, website }) => {
       try {
+        checkForValidObjectIds({ userId }, "Couldn't update user.");
         await updateSchema.validate(
           { name, bio, website },
           { abortEarly: false }
@@ -161,51 +157,6 @@ export default {
         const errors = formatErrors(error.inner[0]);
 
         return { ...errors, message: "invalid input" };
-      }
-    },
-    followUser: async (_, { id }, { authenticatedUser }: OwnContext) => {
-      try {
-        const user = await User.findById(authenticatedUser._id);
-
-        const follow = await User.updateOne(
-          { _id: id, followers: { $nin: [user!.id] } },
-          { $push: { followers: user!.id } }
-        );
-
-        await User.updateOne(
-          { _id: user!.id, following: { $nin: [id] } },
-          { $push: { following: id! } }
-        );
-
-        if (!follow.nModified) {
-          if (!follow.ok) {
-            return new Error("Couldn't follow the user.");
-          }
-          const unfollow = await User.updateOne(
-            { _id: id },
-            { $pull: { followers: user!.id } }
-          );
-
-          await User.updateOne(
-            { _id: user!.id },
-            { $pull: { following: id! } }
-          );
-
-          if (!unfollow.nModified) {
-            return new Error("Couldn't unfollow the user");
-          }
-        }
-        const userToFollow = await User.aggregate([
-          { $match: { _id: Types.ObjectId(id) } },
-          ...userPipeline,
-        ]);
-
-        return {
-          node: userToFollow[0],
-          status: true,
-        };
-      } catch (error) {
-        throw new Error(error);
       }
     },
     uploadAvatar: async (_, { file }, { authenticatedUser }: OwnContext) => {
@@ -250,6 +201,100 @@ export default {
       } catch (error) {
         throw new Error(error);
       }
+    },
+    followUser: async (_, { userId }, { authenticatedUser }: OwnContext) => {
+      try {
+        checkForValidObjectIds({ userId });
+        const user = await User.findById(authenticatedUser._id);
+
+        const follow = await User.updateOne(
+          { _id: userId, followers: { $nin: [user!.id] } },
+          { $push: { followers: user!.id } }
+        );
+
+        await User.updateOne(
+          { _id: user!.id, following: { $nin: [userId] } },
+          { $push: { following: userId! } }
+        );
+
+        if (!follow.nModified) {
+          if (!follow.ok) {
+            return new Error("Couldn't follow the user.");
+          }
+          const unfollow = await User.updateOne(
+            { _id: userId },
+            { $pull: { followers: user!.id } }
+          );
+
+          await User.updateOne(
+            { _id: user!.id },
+            { $pull: { following: userId! } }
+          );
+
+          if (!unfollow.nModified) {
+            return new Error("Couldn't unfollow the user");
+          }
+        }
+        const userToFollow = await User.aggregate([
+          { $match: { _id: Types.ObjectId(userId) } },
+          ...userPipeline,
+        ]);
+
+        return {
+          node: userToFollow[0],
+          status: true,
+        };
+      } catch (error) {
+        return {
+          message: error.message,
+          userId,
+        };
+      }
+    },
+  },
+  User: {
+    id: (parent, args, context, info) => {
+      return parent.id || parent._id;
+    },
+  },
+  UserByNameResult: {
+    __resolveType(obj: any) {
+      return resolve(obj, {
+        success: "UserByNameSuccess",
+        error: "UserByNameInvalidInputError",
+      });
+    },
+  },
+  UserUpdateResult: {
+    __resolveType(obj: any) {
+      return resolve(obj, {
+        success: "UserUpdateSuccess",
+        error: "UserUpdateInvalidInputError",
+      });
+    },
+  },
+  UserRegisterResult: {
+    __resolveType(obj: any) {
+      return resolve(obj, {
+        success: "UserRegisterSuccess",
+        error: "UserRegisterInvalidInputError",
+      });
+    },
+  },
+  UserLoginResult: {
+    __resolveType(obj: any) {
+      return resolve(obj, {
+        success: "UserLoginSuccess",
+        error: "UserLoginInvalidInputError",
+      });
+    },
+  },
+  FollowUserResult: {
+    __resolveType(obj: any) {
+      return resolve(obj, {
+        success: "UpdateResourceResponse",
+        error: "FollowUserInvalidInputError",
+      });
     },
   },
 } as IResolvers;

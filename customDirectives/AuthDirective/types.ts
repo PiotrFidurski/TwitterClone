@@ -1,4 +1,4 @@
-import { OwnContext } from "src/types";
+import { OwnContext } from "../../types";
 
 export interface Roles {
   args: {
@@ -9,4 +9,9 @@ export interface Roles {
 
 export interface Validators {
   [key: string]: (roles: any) => Promise<boolean> | boolean;
+}
+
+export interface IArgs {
+  context: OwnContext;
+  args: any;
 }

@@ -17,6 +17,7 @@ const HomePage: React.FC<Props> = ({ user }) => {
   const inbox = useQuery<UserInboxQuery, any>(UserInboxDocument);
 
   if (inbox.loading && !inbox.data) return <Spinner />;
+
   return (
     <BaseStylesDiv flexGrow>
       <HomeSidebar user={user} userInbox={inbox} />

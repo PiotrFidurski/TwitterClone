@@ -1,0 +1,29 @@
+mutation createTweet($body: String!, $conversationId: ID, $inReplyToId: ID) {
+  createTweet(
+    body: $body
+    inReplyToId: $inReplyToId
+    conversationId: $conversationId
+  ) {
+    __typename
+    ... on Tweet {
+      id
+      body
+      conversationId
+      inReplyToId
+      ...tweetLikesFields
+      owner {
+        id
+        username
+        name
+        email
+        ...userAvatarFields
+      }
+    }
+    ... on CreateTweetInvalidInputError {
+      message
+      bodyError: body
+      conversationId
+      inReplyToId
+    }
+  }
+}

@@ -1,0 +1,28 @@
+mutation readConversation($conversationId: String!, $messageId: String!) {
+  readConversation(conversationId: $conversationId, messageId: $messageId) {
+    __typename
+    ... on UpdateResourceResponse {
+      status
+      node {
+        ... on Conversation {
+          id
+          conversationId
+          lastReadMessageId
+          mostRecentEntryId
+          oldestEntryId
+          type
+          participants {
+            userId
+            lastReadMessageId
+          }
+        }
+      }
+    }
+    ... on ReadConversationInvalidInputError {
+      message
+      messageId
+      conversationId
+      __typename
+    }
+  }
+}

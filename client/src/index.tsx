@@ -6,7 +6,6 @@ import { App } from "./components/App";
 import { client } from "./client";
 import Modal from "react-modal";
 import "./index.css";
-import "emoji-mart/css/emoji-mart.css";
 
 Modal.setAppElement("#root");
 

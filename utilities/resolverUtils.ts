@@ -1,9 +1,10 @@
-import Post, { IPost } from "../entity/Post";
+import { isValidObjectId, MongooseDocument } from "mongoose";
+import Tweet, { ITweet } from "../entity/Tweet";
 
-export const postPipeline = [
+export const tweetPipeline = [
   {
     $lookup: {
-      from: "posts",
+      from: "tweets",
       let: { id: "$_id" },
       pipeline: [
         { $match: { $expr: { $eq: ["$inReplyToId", "$$id"] } } },
@@ -134,14 +135,6 @@ export const postPipeline = [
     },
   },
   {
-    $lookup: {
-      from: "posts",
-      localField: "conversation",
-      foreignField: "_id",
-      as: "conversation",
-    },
-  },
-  {
     $unwind: {
       path: "$replyCount",
       preserveNullAndEmptyArrays: true,
@@ -154,27 +147,25 @@ export const postPipeline = [
     },
   },
   { $unwind: "$owner" },
-  { $addFields: { modelType: "Post" } },
+  { $addFields: { modelType: "Tweet" } },
   { $addFields: { likesCount: "$likesCount.count" } },
   { $addFields: { replyCount: "$replyCount.count" } },
 ];
 
-export const fetchMorePosts = async (
-  post: IPost,
+export const fetchMoreTweets = async (
+  tweet: ITweet,
   array: Array<string>
 ): Promise<Array<string>> => {
-  if (!post.conversation.length) {
+  if (!tweet.replyCount) {
     return array;
   } else {
-    const nextPost = await Post.findOne({ inReplyToId: post.id })
-      .sort({
-        createdAt: -1,
-      })
-      .populate("conversation")
-      .populate("owner");
+    const nextTweet = await Tweet.aggregate([
+      { $match: { inReplyToId: { $eq: tweet._id } } },
+      ...tweetPipeline,
+    ]);
 
-    array = [...array, nextPost!.id];
-    return await fetchMorePosts(nextPost!, array);
+    array = [...array, nextTweet![0]._id];
+    return await fetchMoreTweets(nextTweet![0], array);
   }
 };
 
@@ -259,3 +250,56 @@ export const userPipeline = [
   { $unwind: "$avatar" },
   { $unset: ["_following", "_followers"] },
 ];
+
+export const conversationPipeline = [
+  {
+    $lookup: {
+      from: "messages",
+      let: {
+        conversationId: "$conversationId",
+      },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $and: [{ $eq: ["$conversationId", "$$conversationId"] }],
+            },
+          },
+        },
+        { $sort: { _id: -1 } },
+        { $limit: 3 },
+      ],
+      as: "messages_conversation",
+    },
+  },
+  { $addFields: { modelType: "Conversation" } },
+];
+
+export const resolve = (
+  obj: { node: MongooseDocument; message: string },
+  options: { success: string; error: string }
+) => {
+  if (obj.node || !Object.keys(obj).includes("message")) {
+    return options.success;
+  }
+  if (obj.message) {
+    return options.error;
+  }
+  return null;
+};
+
+export function checkForValidObjectIds(
+  ids: { [key: string]: string },
+  customMessage?: string
+) {
+  return Object.entries(ids)
+    .map((entry) => {
+      const [name, value] = entry;
+      if (!isValidObjectId(value)) {
+        if (customMessage) throw new Error(customMessage);
+        throw new Error(`${name}, is not a valid objectId`);
+      }
+      return null;
+    })
+    .filter((v) => v !== null);
+}

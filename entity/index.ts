@@ -1,4 +1,4 @@
-import Post from "./Post";
+import Tweet from "./Tweet";
 import User from "./User";
 import Message from "./Message";
 import Conversation from "./Conversation/index";
@@ -6,7 +6,7 @@ import LastSeenMessage from "./Conversation/LastSeenMessage";
 import { Model } from "mongoose";
 
 export default {
-  Post,
+  Tweet,
   User,
   Message,
   Conversation,

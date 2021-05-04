@@ -3,8 +3,8 @@ import { Link, useHistory, useLocation, useParams } from "react-router-dom";
 import {
   AuthUserDocument,
   AuthUserQuery,
-  DeletePostDocument,
-  DeletePostMutation,
+  DeleteTweetDocument,
+  DeleteTweetMutation,
   FollowUserDocument,
   FollowUserMutation,
 } from "../../generated/graphql";
@@ -42,21 +42,22 @@ import { ReactComponent as Caret } from "../svgs/Caret.svg";
 import { StyledDropDownItem } from "../DropDown/DropDownComposition/Menu";
 import { NavLink } from "../Sidebar/styles";
 import { ReactComponent as Reply } from "../svgs/Reply.svg";
-import { LikePost } from "./LikePost";
+import { LikeTweet } from "./LikeTweet";
 import { ReactComponent as Retweet } from "../svgs/Retweet.svg";
 import { ReactComponent as Options } from "../svgs/Options.svg";
-import { usePost } from "../PostContext";
+import { useTweet } from "../TweetContext";
 import { DisplayMoreButton } from "./DisplayMoreButton";
 import { LoadMore } from "./LoadMore";
-import { Post as PostType } from "../../generated/introspection-result";
+import { Tweet as TweetType } from "../../generated/introspection-result";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 import { useModalContext } from "../context/ModalContext";
+import { Twemoji } from "../TwemojiPicker/Twemoji";
 
 interface Props {
   showBorder?: boolean;
 }
 
-type PostComposition = {
+type TweetComposition = {
   ShowThread: React.FC;
   Threaded: React.FC;
   Avatar: React.FC;
@@ -65,22 +66,22 @@ type PostComposition = {
   Body: React.FC<BodyProps>;
   Footer: React.FC<FooterProps>;
   LoadMore: React.FC<{
-    post: PostType;
+    tweet: TweetType;
   }>;
 };
 
-export const Post: React.FC<Props> & PostComposition = ({
+export const Tweet: React.FC<Props> & TweetComposition = ({
   children,
   showBorder,
 }) => {
   const history = useHistory();
 
-  const { post } = usePost();
+  const { tweet } = useTweet();
 
   const handleRedirect = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
     if (!window.getSelection()!.toString())
-      history!.push(`/${post.owner!.username}/status/${post!.id}`);
+      history!.push(`/${tweet.owner!.username}/status/${tweet!.id}`);
   };
 
   return (
@@ -91,26 +92,27 @@ export const Post: React.FC<Props> & PostComposition = ({
 };
 
 const ShowThread: React.FC = () => {
-  const { post, prevItem } = usePost();
+  const { tweet, prevTweet } = useTweet();
 
-  return prevItem &&
-    prevItem.conversationId === prevItem.id &&
-    prevItem.id !== post.inReplyToId! &&
-    prevItem.conversationId! === post.conversationId! ? (
-    <DisplayMoreButton post={post} isPostView={false}>
+  return prevTweet &&
+    prevTweet.conversationId === prevTweet.id &&
+    prevTweet.id !== tweet.inReplyToId! &&
+    prevTweet.conversationId! === tweet.conversationId! ? (
+    <DisplayMoreButton tweet={tweet} isTweetView={false}>
       Show this thread
     </DisplayMoreButton>
   ) : null;
 };
 
 const Threaded: React.FC = () => {
-  const { prevItem, post } = usePost();
+  const { prevTweet, tweet } = useTweet();
 
-  const isReply =
-    prevItem &&
-    post!.id !== post!.conversationId &&
-    (prevItem.id === post!.inReplyToId! ||
-      prevItem.id === post!.conversationId!);
+  const isReply = !!(
+    prevTweet &&
+    tweet!.id !== tweet!.conversationId &&
+    ((prevTweet && prevTweet!.id === tweet!.inReplyToId!) ||
+      prevTweet!.id === tweet!.conversationId!)
+  );
 
   return (
     <PlaceHolder noPadding={isReply}>
@@ -122,11 +124,11 @@ const Threaded: React.FC = () => {
 };
 
 const Avatar: React.FC = ({ children }) => {
-  const { post } = usePost();
+  const { tweet } = useTweet();
   return (
     <StyledAvatarWrapper>
       <AvatarContainer height="49px" width={49}>
-        <StyledAvatar url={post!.owner!.avatar!} />
+        <StyledAvatar url={tweet!.owner!.avatar!} />
       </AvatarContainer>
       {children}
     </StyledAvatarWrapper>
@@ -147,7 +149,7 @@ export const Header: React.FC<HeaderProps> & HeaderComposition = ({
   displayDate,
   flexColumn,
 }) => {
-  const { post } = usePost();
+  const { tweet } = useTweet();
 
   return (
     <StyledHeaderContainer>
@@ -158,15 +160,15 @@ export const Header: React.FC<HeaderProps> & HeaderComposition = ({
               $textunderline
               onClick={(e) => e.stopPropagation()}
               id="_interactive-icon"
-              to={`/user/${post!.owner!.username}`}
+              to={`/user/${tweet!.owner!.username}`}
             >
               <SpanContainer bold style={{ flexShrink: 1 }}>
-                <span>{post!.owner!.name}</span>
+                <span>{tweet!.owner!.name}</span>
               </SpanContainer>
             </StyledLink>
           </SpanContainer>
           <SpanContainer grey style={{ flexShrink: 3 }}>
-            <span>@{post!.owner!.username}</span>
+            <span>@{tweet!.owner!.username}</span>
           </SpanContainer>
         </BaseStylesDiv>
         {displayDate ? (
@@ -179,7 +181,7 @@ export const Header: React.FC<HeaderProps> & HeaderComposition = ({
             </SpanContainer>
 
             <SpanContainer marginRight grey style={{ flexShrink: 0 }}>
-              <span>{convertDateToTime(post)}</span>
+              <span>{convertDateToTime(tweet)}</span>
             </SpanContainer>
           </>
         ) : null}
@@ -190,16 +192,16 @@ export const Header: React.FC<HeaderProps> & HeaderComposition = ({
 };
 
 const Menu: React.FC = () => {
-  const { post, prevItem } = usePost();
+  const { tweet, prevTweet } = useTweet();
 
-  const [deletePost] = useMutation<DeletePostMutation>(DeletePostDocument);
+  const [deleteTweet] = useMutation<DeleteTweetMutation>(DeleteTweetDocument);
   const [followUser] = useMutation<FollowUserMutation>(FollowUserDocument, {
-    variables: { id: post!.owner!.id! },
+    variables: { userId: tweet!.owner!.id! },
     optimisticResponse: {
       __typename: "Mutation",
       followUser: {
         __typename: "UpdateResourceResponse",
-        node: { ...post!.owner!, isFollowed: !post!.owner!.isFollowed },
+        node: { ...tweet!.owner!, isFollowed: !tweet!.owner!.isFollowed },
       },
     },
   });
@@ -211,13 +213,14 @@ const Menu: React.FC = () => {
   });
   const { openModal, setOpen } = useModalContext();
 
-  const evictPost = () => {
-    deletePost({
-      variables: { id: post!.id! },
+  const evictTweetFromCache = () => {
+    deleteTweet({
+      variables: { tweetId: tweet!.id! },
     });
+
     const possibleParent =
-      prevItem !== undefined && prevItem.id === post.inReplyToId
-        ? prevItem
+      prevTweet !== undefined && prevTweet!.id === tweet.inReplyToId
+        ? prevTweet
         : {};
 
     cache.modify({
@@ -228,7 +231,11 @@ const Menu: React.FC = () => {
         },
       },
     });
-    cache.evict({ id: cache.identify(post) });
+
+    cache.evict({
+      id: cache.identify(tweet),
+    });
+
     cache.gc();
   };
 
@@ -249,12 +256,14 @@ const Menu: React.FC = () => {
                 <span>Not interested in this Tweet</span>
               </SpanContainer>
             </StyledDropDownItem>
-            {data!.authUser!.id === post!.owner!.id ? (
+            {data!.authUser!.id === tweet!.owner!.id ? (
               <StyledDropDownItem
                 danger
                 id="dropdown-item"
                 onClick={() =>
-                  openModal("deletePostAlert", { deletePost: evictPost })
+                  openModal("deleteTweetAlert", {
+                    deleteTweet: evictTweetFromCache,
+                  })
                 }
               >
                 <Delete />
@@ -270,7 +279,7 @@ const Menu: React.FC = () => {
               to={{
                 pathname: "/i/display",
                 state: {
-                  isModalLoc: location,
+                  isModalLocaction: location,
                 },
               }}
             >
@@ -282,17 +291,17 @@ const Menu: React.FC = () => {
                 </SpanContainer>
               </StyledDropDownItem>
             </NavLink>
-            {data && data!.authUser!.id !== post!.owner!.id ? (
+            {data && data!.authUser!.id !== tweet!.owner!.id ? (
               <StyledDropDownItem
                 id="dropdown-item"
                 onClick={() => {
                   if (!data!.authUser!.username) {
                     openModal("loginAlert", { closeModal: setOpen });
                   } else {
-                    post!.owner!.isFollowed
+                    tweet!.owner!.isFollowed
                       ? openModal("unfollowUserAlert", {
                           unfollowUser: followUser,
-                          user: post!.owner!,
+                          user: tweet!.owner!,
                         })
                       : followUser();
                   }
@@ -300,16 +309,16 @@ const Menu: React.FC = () => {
                   close();
                 }}
               >
-                {post!.owner!.isFollowed || !data!.authUser!.username ? (
+                {tweet!.owner!.isFollowed || !data!.authUser!.username ? (
                   <FollowPlus />
                 ) : (
                   <FollowMinus />
                 )}
                 <SpanContainer>
                   <span>
-                    {post!.owner!.isFollowed
-                      ? `Unfollow @${post!.owner!.username}`
-                      : `Follow @${post!.owner!.username}`}
+                    {tweet!.owner!.isFollowed
+                      ? `Unfollow @${tweet!.owner!.username}`
+                      : `Follow @${tweet!.owner!.username}`}
                   </span>
                 </SpanContainer>
               </StyledDropDownItem>
@@ -317,13 +326,13 @@ const Menu: React.FC = () => {
             <StyledDropDownItem id="dropdown-item">
               <Mute />
               <SpanContainer>
-                <span>Mute @{post!.owner!.username!}</span>
+                <span>Mute @{tweet!.owner!.username!}</span>
               </SpanContainer>
             </StyledDropDownItem>
             <StyledDropDownItem id="dropdown-item">
               <Block />
               <SpanContainer>
-                <span>Block @{post!.owner!.username!}</span>
+                <span>Block @{tweet!.owner!.username!}</span>
               </SpanContainer>
             </StyledDropDownItem>
           </BaseStylesDiv>
@@ -334,18 +343,18 @@ const Menu: React.FC = () => {
 };
 
 const ReplyingTo: React.FC = () => {
-  const { post, prevItem } = usePost();
-  const { postId } = useParams<{ postId: string }>();
+  const { tweet, prevTweet } = useTweet();
+  const { tweetId } = useParams<{ tweetId: string }>();
 
-  return prevItem &&
-    post.inReplyToId !== null &&
-    prevItem.id !== post!.inReplyToId! ? (
+  return prevTweet &&
+    tweet.inReplyToId !== null &&
+    prevTweet.id !== tweet!.inReplyToId! ? (
     <BaseStylesDiv>
       <Link
-        to={`/user/${post!.owner!.username}`}
+        to={`/user/${tweet!.owner!.username}`}
         style={{ textDecoration: "none", color: "inherit" }}
       >
-        {post.inReplyToId !== prevItem.id && post.inReplyToId !== postId ? (
+        {tweet.inReplyToId !== prevTweet.id && tweet.inReplyToId !== tweetId ? (
           <SpanContainer grey>
             <span id="link"></span>
           </SpanContainer>
@@ -360,7 +369,7 @@ interface BodyProps {
 }
 
 const Body: React.FC<BodyProps> = ({ biggest }) => {
-  const { post } = usePost();
+  const { tweet } = useTweet();
   return (
     <BaseStylesDiv flexShrink>
       <BaseStylesDiv
@@ -368,7 +377,9 @@ const Body: React.FC<BodyProps> = ({ biggest }) => {
         style={{ flexBasis: "0px", width: "0px", minWidth: "0px" }}
       >
         <SpanContainer biggest={biggest} breakSpaces>
-          <span>{post!.body}</span>
+          <span>
+            <Twemoji>{tweet!.body}</Twemoji>
+          </span>
         </SpanContainer>
       </BaseStylesDiv>
     </BaseStylesDiv>
@@ -384,7 +395,7 @@ const Footer: React.FC<FooterProps> = ({ marginAuto }) => {
   const { data } = useQuery<AuthUserQuery>(AuthUserDocument, {
     fetchPolicy: "cache-only",
   });
-  const { post } = usePost();
+  const { tweet } = useTweet();
   const location = useLocation();
   return (
     <BaseStylesDiv flexGrow>
@@ -402,8 +413,8 @@ const Footer: React.FC<FooterProps> = ({ marginAuto }) => {
                   ? {
                       pathname: "/posts/compose",
                       state: {
-                        isModalLoc: location,
-                        postId: post!.id,
+                        isModalLocaction: location,
+                        tweetId: tweet!.id,
                       },
                     }
                   : {}
@@ -414,7 +425,7 @@ const Footer: React.FC<FooterProps> = ({ marginAuto }) => {
                 <Reply />
               </BaseStylesDiv>
               <SpanContainer smaller textCenter>
-                <span>{post.replyCount! > 0 ? post.replyCount! : null}</span>
+                <span>{tweet.replyCount! > 0 ? tweet.replyCount! : null}</span>
               </SpanContainer>
             </StyledLink>
           </HoverContainer>
@@ -425,7 +436,7 @@ const Footer: React.FC<FooterProps> = ({ marginAuto }) => {
             <Retweet />
           </HoverContainer>
         </InteractiveIcon>
-        <LikePost />
+        <LikeTweet />
         <InteractiveIcon color="rgb(29, 161, 242)" style={{ flexGrow: 0 }}>
           <HoverContainer onClick={(e) => e.stopPropagation()}>
             <Absolute biggerMargin />
@@ -437,12 +448,12 @@ const Footer: React.FC<FooterProps> = ({ marginAuto }) => {
   );
 };
 
-Post.ShowThread = ShowThread;
-Post.Threaded = Threaded;
-Post.Avatar = Avatar;
-Post.Header = Header;
+Tweet.ShowThread = ShowThread;
+Tweet.Threaded = Threaded;
+Tweet.Avatar = Avatar;
+Tweet.Header = Header;
 Header.Menu = Menu;
-Post.ReplyingTo = ReplyingTo;
-Post.Body = Body;
-Post.Footer = Footer;
-Post.LoadMore = LoadMore;
+Tweet.ReplyingTo = ReplyingTo;
+Tweet.Body = Body;
+Tweet.Footer = Footer;
+Tweet.LoadMore = LoadMore;

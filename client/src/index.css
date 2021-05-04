@@ -90,9 +90,6 @@ body[data-color="rgb(121, 75, 196)"] {
   position: absolute;
   color: #9197a3;
 }
-.emoji-mart-preview {
-  display: none;
-}
 
 .DraftEditor-root {
   height: inherit;
@@ -104,31 +101,17 @@ body[data-color="rgb(121, 75, 196)"] {
   width: 100%;
 }
 
-span.emoji-mart-emoji {
-  vertical-align: text-bottom;
-  font-size: 16px;
-  margin: 0 4px !important;
-  width: 20px;
-  height: 20px;
-}
-span.emoji-mart-emoji span {
-  background-image: none !important;
-}
-.emoji-mart {
-  border-color: var(--colors-button) !important;
-}
-.emoji-mart-category-label span {
-  background-color: var(--colors-background) !important;
-}
 .emoji {
-  width: 20px;
-  height: 20px;
+  width: 1.2em;
+  height: 1.2em;
   margin-right: 2px;
   margin-left: 2px;
+  vertical-align: bottom;
 }
+
 .style-emoji {
   background-size: 1em 1em;
-  padding: 0;
+  padding: 0.15em;
   background-position: center center;
   background-repeat: no-repeat;
   -webkit-text-fill-color: transparent;

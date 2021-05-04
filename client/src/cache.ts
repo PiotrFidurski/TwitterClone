@@ -1,161 +1,173 @@
-import { InMemoryCache, makeVar } from "@apollo/client";
-import { Conversation, Post } from "./generated/graphql";
+import { InMemoryCache } from "@apollo/client";
+import { Tweet } from "./generated/graphql";
 import generatedIntrospection from "./generated/introspection-result";
 
 export const cache: InMemoryCache = new InMemoryCache({
   possibleTypes: generatedIntrospection.possibleTypes,
-  dataIdFromObject: (object: any) => object.id,
+  dataIdFromObject: (object: any) => {
+    return object.id;
+  },
   typePolicies: {
     Query: {
       fields: {
-        conversationMessages: {
+        messages: {
           keyArgs: ["conversationId", "leftAtMessageId"],
           read(existing) {
             return existing;
           },
-          merge(existing = { messages: [] }, incoming = {}, { mergeObjects }) {
-            return {
-              ...existing,
-              hasNextPage: incoming.hasNextPage,
-              conversation: incoming.conversation,
-              messages: [...incoming.messages, ...existing.messages],
-            };
+          merge(existing = {}, incoming = {}) {
+            return incoming.__typename !== "MessagesInvalidInputError"
+              ? {
+                  ...existing,
+                  __typename: incoming.__typename,
+                  pageInfo: incoming.pageInfo,
+                  conversation: incoming.conversation,
+                  edges:
+                    existing && existing.edges
+                      ? [...incoming.edges, ...existing.edges]
+                      : incoming.edges,
+                }
+              : {
+                  conversationId: incoming.conversationId,
+                  cursorId: incoming.cursorId,
+                  leftAtMessageId: incoming.leftAtMessageId,
+                  limit: incoming.limit,
+                  message: incoming.message,
+                  __typename: "MessagesInvalidInputError",
+                };
           },
         },
         conversation: {
-          keyArgs: ["conversationId", "postId"],
+          keyArgs: ["conversationId", "tweetId"],
           read(existing, { toReference, readField, args }: any) {
-            const thread: Array<{ [key: string]: Post }> = [];
-
+            const thread: Array<{ [key: string]: Tweet }> = [];
             existing &&
-              existing.length &&
-              existing.forEach((post: any) => (thread[post.__ref] = post));
-            const ref = toReference(args.postId);
+              existing.edges &&
+              existing.edges.forEach(
+                (tweet: any) => (thread[tweet.__ref] = tweet)
+              );
+            const ref = toReference(args.tweetId);
             const inReplyToId = readField("inReplyToId", ref);
-
             let array =
               existing &&
-              existing.filter((post: any) => post.__ref === inReplyToId);
-
-            const findMore = (post: any) => {
-              if (post) {
-                post && array!.unshift(post);
-                const ref = toReference(post);
+              existing.edges &&
+              existing.edges.filter(
+                (tweet: any) => tweet.__ref === inReplyToId
+              );
+            const findMore = (tweet: any) => {
+              if (tweet) {
+                tweet && array!.unshift(tweet);
+                const ref = toReference(tweet);
                 const inReplyToId = readField("inReplyToId", ref);
                 findMore(thread[inReplyToId]);
               }
             };
-
             if (array && array.length) {
               array.slice(0).forEach((post: any) => {
                 const ref = toReference(post);
                 const inReplyToId = readField("inReplyToId", ref);
                 let parent: any = thread[inReplyToId];
-
                 if (!array!.includes(parent)) {
                   findMore(parent!);
                 }
               });
             }
-
-            return array;
+            return { ...existing, edges: array };
           },
         },
         replies: {
-          keyArgs: ["postId"],
+          keyArgs: ["tweetId"],
           read(existing, { toReference, readField, args }: any) {
-            const thread: Array<{ [key: string]: Post }> = [];
-
+            const thread: Array<{ [key: string]: Tweet }> = [];
             existing &&
-              existing.length &&
-              existing.forEach((reply: any) => {
-                const ref = toReference(reply);
-                const inReplyToId = readField("inReplyToId", ref);
+              existing.edges &&
+              existing.edges.forEach((reply: any) => {
+                const inReplyToId = readField("inReplyToId", reply);
                 return (thread[inReplyToId] = reply);
               });
-
             let array =
               existing &&
-              existing.length &&
-              existing!.filter((reply: any) => {
+              existing.edges &&
+              existing!.edges.filter((reply: any) => {
                 const ref = toReference(reply);
                 const field = readField("inReplyToId", ref);
-
-                return field === args.postId;
+                return field === args.tweetId;
               });
-
             existing &&
-              existing.slice(0).forEach((reply: any) => {
+              existing.edges &&
+              existing.edges.slice(0).forEach((reply: any) => {
                 let child = thread[reply.__ref];
-
                 let idx = array.indexOf(reply);
                 if (child) {
                   array.splice(idx + 1, 0, child);
                 }
               });
 
-            return array;
+            return existing && { ...existing, edges: array };
           },
-          merge(existing = [], incoming, { args }: any) {
-            return Array.from(
-              [...existing, ...incoming]
-                .reduce((array, item) => array.set(item.__ref, item), new Map())
-                .values()
-            );
+          merge(existing = {}, incoming = {}, { args }: any) {
+            return incoming.__typename !== "TweetsInvalidInputError"
+              ? {
+                  ...existing,
+                  __typename: "TweetConnection",
+                  pageInfo: incoming.pageInfo,
+                  count:
+                    existing && existing.count
+                      ? existing.count + incoming.count
+                      : incoming.count,
+                  edges:
+                    existing && existing.edges
+                      ? Array.from(
+                          [...existing.edges, ...incoming.edges]
+                            .reduce(
+                              (array, tweet) => array.set(tweet.__ref, tweet),
+                              new Map()
+                            )
+                            .values()
+                        )
+                      : incoming.edges,
+                }
+              : {
+                  __typename: "TweetsInvalidInputError",
+                  message: incoming.message,
+                  cursorId: incoming.cursorId,
+                  tweetId: incoming.tweetId,
+                };
           },
         },
         feed: {
-          keyArgs: [],
-          read(existing, { toReference, readField, args }) {
-            let thread: Array<{ [key: string]: Post }> = [];
-            let secondThread: Array<{ [key: string]: Post }> = [];
-            existing &&
-              existing.feed &&
-              existing.feed.forEach((item: any) => (thread[item.__ref] = item));
+          read(existing, { toReference, readField }) {
+            let thread: Array<{ [key: string]: Tweet }> = [];
 
             existing &&
-              existing.feed &&
-              existing.feed.forEach((item: any) => {
-                const ref = toReference(item);
-                const inReplyToId: any = readField("inReplyToId", ref);
-                return (secondThread[inReplyToId] = item);
+              existing.edges &&
+              existing.edges.forEach((tweet: any) => {
+                return (thread[tweet.__ref] = tweet);
               });
+
             let array =
               existing &&
-              existing.feed &&
-              existing.feed.filter((item: any) => {
-                // const ref = toReference(item);
-                // const field = readField("conversationId", ref);
-                // return field === item.__ref;
-                const ref = toReference(item);
+              existing.edges &&
+              existing.edges.filter((tweet: any) => {
+                const ref: any = toReference(tweet);
+
                 const field = readField("replyCount", ref);
-                // const conversationId = readField("conversationId", ref);
-                // || conversationId === ref!.__ref;
+
                 return !field;
               });
 
             array &&
               array!.length &&
-              array!.slice(0).forEach((post: any) => {
-                const ref = toReference(post);
-                // const conversationId: any = readField("conversationId", ref);
-                // let child: any = secondThread[conversationId];
+              array!.slice(0).forEach((tweet: any) => {
+                const ref: any = toReference(tweet);
 
-                // if (child && !array!.includes(child)) {
-                //   const idx = array!.indexOf(post);
-                //   array!.splice(idx + 1, 0, child);
-                //   const ref = toReference(child);
-                //   const replyCount = readField("replyCount", ref);
-                //   if (replyCount) {
-                //     let childOfaChild: any = secondThread[child.__ref];
-                //     const idx = array!.indexOf(child);
-                //     array!.splice(idx + 1, 0, childOfaChild);
-                //   }
-                // }
                 const inReplyToId: any = readField("inReplyToId", ref);
+
                 let parent: any = thread[inReplyToId];
+
                 if (parent && !array!.includes(parent)) {
-                  const idx = array!.indexOf(post);
+                  const idx = array!.indexOf(tweet);
+
                   array!.splice(idx, 0, parent);
                   const ref = toReference(parent);
                   const replyId = readField("inReplyToId", ref);
@@ -166,43 +178,110 @@ export const cache: InMemoryCache = new InMemoryCache({
                   }
                 }
               });
-            return { ...existing, feed: array };
+
+            return { ...existing, edges: array };
+          },
+          merge(existing = {}, incoming = {}) {
+            console.log(existing, incoming);
+            return {
+              ...existing,
+              pageInfo: incoming.pageInfo,
+              count:
+                existing && existing.count
+                  ? existing.count + incoming.count
+                  : incoming.count,
+              edges:
+                existing && existing.edges
+                  ? [...existing.edges, ...incoming.edges]
+                  : incoming.edges,
+            };
+          },
+        },
+        userTweets: {
+          keyArgs: ["userId"],
+          read(existing = {}) {
+            return existing;
           },
           merge(existing = [], incoming) {
-            return {
-              ...incoming,
-              length:
-                existing && existing!.feed
-                  ? existing!.length + incoming!.length
-                  : incoming!.length,
-              feed:
-                existing.length && existing.feed
-                  ? Array.from(
-                      [...existing!.feed!, ...incoming.feed!]
-                        .reduce(
-                          (array, item) => array.set(item.__ref, item),
-                          new Map()
-                        )
-                        .values()
-                    )
-                  : incoming.feed!,
-            };
+            return incoming.__typename !== "TweetsInvalidInputError"
+              ? {
+                  ...existing,
+                  __typename: "TweetConnection",
+                  pageInfo: incoming.pageInfo,
+                  count:
+                    existing && existing.count
+                      ? existing.count + incoming.count
+                      : incoming!.count,
+                  edges:
+                    existing && existing.edges
+                      ? [...existing!.edges!, ...incoming.edges!]
+                      : incoming!.edges!,
+                }
+              : {
+                  __typename: "TweetsInvalidInputError",
+                  message: incoming.message,
+                  after: incoming.after,
+                  userId: incoming.userId,
+                };
+          },
+        },
+        userLikedTweets: {
+          keyArgs: ["userId"],
+          read(existing = {}) {
+            return existing;
+          },
+          merge(existing = {}, incoming) {
+            return incoming.__typename !== "TweetsInvalidInputError"
+              ? {
+                  ...existing,
+                  __typename: "TweetConnection",
+                  pageInfo: incoming.pageInfo,
+                  count:
+                    existing && existing.count
+                      ? existing.count + incoming.count
+                      : incoming!.count,
+                  edges:
+                    existing && existing.edges
+                      ? [...existing!.edges!, ...incoming.edges!]
+                      : incoming!.edges!,
+                }
+              : {
+                  __typename: "TweetsInvalidInputError",
+                  message: incoming.message,
+                  after: incoming.after,
+                  userId: incoming.userId,
+                };
+          },
+        },
+        userTweetsAndReplies: {
+          keyArgs: ["userId"],
+          read(existing = {}) {
+            return existing;
+          },
+          merge(existing = [], incoming) {
+            return incoming.__typename !== "TweetsInvalidInputError"
+              ? {
+                  ...existing,
+                  __typename: "TweetConnection",
+                  pageInfo: incoming.pageInfo,
+                  count:
+                    existing && existing.count
+                      ? existing.count + incoming.count
+                      : incoming!.count,
+                  edges:
+                    existing && existing.edges
+                      ? [...existing!.edges!, ...incoming.edges!]
+                      : incoming!.edges!,
+                }
+              : {
+                  __typename: "TweetsInvalidInputError",
+                  message: incoming.message,
+                  after: incoming.after,
+                  userId: incoming.userId,
+                };
           },
         },
       },
     },
   },
-});
-
-export const localConversation = makeVar<Conversation>({
-  id: "",
-  conversationId: "",
-  __typename: "Conversation",
-  lastReadMessageId: "",
-  messages_conversation: [],
-  mostRecentEntryId: "",
-  oldestEntryId: "",
-  participants: [],
-  type: "",
-  user: {} as any,
 });

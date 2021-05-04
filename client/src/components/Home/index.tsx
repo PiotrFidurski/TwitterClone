@@ -69,7 +69,7 @@ export const Home: React.FC = () => {
                 <Route path="/user/:username">
                   <ProfilePage user={defaultUser} />
                 </Route>
-                <Route exact path="/:username/status/:postId">
+                <Route exact path="/:username/status/:tweetId">
                   <CommentsPage user={defaultUser} />
                 </Route>
               </Switch>

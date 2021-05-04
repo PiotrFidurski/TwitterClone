@@ -2,12 +2,12 @@ import { SchemaDirectiveVisitor, IResolvers } from "graphql-tools";
 import { GraphQLField, defaultFieldResolver } from "graphql";
 import { OwnContext } from "../../types";
 import { authenticate } from "../../utilities/auth";
-import { Validators } from "./types";
+import { IArgs, Validators } from "./types";
 import { ApolloError } from "apollo-server-core";
-import Post from "../../entity/Post";
+import Tweet from "../../entity/Tweet";
 
 export const validators: Validators = {
-  ownsAccount: ({ ...passedArgs }: any) => {
+  ownsAccount: ({ ...passedArgs }: IArgs) => {
     const { args, context } = passedArgs;
 
     if (args.userId !== context.authenticatedUser._id) {
@@ -18,10 +18,10 @@ export const validators: Validators = {
     }
     return true;
   },
-  ownsPost: async ({ ...passedArgs }: any) => {
+  ownsPost: async ({ ...passedArgs }: IArgs) => {
     const { args, context } = passedArgs;
 
-    const post = await Post.findById(args.id).populate("owner");
+    const post = await Tweet.findById(args.id).populate("owner");
     if (post && post!.owner.id !== context.authenticatedUser!._id) {
       throw new ApolloError(
         "You do not have permission to perform this action.",

@@ -2,7 +2,7 @@ import * as React from "react";
 import { useDropdownCtxt } from "../";
 import ReactDOM from "react-dom";
 import styled from "styled-components";
-import { BaseStyles, slideDown, SpanContainer } from "../../../styles";
+import { BaseStyles, SpanContainer } from "../../../styles";
 
 export const StyledContentsContainer = styled.div<{
   position: string;
@@ -10,12 +10,6 @@ export const StyledContentsContainer = styled.div<{
   visible: boolean;
 }>`
   ${BaseStyles};
-  // animation: ${slideDown} ease-in 3s;
-  // -webkit-animation-fill-mode: forwards;
-  // -moz-animation-fill-mode: forwards;
-  // -ms-animation-fill-mode: forwards;
-  // -o-animation-fill-mode: forwards;
-  // animation-fill-mode: forwards;
   min-height: 25px;
   box-shadow: rgb(101 119 134 / 20%) 0px 0px 15px,
     rgb(101 119 134 / 15%) 0px 0px 3px 1px;

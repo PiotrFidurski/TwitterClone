@@ -3,19 +3,16 @@ import {
   AuthUserQuery,
   AuthUserDocument,
 } from "../generated/graphql";
-import { useApolloClient } from "@apollo/client";
 import { setAccessToken } from "../accessToken";
-import { useHistory } from "react-router";
+import { useApolloClient } from "@apollo/client";
 
 export const useLogout = () => {
-  const { push } = useHistory();
-  const { resetStore } = useApolloClient();
   const [logout] = useLogoutMutation();
-
+  const { clearStore } = useApolloClient();
   const handleLogOut = () => {
     logout({
-      update: (store) => {
-        store.writeQuery<AuthUserQuery>({
+      update: (cache) => {
+        cache.writeQuery<AuthUserQuery>({
           query: AuthUserDocument,
           data: {
             authUser: {
@@ -36,9 +33,9 @@ export const useLogout = () => {
         });
       },
     });
+
     setAccessToken("");
-    resetStore();
-    push("/login");
+    clearStore();
   };
 
   return handleLogOut;

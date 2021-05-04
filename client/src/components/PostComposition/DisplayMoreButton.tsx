@@ -2,7 +2,7 @@ import * as React from "react";
 import { BaseStyles, BaseStylesDiv, SpanContainer } from "../../styles";
 import styled from "styled-components";
 import { useHistory } from "react-router-dom";
-import { Post } from "../../generated/graphql";
+import { Tweet } from "../../generated/graphql";
 
 const StyledContainer = styled.div`
   ${BaseStyles};
@@ -39,24 +39,24 @@ const Dot = styled.div`
 `;
 
 interface Props {
-  post: Post;
-  isPostView: boolean;
+  tweet: Tweet;
+  isTweetView: boolean;
 }
 
 export const DisplayMoreButton: React.FC<Props> = React.memo(
-  ({ post, children, isPostView }) => {
+  ({ tweet, children, isTweetView }) => {
     let history = useHistory();
 
     const handleClick = (e: any) => {
       e.stopPropagation();
-      history.push(`${post.owner!.username}/status/${post!.conversationId}`);
+      history.push(`${tweet.owner!.username}/status/${tweet!.conversationId}`);
     };
 
     return (
       <BaseStylesDiv
         style={{ textDecoration: "none" }}
         onClick={(e) => {
-          !isPostView && handleClick(e);
+          !isTweetView && handleClick(e);
         }}
       >
         <StyledContainer>

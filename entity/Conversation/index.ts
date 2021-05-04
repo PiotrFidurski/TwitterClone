@@ -19,20 +19,16 @@ export interface IConversationModel extends Model<IConversation> {}
 
 const schema: Schema<IConversation> = new Schema(
   {
-    lastReadMessageId: { type: String },
-    mostRecentEntryId: { type: String },
-    oldestEntryId: { type: String },
-    conversationId: {
-      type: String,
-    },
-    type: {
-      type: String,
-    },
+    lastReadMessageId: String,
+    mostRecentEntryId: String,
+    oldestEntryId: String,
+    conversationId: String,
+    type: String,
     participants: [
       {
         _id: false,
-        userId: { type: String },
-        lastReadMessageId: { type: String },
+        userId: String,
+        lastReadMessageId: String,
       },
     ],
   },

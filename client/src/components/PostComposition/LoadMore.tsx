@@ -1,28 +1,54 @@
 import * as React from "react";
 import { Wrapper } from "./styles";
-import { RepliesDocument } from "../../generated/graphql";
+import {
+  RepliesToTweetDocument,
+  RepliesToTweetMutation,
+} from "../../generated/graphql";
 import { DisplayMoreButton } from "./DisplayMoreButton";
-import { Post } from "../../generated/introspection-result";
+import { Tweet } from "../../generated/introspection-result";
 import { Spinner } from "../../styles";
-import { useQuery } from "@apollo/client";
-import { useParams } from "react-router-dom";
+import { useMutation } from "@apollo/client";
 
 interface Props {
-  post: Post;
+  tweet: Tweet;
 }
 
-export const LoadMore: React.FC<Props> = ({ post }) => {
+export const LoadMore: React.FC<Props> = ({ tweet }) => {
   const [{ loaded, loading }, setLoadings] = React.useState({
     loaded: false,
     loading: false,
   });
-  const { postId } = useParams<{ postId: string }>();
-  const { fetchMore } = useQuery(RepliesDocument, {
-    variables: { postId: postId! },
-    fetchPolicy: "network-only",
-    skip: true,
+
+  const [load] = useMutation<RepliesToTweetMutation>(RepliesToTweetDocument, {
+    variables: { tweetId: tweet.id },
   });
 
+  const loadMore = React.useCallback(async (): Promise<any> => {
+    try {
+      await load({
+        update: (cache, { data }) => {
+          cache.modify({
+            fields: {
+              replies(existingReplies, { toReference, readField }) {
+                const refArr =
+                  data?.repliesToTweet.__typename === "RepliesToTweetSuccess"
+                    ? data.repliesToTweet.edges!.map((tweet) => {
+                        const ref = toReference(tweet);
+                        return ref;
+                      })
+                    : [];
+
+                return {
+                  ...existingReplies,
+                  edges: [...existingReplies.edges, ...refArr!],
+                };
+              },
+            },
+          });
+        },
+      });
+    } catch (error) {}
+  }, [load]);
   return (
     <Wrapper
       style={loaded ? { borderBottom: "transparent" } : {}}
@@ -31,15 +57,13 @@ export const LoadMore: React.FC<Props> = ({ post }) => {
 
         try {
           setLoadings({ loaded: false, loading: true });
-          await fetchMore!({
-            variables: { postId: postId!, loadMoreId: post.id! },
-          });
+          await loadMore();
           setLoadings({ loaded: true, loading: false });
         } catch (e) {}
       }}
     >
       {!loading && !loaded ? (
-        <DisplayMoreButton post={post} isPostView={true}>
+        <DisplayMoreButton tweet={tweet} isTweetView={true}>
           more replies
         </DisplayMoreButton>
       ) : loading ? (

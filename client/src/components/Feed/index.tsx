@@ -1,5 +1,5 @@
 import * as React from "react";
-import { CreatePost } from "../CreatePost";
+import { CreateTweet } from "../CreateTweet";
 import { User, FeedQuery } from "../../generated/graphql";
 import {
   Spinner,
@@ -7,6 +7,7 @@ import {
   BaseStyles,
   PrimaryColumn,
   SidebarColumn,
+  fade,
 } from "../../styles";
 import styled from "styled-components";
 import { Header as FeedHeader } from "../Header";
@@ -16,12 +17,15 @@ import { VirtualizedList } from "../VirtualizedList";
 import "../../index.css";
 import { SecondaryColumn } from "../SecondaryColumn";
 
-export const StyledContainer = styled.div<{ display?: boolean }>`
+export const StyledContainer = styled.div`
   ${BaseStyles};
   flex-direction: row;
   justify-content: space-between;
   flex-grow: 1;
-  flex-grow: 1;
+  animation-name: ${fade};
+  animation-iteration-count: 1;
+  animation-timing-function: ease-in;
+  animation-duration: 0.15s;
   height: 100%;
   opacity: 1;
   position: relative;
@@ -37,43 +41,43 @@ interface GnenerateFeedProps {
   userId: string;
 }
 
-const GenerateFeed: React.FC<GnenerateFeedProps> = React.memo(({ userId }) => {
+const GenerateFeed: React.FC<GnenerateFeedProps> = ({ userId }) => {
   const { data, loading, fetchMore } = useQuery<FeedQuery>(FeedDocument);
 
   const loadMore = React.useCallback(async (): Promise<any> => {
     try {
       await fetchMore({
-        variables: { offset: data && data!.feed!.length! },
+        variables: {
+          after: data?.feed.pageInfo.endCursor,
+        },
       });
     } catch (error) {}
   }, [fetchMore, data]);
 
   if (loading) return <Spinner />;
 
-  return !loading ? (
+  return !loading && data ? (
     <VirtualizedList
       userId={userId}
       loading={loading}
-      data={data!.feed!.feed!}
-      itemCount={data!.feed!.length!}
+      data={data?.feed.edges!}
+      hasNextPage={data?.feed.pageInfo.hasNextPage}
       loadMore={loadMore}
       showConnector={true}
     />
   ) : null;
-});
-
-export const Feed: React.FC<Props> = ({ user }) => {
-  return (
-    <StyledContainer id="feed">
-      <PrimaryColumn>
-        <FeedHeader justifyStart={false}>Home</FeedHeader>
-        <CreatePost user={user} />
-        <PlaceHolder light />
-        <GenerateFeed userId={user!.id} />
-      </PrimaryColumn>
-      <SidebarColumn>
-        <SecondaryColumn user={user} />
-      </SidebarColumn>
-    </StyledContainer>
-  );
 };
+
+export const Feed: React.FC<Props> = ({ user }) => (
+  <StyledContainer>
+    <PrimaryColumn>
+      <FeedHeader justifyStart={false}>Home</FeedHeader>
+      <CreateTweet user={user} />
+      <PlaceHolder light />
+      <GenerateFeed userId={user!.id} />
+    </PrimaryColumn>
+    <SidebarColumn>
+      <SecondaryColumn user={user} />
+    </SidebarColumn>
+  </StyledContainer>
+);

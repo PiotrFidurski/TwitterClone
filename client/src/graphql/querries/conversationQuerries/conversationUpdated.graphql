@@ -1,0 +1,43 @@
+subscription conversationUpdated($userId: String!) {
+  conversationUpdated(userId: $userId) {
+    conversation {
+      id
+      conversationId
+      lastReadMessageId
+      mostRecentEntryId
+      oldestEntryId
+      type
+      participants {
+        userId
+        lastReadMessageId
+      }
+      messages_conversation {
+        conversationId
+        id
+        messagedata {
+          text
+          senderId
+          receiverId
+          conversationId
+          id
+        }
+      }
+    }
+    message {
+      id
+      conversationId
+      messagedata {
+        text
+        receiverId
+        id
+        conversationId
+        senderId
+      }
+    }
+    sender {
+      id
+      username
+      avatar
+    }
+  }
+}

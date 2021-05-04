@@ -1,6 +1,0 @@
-mutation updateLastSeenMessage($messageId: String!) {
-  updateLastSeenMessage(messageId: $messageId) {
-    userId
-    lastSeenMessageId
-  }
-}

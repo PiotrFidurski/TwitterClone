@@ -1,0 +1,17 @@
+mutation followUser($userId: ID!) {
+  followUser(userId: $userId) {
+    ... on UpdateResourceResponse {
+      node {
+        ... on User {
+          id
+          ...userFollowerFields
+          ...userAvatarFields
+        }
+      }
+    }
+    ... on FollowUserInvalidInputError {
+      message
+      userId
+    }
+  }
+}

@@ -1,0 +1,17 @@
+mutation likeTweet($tweetId: ID!) {
+  likeTweet(tweetId: $tweetId) {
+    ... on UpdateResourceResponse {
+      node {
+        id
+        ... on Tweet {
+          ...tweetLikesFields
+        }
+      }
+      status
+    }
+    ... on LikeTweetInvalidInputError {
+      message
+      tweetId
+    }
+  }
+}

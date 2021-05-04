@@ -1,6 +1,5 @@
 import { Document, model, Model, Types, Schema } from "mongoose";
 import { hash, compare } from "bcryptjs";
-import { IPost } from "./Post";
 var uniqueValidator = require("mongoose-unique-validator");
 
 interface IUserSchema extends Document {
@@ -14,7 +13,6 @@ interface IUserSchema extends Document {
   avatar: string;
   lastSeenMessageId: string;
   lastReadMessageId: string;
-  posts: IPost[];
   followers: Types.Array<Document>;
   following: Types.Array<Document>;
   tokenVersion: number;
@@ -33,18 +31,12 @@ const schema: Schema<IUser> = new Schema({
     type: String,
     unique: true,
   },
-  name: {
-    type: String,
-  },
+  name: String,
   email: {
     type: String,
     unique: true,
   },
-  password: {
-    type: String,
-  },
-  lastSeenMessageId: { type: String },
-  lastReadMessageId: { type: String },
+  password: String,
   isAdmin: {
     type: Boolean,
     default: false,

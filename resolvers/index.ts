@@ -1,6 +1,7 @@
 import user from "./user";
-import post from "./post";
+import tweet from "./tweet";
 import node from "./node";
 import message from "./message";
+import conversation from "./conversation";
 
-export default [node, user, post, message];
+export default [node, user, tweet, message, conversation];

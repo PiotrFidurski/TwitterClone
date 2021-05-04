@@ -1,0 +1,33 @@
+query replies($tweetId: ID!, $after: ID) {
+  replies(tweetId: $tweetId, after: $after) {
+    ... on TweetConnection {
+      pageInfo {
+        hasPreviousPage
+        hasNextPage
+        startCursor
+        endCursor
+      }
+      count
+      edges {
+        id
+        body
+        conversationId
+        inReplyToId
+        ...tweetLikesFields
+        owner {
+          id
+          username
+          name
+          email
+          ...userAvatarFields
+          ...userFollowerFields
+        }
+      }
+    }
+    ... on TweetsInvalidInputError {
+      message
+      after
+      tweetId
+    }
+  }
+}

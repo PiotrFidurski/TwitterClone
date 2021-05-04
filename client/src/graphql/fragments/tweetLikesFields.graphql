@@ -1,0 +1,9 @@
+fragment tweetLikesFields on Tweet {
+  id
+  isLiked @client
+  likesCount
+  replyCount
+  likes {
+    id
+  }
+}

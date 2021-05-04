@@ -4,7 +4,6 @@ import {
   Absolute,
   BaseStyles,
   SpanContainer,
-  BaseStylesDiv,
 } from "../../styles";
 import { ReactComponent as ArrowLeft } from "../svgs/ArrowLeft.svg";
 import { useHistory } from "react-router-dom";

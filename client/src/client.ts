@@ -9,11 +9,10 @@ import { Observable } from "@apollo/client/utilities/observables/Observable";
 import { cache } from "./cache";
 import typeDefs from "./typeDefs";
 import { WebSocketLink } from "@apollo/client/link/ws";
-
 import {
   AuthUserDocument,
   AuthUserQuery,
-  Post,
+  Tweet,
   User,
 } from "./generated/graphql";
 
@@ -165,8 +164,8 @@ export const client = new ApolloClient({
         );
       },
     },
-    Post: {
-      isLiked: (parent: Post, args, { cache }) => {
+    Tweet: {
+      isLiked: (parent: Tweet, args, { cache }) => {
         const data: AuthUserQuery | null = cache.readQuery({
           query: AuthUserDocument,
         });

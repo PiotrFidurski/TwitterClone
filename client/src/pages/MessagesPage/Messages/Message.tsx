@@ -1,7 +1,11 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import styled, { css } from "styled-components";
-import { Message as MessageType, User } from "../../../generated/graphql";
+import {
+  Message as MessageType,
+  MessageEdge,
+  User,
+} from "../../../generated/graphql";
 import { format } from "date-fns";
 import {
   AvatarContainer,
@@ -10,44 +14,9 @@ import {
   BaseStylesDiv,
   BaseStyles,
 } from "../../../styles";
-import { Twemoji } from "../Conversation";
-import { parse } from "twemoji-parser";
-import Grapheme from "grapheme-splitter";
-import eRegex from "emoji-regex";
+import { Twemoji } from "../../../components/TwemojiPicker/Twemoji";
+import twemoji from "twemoji";
 
-// interface TwemojiProps extends React.ImgHTMLAttributes<HTMLImageElement> {
-//   text: string;
-//   className?: string;
-// }
-
-// const splitter = new Grapheme();
-
-// export const Twemoji: React.FC<TwemojiProps> = ({
-//   text,
-//   className = "",
-//   ...props
-// }) => {
-//   const regex = /\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]/i;
-//   const chars = splitter.splitGraphemes(text);
-//   let arr = chars.map((e) => {
-//     if (e.match(regex)) {
-//       return e;
-//     }
-//   });
-//   let arrTwo = chars.map((e) => {
-//     if (!e.match(regex)) {
-//       return e;
-//     }
-//   });
-
-//   const parsedChars = chars.map((e) =>
-//     e.match(regex) ? (
-//       <img alt="" {...props} className="emoji" src={parse(e)[0].url} />
-//     ) : null
-//   );
-
-//   return <span>{parsedChars}</span>;
-// };
 const StyledContainer = styled.div<{
   isItMyMsg: boolean;
   margin: boolean;
@@ -68,57 +37,73 @@ const StyledWrapper = styled.div<{ isItMyMsg: boolean }>`
   align-items: ${(props) => (props.isItMyMsg ? "flex-end" : "flex-start")};
 `;
 
-const StyledMessage = styled.div<{ isItMyMsg: boolean }>`
-  ${({ isItMyMsg }) => css`
+const StyledMessage = styled.div<{ isItMyMsg: boolean; isEmojiOnly: boolean }>`
+  ${({ isItMyMsg, isEmojiOnly }) => css`
     ${BaseStyles};
     max-width: 85%;
     border: 1px solid
-      ${isItMyMsg ? "var(--colors-button)" : "var(--colors-thirdbackground)"};
+      ${isItMyMsg && !isEmojiOnly
+        ? "var(--colors-button)"
+        : !isItMyMsg && !isEmojiOnly
+        ? "var(--colors-thirdbackground)"
+        : "transparent"};
     border-radius: 16px;
-    background-color: ${isItMyMsg
+    background-color: ${isItMyMsg && !isEmojiOnly
       ? "var(--colors-button)"
-      : "var(--colors-thirdbackground)"};
+      : !isItMyMsg && !isEmojiOnly
+      ? "var(--colors-thirdbackground)"
+      : "transparent"};
     border-bottom-left-radius: ${isItMyMsg ? "16px" : "0px"};
     border-bottom-right-radius: ${isItMyMsg ? "0px" : "16px"};
-    padding: 10px;
+    padding: ${isEmojiOnly ? "0" : "10px"};
     margin: 0 5px 5px 5px;
-    ${SpanContainer} {
-      > span {
-        color: ${isItMyMsg ? "white !important" : "var(--colors-maintext)"};
-      }
+    .emoji {
+      width: ${isEmojiOnly ? "2.8em" : "1.2em"};
+      height: ${isEmojiOnly ? "2.8em" : "1.2em"};
     }
   `}
 `;
 
 interface Props {
-  message: MessageType;
-  messages: Array<MessageType>;
+  message: MessageEdge;
+  messages: Array<MessageEdge>;
   index: number;
   receiver: User;
   user: User;
 }
 
-export const Message: React.FC<Props> = ({ ...props }) => {
+export const Message: React.FC<Props> = React.memo(({ ...props }) => {
   const { message, index, receiver, user, messages } = props;
+
+  const messageIsEmojiOnly = React.useCallback(() => {
+    if (!!twemoji.test(message!.node.messagedata!.text!)) {
+      const regex = /\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]/g;
+
+      const replace = message!.node.messagedata!.text!.replace(regex, "");
+      const match = message!.node.messagedata!.text!.match(regex);
+      if (match!.length <= 10 && !replace.length) return true;
+    }
+    return false;
+  }, [message]);
 
   const isLast = (index: number) => {
     return !!(messages!.length && messages![index + 1]
-      ? messages![index + 1].messagedata.senderId !==
-        messages![index].messagedata.senderId
-      : messages![index].id);
+      ? messages![index + 1].node.messagedata.senderId !==
+        messages![index].node.messagedata.senderId
+      : messages![index].node.id);
   };
 
-  const isMine = (message: MessageType) =>
-    !!(user.id === message.messagedata.senderId);
+  const isMine = (message: MessageEdge) =>
+    !!(user.id === message.node.messagedata.senderId);
 
   return (
     <StyledContainer
       isItMyLastMsg={isLast(index)}
-      margin={message.messagedata!.senderId !== user.id && !isLast(index)}
+      margin={message.node.messagedata!.senderId !== user.id && !isLast(index)}
       isItMyMsg={isMine(message)}
     >
       <BaseStylesDiv style={{ height: "40px", alignSelf: "flex-start" }}>
-        {message.messagedata!.senderId !== user.id && isLast(index) ? (
+        {message.node.messagedata!.senderId !== user.id && isLast(index) ? (
           <Link
             to={{
               pathname: `/user/${receiver.username}`,
@@ -135,10 +120,13 @@ export const Message: React.FC<Props> = ({ ...props }) => {
         ) : null}
       </BaseStylesDiv>
       <StyledWrapper isItMyMsg={isMine(message)}>
-        <StyledMessage isItMyMsg={isMine(message)}>
+        <StyledMessage
+          isItMyMsg={isMine(message)}
+          isEmojiOnly={messageIsEmojiOnly()}
+        >
           <SpanContainer breakSpaces>
             <span>
-              <Twemoji>{message!.messagedata!.text!}</Twemoji>
+              <Twemoji>{message!.node.messagedata!.text!}</Twemoji>
             </span>
           </SpanContainer>
         </StyledMessage>
@@ -146,13 +134,13 @@ export const Message: React.FC<Props> = ({ ...props }) => {
           <SpanContainer smaller grey style={{ marginLeft: "5px" }}>
             <span>
               {isLast(index)
-                ? receiver.id !== message.messagedata!.senderId
+                ? receiver.id !== message.node.messagedata!.senderId
                   ? null
                   : receiver.username
                 : null}
             </span>
           </SpanContainer>
-          {message!.messagedata!.senderId !== user.id && isLast(index) ? (
+          {message!.node.messagedata!.senderId !== user.id && isLast(index) ? (
             <SpanContainer
               grey
               style={{
@@ -166,12 +154,14 @@ export const Message: React.FC<Props> = ({ ...props }) => {
           {isLast(index) ? (
             <SpanContainer grey smaller>
               <span>
-                {message.id.endsWith("sending...")
+                {message.node.id.endsWith("sending...")
                   ? "Sending..."
                   : format(
                       new Date(
-                        parseInt(message!.id.toString().substring(0, 8), 16) *
-                          1000
+                        parseInt(
+                          message!.node.id.toString().substring(0, 8),
+                          16
+                        ) * 1000
                       ),
                       "MMM dd, yyyy, hh:mm aaa",
                       {}
@@ -183,4 +173,4 @@ export const Message: React.FC<Props> = ({ ...props }) => {
       </StyledWrapper>
     </StyledContainer>
   );
-};
+});
