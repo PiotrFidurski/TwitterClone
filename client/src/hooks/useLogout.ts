@@ -8,10 +8,10 @@ import { useApolloClient } from "@apollo/client";
 
 export const useLogout = () => {
   const [logout] = useLogoutMutation();
-  const { clearStore } = useApolloClient();
+  const { resetStore } = useApolloClient();
   const handleLogOut = () => {
     logout({
-      update: (cache) => {
+      update: async (cache) => {
         cache.writeQuery<AuthUserQuery>({
           query: AuthUserDocument,
           data: {
@@ -31,11 +31,11 @@ export const useLogout = () => {
             },
           },
         });
+        await resetStore();
       },
     });
 
     setAccessToken("");
-    clearStore();
   };
 
   return handleLogOut;
