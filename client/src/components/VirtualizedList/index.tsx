@@ -135,3 +135,22 @@ export const VirtualizedList: React.FC<Props> = ({ ...props }) => {
     </InfiniteLoader>
   );
 };
+
+const renderAtBottom: React.FC<any> = React.forwardRef(
+  ({ style, ...rest }: any, ref: React.Ref<HTMLDivElement>) => {
+    return (
+      <div
+        ref={ref}
+        style={{
+          ...style,
+          width: "100%",
+          minWidth: "0px",
+          display: "flex",
+          flexGrow: 1,
+          height: `${parseFloat(style.height) + 300 * 2}px`,
+        }}
+        {...rest}
+      />
+    );
+  }
+);
