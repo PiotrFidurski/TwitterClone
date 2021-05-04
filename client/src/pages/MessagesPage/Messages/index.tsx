@@ -8,8 +8,6 @@ import {
   LeftAtQuery,
   LeftAtDocument,
   Conversation,
-  Message as MessageType,
-  LeftAtSuccess,
   MessagesConnection,
 } from "../../../generated/graphql";
 import {
@@ -121,12 +119,20 @@ export const Messages: React.FC<Props> = ({ user, getReceiver }) => {
     <BaseStylesDiv flexGrow flexColumn style={{ paddingTop: "50%" }}>
       <JustifyCenter>
         <SpanContainer bolder bigger textCenter breakSpaces>
-          <span>{data.messages.message}</span>
+          <span>{data?.messages.message}</span>
+        </SpanContainer>
+      </JustifyCenter>
+    </BaseStylesDiv>
+  ) : !receiver ? (
+    <BaseStylesDiv flexGrow flexColumn style={{ paddingTop: "50%" }}>
+      <JustifyCenter>
+        <SpanContainer bolder bigger textCenter breakSpaces>
+          <span>this conversation doesn't exist anymore.</span>
         </SpanContainer>
       </JustifyCenter>
     </BaseStylesDiv>
   ) : (
-    <>
+    <div>
       <MessageHeader messages={data!.messages!.edges!} receiver={receiver} />
       <StyledContainer height={height} id="scrollableDiv">
         <InfiniteScroll
@@ -159,6 +165,6 @@ export const Messages: React.FC<Props> = ({ user, getReceiver }) => {
         connection={data!.messages!}
         conversation={data!.messages!.conversation! as Conversation}
       />
-    </>
+    </div>
   );
 };

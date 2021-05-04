@@ -71,7 +71,7 @@ export const MessageHeader: React.FC<Props> = ({ receiver, messages }) => {
             ) {
               return {
                 ...cachedEntry,
-                leftAtMessageId: messages
+                leftAtMessageId: messages.length
                   ? messages[messages.length - 1].node.id
                   : "",
               };

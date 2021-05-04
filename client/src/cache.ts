@@ -182,7 +182,6 @@ export const cache: InMemoryCache = new InMemoryCache({
             return { ...existing, edges: array };
           },
           merge(existing = {}, incoming = {}) {
-            console.log(existing, incoming);
             return {
               ...existing,
               pageInfo: incoming.pageInfo,
