@@ -213,11 +213,7 @@ export default {
           userId: authenticatedUser!._id,
           conversationId: conversationId,
         });
-        if (!leftAt) {
-          throw new Error(
-            "This record might not exist yet, or the input is invalid."
-          );
-        }
+
         const conversationToBeLeft = await Conversation.findOne({
           conversationId: conversationId,
         });
