@@ -18,6 +18,8 @@ import {
 import { useMutation, useQuery } from "@apollo/client";
 import { FollowUserDocument } from "../../generated/introspection-result";
 import { useModalContext } from "../context/ModalContext";
+import { useHistory } from "react-router";
+import { Link } from "react-router-dom";
 
 interface Props {
   user: User;
@@ -75,6 +77,8 @@ interface UserToFollowProps {
 
 const UserToFollow: React.FC<UserToFollowProps> = React.memo(
   ({ userToFollow }) => {
+    const history = useHistory();
+
     const { openModal } = useModalContext();
 
     const [followUser] = useMutation<FollowUserMutation>(FollowUserDocument, {
@@ -89,7 +93,8 @@ const UserToFollow: React.FC<UserToFollowProps> = React.memo(
       },
     });
 
-    const handleFollowUser = () => {
+    const handleFollowUser = (e: React.BaseSyntheticEvent) => {
+      e.stopPropagation();
       userToFollow.isFollowed
         ? openModal("unfollowUserAlert", {
             unfollowUser: followUser,
@@ -99,13 +104,26 @@ const UserToFollow: React.FC<UserToFollowProps> = React.memo(
     };
 
     return (
-      <StyledWrapper hover style={{ display: "flex" }}>
-        <AvatarContainer width={49} height="49px">
-          <StyledAvatar url={userToFollow.avatar!} />
-        </AvatarContainer>
+      <StyledWrapper
+        hover
+        style={{ display: "flex" }}
+        onClick={() => {
+          history.push(`/user/${userToFollow.username}`);
+        }}
+      >
+        <Link
+          onClick={(e) => e.stopPropagation()}
+          to={{ pathname: `/user/${userToFollow.username}` }}
+        >
+          <AvatarContainer width={49} height="49px">
+            <StyledAvatar url={userToFollow.avatar!} />
+          </AvatarContainer>
+        </Link>
+
         <StyledHeader>
           <BaseStylesDiv flexColumn flexShrink>
             <StyledLink
+              onClick={(e) => e.stopPropagation()}
               $textunderline
               to={{ pathname: `/user/${userToFollow.username}` }}
             >

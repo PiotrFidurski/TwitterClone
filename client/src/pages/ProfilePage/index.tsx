@@ -8,7 +8,6 @@ import {
   SpanContainer,
   PrimaryColumn,
   SidebarColumn,
-  fade,
 } from "../../styles";
 import { useParams } from "react-router-dom";
 import { Header } from "../../components/Header";
@@ -24,10 +23,6 @@ import { useQuery } from "@apollo/client";
 const StyledContainer = styled.div`
   ${BaseStyles};
   flex-direction: row;
-  animation-name: ${fade};
-  animation-iteration-count: 1;
-  animation-timing-function: ease-in;
-  animation-duration: 0.15s;
   flex-grow: 1;
   justify-content: space-between;
 `;

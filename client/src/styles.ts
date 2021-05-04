@@ -11,6 +11,24 @@ export const slideDown = keyframes`
   }
 `;
 
+const spin = keyframes`
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+`;
+
+export const fade = keyframes`
+  0% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+`;
+
 export const BaseStyles = css`
   display: flex;
   box-sizing: border-box;
@@ -198,6 +216,10 @@ export const PrimaryColumn = styled.div`
   ${BaseStyles};
   max-width: 600px;
   flex-direction: column;
+  animation-name: ${fade};
+  animation-iteration-count: 1;
+  animation-timing-function: ease-in;
+  animation-duration: 0.15s;
   height: max-content;
   flex-grow: 1;
   border-left: 1px solid var(--colors-border);
@@ -494,24 +516,6 @@ export const StyledLink = styled(Link)<{ $textunderline?: boolean }>`
       props.$textunderline ? "underline" : "none"};
     text-decoration-color: inherit;
   }
-`;
-
-const spin = keyframes`
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-`;
-
-export const fade = keyframes`
-  0% {
-		opacity: 0;
-	}
-	100% {
-		opacity: 1;
-	}
 `;
 
 export const Spinner = styled.div<{ bigMargin?: boolean }>`

@@ -5,6 +5,7 @@ import { ReactComponent as Home } from "../../components/svgs/Home.svg";
 import { SideBar, Link, Nav } from "../../components/Sidebar";
 import { ReactComponent as Bell } from "../../components/svgs/Bell.svg";
 import { ReactComponent as Settings } from "../../components/svgs/settings.svg";
+import { ReactComponent as Logout } from "../../components/svgs/followminus.svg";
 import { ReactComponent as More } from "../../components/svgs/More.svg";
 import { ReactComponent as Messages } from "../../components/svgs/Messages.svg";
 import { ReactComponent as Bookmarks } from "../../components/svgs/Bookmarks.svg";
@@ -182,8 +183,8 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
                     <span>Settings and privacy</span>
                   </SpanContainer>
                 </StyledDropDownItem>
-                <StyledDropDownItem onClick={logout}>
-                  <Settings />
+                <StyledDropDownItem danger onClick={logout}>
+                  <Logout />
                   <SpanContainer>
                     <span>Log Out @{user.username}</span>
                   </SpanContainer>

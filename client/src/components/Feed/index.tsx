@@ -7,7 +7,6 @@ import {
   BaseStyles,
   PrimaryColumn,
   SidebarColumn,
-  fade,
 } from "../../styles";
 import styled from "styled-components";
 import { Header as FeedHeader } from "../Header";
@@ -22,9 +21,6 @@ export const StyledContainer = styled.div`
   flex-direction: row;
   justify-content: space-between;
   flex-grow: 1;
-  animation-name: ${fade};
-  animation-iteration-count: 1;
-  animation-timing-function: ease-in;
   animation-duration: 0.15s;
   height: 100%;
   opacity: 1;

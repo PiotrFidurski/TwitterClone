@@ -1,6 +1,6 @@
 import { useMutation } from "@apollo/client";
 import * as React from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useHistory } from "react-router-dom";
 import {
   User,
   Conversation as ConversationType,
@@ -67,7 +67,7 @@ export const Conversation: React.FC<Props> = ({
   const handleMarkAsSeen = useMarkMessagesAsSeen(
     userInbox!.data!.userInbox!.conversations!
   );
-
+  const history = useHistory();
   const location = useLocation();
 
   const [readConversation] = useMutation<ReadConversationMutation>(
@@ -99,52 +99,51 @@ export const Conversation: React.FC<Props> = ({
   }, [location, conversation.mostRecentEntryId, readConversation]);
 
   return (
-    <Link
-      style={{ textDecoration: "none" }}
-      to={{ pathname: `/messages/${conversation.conversationId}` }}
+    <StyledContainer
+      key={conversation.id}
+      onClick={() => {
+        history.push(`/messages/${conversation.conversationId}`);
+      }}
+      recentMessage={
+        conversation!.lastReadMessageId !== authUser!.lastReadMessageId
+      }
     >
-      <StyledContainer
-        key={conversation.id}
-        recentMessage={
-          conversation!.lastReadMessageId !== authUser!.lastReadMessageId
-        }
-      >
-        <BaseStylesDiv flexGrow>
-          <Link to={{ pathname: `/user/${receiver.username}` }}>
-            <AvatarContainer height="49px" width={49} noRightMargin>
-              <StyledAvatar url={receiver.avatar} />
-            </AvatarContainer>
-          </Link>
-          <StyledWrapper>
-            <BaseStylesDiv>
-              <StyledConversationHeader>
-                <SpanContainer bold>
-                  <span>{receiver!.username}</span>
-                </SpanContainer>
-                <SpanContainer grey>
-                  <span>
-                    {conversation!.messages_conversation!.length
-                      ? convertDateToTime(
-                          conversation!.messages_conversation![0]
-                        )
-                      : null}
-                  </span>
-                </SpanContainer>
-              </StyledConversationHeader>
-            </BaseStylesDiv>
-            {conversation!.messages_conversation! &&
-            conversation!.messages_conversation!.length ? (
+      <BaseStylesDiv flexGrow>
+        <Link
+          to={{ pathname: `/user/${receiver.username}` }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <AvatarContainer height="49px" width={49} noRightMargin>
+            <StyledAvatar url={receiver.avatar} />
+          </AvatarContainer>
+        </Link>
+        <StyledWrapper>
+          <BaseStylesDiv>
+            <StyledConversationHeader>
+              <SpanContainer bold>
+                <span>{receiver!.username}</span>
+              </SpanContainer>
               <SpanContainer grey>
                 <span>
-                  <Twemoji>
-                    {conversation!.messages_conversation![0].messagedata!.text!}
-                  </Twemoji>
+                  {conversation!.messages_conversation!.length
+                    ? convertDateToTime(conversation!.messages_conversation![0])
+                    : null}
                 </span>
               </SpanContainer>
-            ) : null}
-          </StyledWrapper>
-        </BaseStylesDiv>
-      </StyledContainer>
-    </Link>
+            </StyledConversationHeader>
+          </BaseStylesDiv>
+          {conversation!.messages_conversation! &&
+          conversation!.messages_conversation!.length ? (
+            <SpanContainer grey>
+              <span>
+                <Twemoji>
+                  {conversation!.messages_conversation![0].messagedata!.text!}
+                </Twemoji>
+              </span>
+            </SpanContainer>
+          ) : null}
+        </StyledWrapper>
+      </BaseStylesDiv>
+    </StyledContainer>
   );
 };

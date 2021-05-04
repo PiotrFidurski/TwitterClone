@@ -3,7 +3,6 @@ import styled from "styled-components";
 import {
   BaseStyles,
   BaseStylesDiv,
-  fade,
   JustifyCenter,
   PrimaryColumn,
   SidebarColumn,
@@ -27,10 +26,6 @@ const StyledContainer = styled.div`
   flex-grow: 1;
   opacity: 1;
   justify-content: space-between;
-  animation-name: ${fade};
-  animation-iteration-count: 1;
-  animation-timing-function: ease-in;
-  animation-duration: 0.15s;
 `;
 
 export const CommentsPage: React.FC<Props> = ({ user }) => {
