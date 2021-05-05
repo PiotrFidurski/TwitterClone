@@ -67,7 +67,9 @@ export const LoadMore: React.FC<Props> = ({ tweet }) => {
           more replies
         </DisplayMoreButton>
       ) : loading ? (
-        <Spinner style={{ margin: "0 auto" }} />
+        <div>
+          <Spinner style={{ margin: "10px auto" }} />
+        </div>
       ) : null}
     </Wrapper>
   );

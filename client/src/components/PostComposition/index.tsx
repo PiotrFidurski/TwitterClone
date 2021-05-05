@@ -9,8 +9,6 @@ import {
   FollowUserMutation,
 } from "../../generated/graphql";
 import { ReactComponent as Delete } from "../svgs/Delete.svg";
-import { ReactComponent as Display } from "../svgs/display.svg";
-import { ReactComponent as Brush } from "../svgs/brush.svg";
 import { ReactComponent as SadFace } from "../svgs/SadFace.svg";
 import { ReactComponent as FollowPlus } from "../svgs/followplus.svg";
 import { ReactComponent as FollowMinus } from "../svgs/followminus.svg";
@@ -40,7 +38,6 @@ import {
 } from "./styles";
 import { ReactComponent as Caret } from "../svgs/Caret.svg";
 import { StyledDropDownItem } from "../DropDown/DropDownComposition/Menu";
-import { NavLink } from "../Sidebar/styles";
 import { ReactComponent as Reply } from "../svgs/Reply.svg";
 import { LikeTweet } from "./LikeTweet";
 import { ReactComponent as Retweet } from "../svgs/Retweet.svg";
@@ -125,10 +122,17 @@ const Threaded: React.FC = () => {
 
 const Avatar: React.FC = ({ children }) => {
   const { tweet } = useTweet();
+  const history = useHistory();
   return (
     <StyledAvatarWrapper>
       <AvatarContainer height="49px" width={49}>
-        <StyledAvatar url={tweet!.owner!.avatar!} />
+        <StyledAvatar
+          url={tweet!.owner!.avatar!}
+          onClick={(e) => {
+            e.stopPropagation();
+            history.push(`/user/${tweet.owner?.username}`);
+          }}
+        />
       </AvatarContainer>
       {children}
     </StyledAvatarWrapper>
@@ -207,7 +211,6 @@ const Menu: React.FC = () => {
   });
   const { close } = useDropdownCtxt();
   const { cache } = useApolloClient();
-  const location = useLocation();
   const { data } = useQuery<AuthUserQuery>(AuthUserDocument, {
     fetchPolicy: "cache-only",
   });
@@ -273,24 +276,6 @@ const Menu: React.FC = () => {
               </StyledDropDownItem>
             ) : null}
 
-            <NavLink
-              id="dropdown-item"
-              style={{ textDecoration: "none" }}
-              to={{
-                pathname: "/i/display",
-                state: {
-                  isModalLocaction: location,
-                },
-              }}
-            >
-              <StyledDropDownItem id="dropdown-item">
-                <Display />
-                <Brush style={{ position: "absolute" }} />
-                <SpanContainer>
-                  <span>Display</span>
-                </SpanContainer>
-              </StyledDropDownItem>
-            </NavLink>
             {data && data!.authUser!.id !== tweet!.owner!.id ? (
               <StyledDropDownItem
                 id="dropdown-item"

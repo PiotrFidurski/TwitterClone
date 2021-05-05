@@ -1,11 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import styled, { css } from "styled-components";
-import {
-  Message as MessageType,
-  MessageEdge,
-  User,
-} from "../../../generated/graphql";
+import { MessageEdge, User } from "../../../generated/graphql";
 import { format } from "date-fns";
 import {
   AvatarContainer,

@@ -22,10 +22,6 @@ const StyledPanelButton = styled.div`
   background: none;
   border: none;
   cursor: pointer;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -khtml-user-select: none;
-  -ms-user-select: none;
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
   transition: all 0.2s;

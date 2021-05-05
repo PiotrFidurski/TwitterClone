@@ -110,7 +110,7 @@ export default {
           pageInfo: {
             hasPreviousPage: false,
             hasNextPage: hasNextPage,
-            startCursor: latestTweets[0]._id,
+            startCursor: latestTweets.length ? latestTweets[0]._id : "",
             endCursor: latestTweets.length
               ? latestTweets[latestTweets.length - 1]._id
               : "",

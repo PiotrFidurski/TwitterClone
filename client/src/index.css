@@ -64,23 +64,6 @@ body[data-color="rgb(121, 75, 196)"] {
   width: 100% !important;
 }
 
-@keyframes fade {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-.fade {
-  opacity: 1;
-  animation-name: fade;
-  animation-iteration-count: 1;
-  animation-timing-function: ease-in;
-  animation-duration: 0.15s;
-}
-
 .ReactModal__Overlay {
   background: rgba(110, 118, 125, 0.4) !important;
 }
@@ -116,6 +99,7 @@ body[data-color="rgb(121, 75, 196)"] {
   background-repeat: no-repeat;
   -webkit-text-fill-color: transparent;
 }
+
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {

@@ -14,7 +14,9 @@ export const ModalContext = React.createContext<ModalContextProps | null>(null);
 
 export const ModalProvider: React.FC = React.memo(({ children }) => {
   const [open, setOpen] = React.useState(false);
+
   const [alertDialog, setAlertDialog] = React.useState({ _key: "", props: {} });
+
   let history = useHistory();
 
   let state = history.location.state as { isModal: Location };

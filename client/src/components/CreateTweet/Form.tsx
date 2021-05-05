@@ -8,7 +8,7 @@ import {
   CreateTweetMutation,
 } from "../../generated/graphql";
 import { useHistory } from "react-router-dom";
-import { Editor } from "../Editor";
+import { Editor } from "./Editor";
 import CompositeDecorator from "./CompositeDecorator";
 import { StyledForm, BaseStylesDiv } from "../../styles";
 import { useModalContext } from "../context/ModalContext";

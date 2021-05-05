@@ -7,9 +7,10 @@ import {
   AuthUserQuery,
   AuthUserDocument,
   LoginDocument,
+  LoginMutation,
 } from "../../generated/graphql";
 import { setAccessToken } from "../../accessToken";
-import { useApolloClient, useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 
 const schema = yup.object().shape({
   email: yup.string().email().required(),
@@ -29,34 +30,34 @@ interface IHandleSubmit {
 }
 
 export const Form: React.FC = () => {
-  const [login] = useMutation(LoginDocument);
-  const { cache } = useApolloClient();
+  const [login] = useMutation<LoginMutation>(LoginDocument);
+
   const handleSubmit = async ({
     values: { email, password },
     setErrors,
   }: IHandleSubmit) => {
-    const response = await login({
+    await login({
       variables: { email, password },
+      update(cache, { data }) {
+        if (data?.login?.__typename === "UserLoginInvalidInputError") {
+          setErrors(
+            data!.login! as FormikErrors<{
+              email: string | undefined;
+              password: string | undefined;
+              message: string;
+              __typename: "UserLoginInvalidInputError";
+            }>
+          );
+        }
+        if (data?.login?.__typename === "UserLoginSuccess") {
+          cache.writeQuery<AuthUserQuery>({
+            query: AuthUserDocument,
+            data: { authUser: data.login.node },
+          });
+          setAccessToken(data.login.accessToken);
+        }
+      },
     });
-    if (response!.data!.login!.node) {
-      cache.writeQuery<AuthUserQuery>({
-        query: AuthUserDocument,
-        data: { authUser: response!.data!.login!.node! },
-      });
-    }
-
-    if (response!.data!.login!.message) {
-      setErrors(
-        response!.data!.login! as FormikErrors<{
-          email: string | undefined;
-          password: string | undefined;
-          message: string;
-          __typename: "UserLoginInvalidInputError";
-        }>
-      );
-    }
-
-    setAccessToken(response.data!.login!.accessToken!);
   };
 
   return (

@@ -13,11 +13,9 @@ import { Tabs } from "./Tabs";
 import format from "date-fns/format";
 import {
   MessageUserMutation,
-  useAuthUserQuery,
   useFollowUserMutation,
   User,
   GetUserByNameQuery,
-  UserByNameSuccess,
   MessageUserSuccess,
   UserTweetsQuery,
   UserTweetsDocument,
@@ -25,6 +23,8 @@ import {
   UserTweetsAndRepliesDocument,
   UserLikedTweetsQuery,
   UserLikedTweetsDocument,
+  AuthUserDocument,
+  AuthUserQuery,
 } from "../../../generated/graphql";
 import { ReactComponent as Message } from "../../../components/svgs/Messages.svg";
 import { useHistory, useLocation, useParams } from "react-router-dom";
@@ -36,6 +36,7 @@ import {
 } from "../../../generated/introspection-result";
 import { VirtualizedList } from "../../../components/VirtualizedList";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { useModalContext } from "../../../components/context/ModalContext";
 
 interface Props {
   user: User;
@@ -68,8 +69,9 @@ const UserTweets = () => {
     }
   );
   const userId =
-    userData?.userByName.__typename === "UserByNameSuccess" &&
-    userData.userByName.node.id;
+    userData?.userByName.__typename === "UserByNameSuccess"
+      ? userData.userByName.node.id
+      : "";
   const { data, loading, fetchMore } = useQuery<UserTweetsQuery>(
     UserTweetsDocument,
     {
@@ -127,12 +129,15 @@ const UserTweetsAndReplies = () => {
       variables: { username },
     }
   );
-
+  const userId =
+    userData?.userByName.__typename === "UserByNameSuccess"
+      ? userData.userByName.node.id
+      : "";
   const { data, loading, fetchMore } = useQuery<UserTweetsAndRepliesQuery>(
     UserTweetsAndRepliesDocument,
     {
       variables: {
-        userId: (userData?.userByName as UserByNameSuccess).node.id,
+        userId,
       },
     }
   );
@@ -144,7 +149,7 @@ const UserTweetsAndReplies = () => {
         data.userTweetsAndReplies.pageInfo.endCursor;
       await fetchMore({
         variables: {
-          userId: (userData?.userByName as UserByNameSuccess).node.id,
+          userId,
           after,
         },
       });
@@ -154,6 +159,7 @@ const UserTweetsAndReplies = () => {
   };
 
   if (loading) return <Spinner />;
+
   return userData?.userByName?.__typename === "UserByNameSuccess" &&
     data?.userTweetsAndReplies.__typename === "TweetConnection" ? (
     <VirtualizedList
@@ -164,6 +170,14 @@ const UserTweetsAndReplies = () => {
       showBorder={true}
       showConnector={false}
     />
+  ) : data?.userTweetsAndReplies.__typename === "TweetsInvalidInputError" ? (
+    <BaseStylesDiv flexGrow>
+      <JustifyCenter>
+        <SpanContainer bigger bolder>
+          <span>{data.userTweetsAndReplies.message}</span>
+        </SpanContainer>
+      </JustifyCenter>
+    </BaseStylesDiv>
   ) : null;
 };
 
@@ -175,11 +189,15 @@ const UserLikedTweets = () => {
       variables: { username },
     }
   );
+  const userId =
+    userData?.userByName.__typename === "UserByNameSuccess"
+      ? userData.userByName.node.id
+      : "";
   const { data, loading, fetchMore } = useQuery<UserLikedTweetsQuery>(
     UserLikedTweetsDocument,
     {
       variables: {
-        userId: (userData?.userByName as UserByNameSuccess).node.id,
+        userId,
       },
     }
   );
@@ -190,7 +208,7 @@ const UserLikedTweets = () => {
         data.userLikedTweets.pageInfo.endCursor;
       await fetchMore({
         variables: {
-          userId: (userData?.userByName as UserByNameSuccess).node.id,
+          userId,
           after,
         },
       });
@@ -211,6 +229,14 @@ const UserLikedTweets = () => {
       showBorder={true}
       showConnector={false}
     />
+  ) : data?.userLikedTweets.__typename === "TweetsInvalidInputError" ? (
+    <BaseStylesDiv flexGrow>
+      <JustifyCenter>
+        <SpanContainer bigger bolder>
+          <span>{data.userLikedTweets.message}</span>
+        </SpanContainer>
+      </JustifyCenter>
+    </BaseStylesDiv>
   ) : null;
 };
 
@@ -235,7 +261,7 @@ const tabsData = [
 
 export const Profile: React.FC<Props> = ({ user }) => {
   let location = useLocation();
-
+  const { openModal, setOpen } = useModalContext();
   const [message] = useMutation<MessageUserMutation>(MessageUserDocument, {
     variables: { userId: user!.id },
   });
@@ -243,7 +269,7 @@ export const Profile: React.FC<Props> = ({ user }) => {
 
   const { cache } = useApolloClient();
 
-  const { data } = useAuthUserQuery();
+  const { data } = useQuery<AuthUserQuery>(AuthUserDocument);
 
   const [followUser] = useFollowUserMutation({
     variables: { userId: user!.id! },
@@ -292,13 +318,27 @@ export const Profile: React.FC<Props> = ({ user }) => {
           },
         },
       });
-      history.push(`/messages/${data!.node?.conversationId}`);
+      history.push(`/messages/${data?.node?.conversationId}`);
     } catch (error) {
       throw new Error(error);
     }
   };
 
-  const handleFollowUser = () => {
+  const handleMessageUser = (e: React.BaseSyntheticEvent) => {
+    e.stopPropagation();
+    if (data?.authUser.name === "") {
+      openModal("loginAlert", { closeModal: setOpen });
+      return;
+    }
+    startMessage();
+  };
+
+  const handleFollowUser = (e: React.BaseSyntheticEvent) => {
+    e.stopPropagation();
+    if (data?.authUser.name === "") {
+      openModal("loginAlert", { closeModal: setOpen });
+      return;
+    }
     followUser();
   };
 
@@ -339,9 +379,7 @@ export const Profile: React.FC<Props> = ({ user }) => {
           <BaseStylesDiv style={{ minHeight: "40px" }}>
             <BaseStylesDiv>
               <ButtonContainer
-                onClick={() => {
-                  startMessage();
-                }}
+                onClick={handleMessageUser}
                 noMarginLeft
                 noPadding
                 style={{ minWidth: "40px" }}

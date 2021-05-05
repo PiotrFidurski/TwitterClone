@@ -10,7 +10,6 @@ export const Toggle: React.FC = ({ children }) => {
       ref={ref}
       onClick={(e) => {
         e.stopPropagation();
-
         open();
       }}
     >

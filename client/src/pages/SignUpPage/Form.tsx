@@ -8,6 +8,8 @@ import {
   AuthUserQuery,
   RegisterDocument,
   LoginDocument,
+  LoginMutation,
+  RegisterMutation,
 } from "../../generated/graphql";
 import { setAccessToken } from "../../accessToken";
 import { useMutation } from "@apollo/client";
@@ -48,43 +50,46 @@ interface IHandleSubmit {
 }
 
 export const Form: React.FC = () => {
-  const [login] = useMutation(LoginDocument);
-  const [register] = useMutation(RegisterDocument);
+  const [login] = useMutation<LoginMutation>(LoginDocument);
+  const [register] = useMutation<RegisterMutation>(RegisterDocument);
 
   const handleSubmit = async ({
     values: { name, username, email, password },
     setErrors,
   }: IHandleSubmit) => {
-    const response = await register({
+    await register({
       variables: { name, username, email, password },
-    });
-    if (response!.data!.register!.message) {
-      setErrors(
-        response!.data!.register as FormikErrors<{
-          name: string | undefined;
-          username: string | undefined;
-          email: string | undefined;
-          password: string | undefined;
-          message: string;
-          __typename: "UserRegisterInvalidInputError";
-        }>
-      );
-    }
-
-    if (response!.data!.register!.node) {
-      const loginResponse = await login({
-        variables: { email, password },
-        update: (store, { data }) => {
-          store.writeQuery<AuthUserQuery>({
-            query: AuthUserDocument,
-            data: {
-              authUser: data!.login!.node,
+      update(cache, { data }) {
+        if (data?.register.__typename === "UserRegisterInvalidInputError") {
+          setErrors(
+            data!.register as FormikErrors<{
+              name: string | undefined;
+              username: string | undefined;
+              email: string | undefined;
+              password: string | undefined;
+              message: string;
+              __typename: "UserRegisterInvalidInputError";
+            }>
+          );
+        }
+        if (data?.register.__typename === "UserRegisterSuccess") {
+          login({
+            variables: { email, password },
+            update: (store, { data }) => {
+              if (data?.login?.__typename === "UserLoginSuccess") {
+                store.writeQuery<AuthUserQuery>({
+                  query: AuthUserDocument,
+                  data: {
+                    authUser: data!.login!.node,
+                  },
+                });
+                setAccessToken(data!.login!.accessToken);
+              }
             },
           });
-        },
-      });
-      setAccessToken(loginResponse.data!.login!.accessToken);
-    }
+        }
+      },
+    });
   };
   return (
     <Formik

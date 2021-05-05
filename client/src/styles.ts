@@ -284,7 +284,12 @@ export const StyledAvatar = styled.div<StyledAvatarProps>`
     background-size: cover;
     background-color: var(--colors-thirdbackground);
     flex-grow: 1;
+    cursor: pointer;
     flex-shrink: 0;
+    transition: opacity 0.25s cubic-bezier(0.39, 0.575, 0.565, 1);
+    :hover {
+      opacity: 0.8;
+    }
   `}
 `;
 

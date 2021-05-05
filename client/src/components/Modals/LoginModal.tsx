@@ -26,11 +26,9 @@ export const LoginModal: React.FC<Props> = ({ closeModal }) => {
       <Modal.Content>
         <StyledContainer>
           <BaseStylesDiv flexGrow>
-            {/* <JustifyCenter> */}
             <SpanContainer bigger bold textCenter breakSpaces>
               <span>Get the best Twitter experience</span>
             </SpanContainer>
-            {/* </JustifyCenter> */}
           </BaseStylesDiv>
           <BaseStylesDiv flexGrow style={{ marginBottom: "10px" }}>
             <SpanContainer grey breakSpaces textCenter>

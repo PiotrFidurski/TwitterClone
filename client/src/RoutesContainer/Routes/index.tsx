@@ -5,14 +5,16 @@ import { Modals } from "../../components/context/ModalContext/ModalRoot";
 import { LoadingPage } from "../../pages/LoadingPage";
 import { useQuery } from "@apollo/client";
 import { AuthUserDocument, AuthUserQuery } from "../../generated/graphql";
+const HomePage = React.lazy(() => import("../../pages/HomePage"));
 const NonAuthenticatedRoutes = React.lazy(
   () => import("./NonAuthenticatedRoutes")
 );
-const HomePage = React.lazy(() => import("../../pages/HomePage"));
 
 export const Routes = () => {
   const location = useLocation();
+
   const { openModal } = useModalContext();
+
   const { data, loading } = useQuery<AuthUserQuery>(AuthUserDocument, {
     fetchPolicy: "network-only",
     nextFetchPolicy: "cache-only",

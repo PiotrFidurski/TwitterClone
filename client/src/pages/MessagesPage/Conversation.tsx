@@ -22,9 +22,9 @@ import { Twemoji } from "../../components/TwemojiPicker/Twemoji";
 
 const StyledContainer = styled.div<{ recentMessage: boolean }>`
   ${BaseStyles};
-  flex-grow: 1;
+  flex-grow: 0;
   padding: 10px;
-  overflow: hidden;
+  overflow: auto;
   border-bottom: 1px solid var(--colors-border);
   background-color: ${(props) =>
     props.recentMessage! ? "var(--colors-thirdbackground)" : "transparent"};
@@ -67,6 +67,7 @@ export const Conversation: React.FC<Props> = ({
   const handleMarkAsSeen = useMarkMessagesAsSeen(
     userInbox!.data!.userInbox!.conversations!
   );
+
   const history = useHistory();
   const location = useLocation();
 
@@ -96,7 +97,7 @@ export const Conversation: React.FC<Props> = ({
       handleMarkAsSeen();
     }
     //eslint-disable-next-line
-  }, [location, conversation.mostRecentEntryId, readConversation]);
+  }, [location, conversation.mostRecentEntryId]);
 
   return (
     <StyledContainer

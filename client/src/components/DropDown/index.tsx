@@ -4,10 +4,7 @@ import { Menu } from "./DropDownComposition/Menu";
 import { Toggle } from "./DropDownComposition/Toggle";
 import { IAction, IState, baseReducer } from "./reducers";
 
-const useCalculatedDimensions = (
-  callback: (value: any) => void,
-  state: IState
-) => {
+const useDimensions = (callback: (value: any) => void, state: IState) => {
   const ref = React.useRef<HTMLDivElement | any>(null);
 
   const handleResize = React.useCallback(() => {
@@ -103,7 +100,7 @@ export const useDropDown = ({ reducer = baseReducer } = {}) => {
     }
   }, [state.open, menuRef, dispatch]);
 
-  const ref = useCalculatedDimensions(dispatch, state);
+  const ref = useDimensions(dispatch, state);
 
   const open = () => dispatch({ type: "open" });
 

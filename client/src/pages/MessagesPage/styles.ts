@@ -26,7 +26,12 @@ export const StyledConversationContainer = styled.div`
   ${BaseStyles};
   flex-direction: column;
   overflow: auto;
-  flex-shrink: 0;
+  position: absolute;
+  top: 53px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  flex-shrink: 1;
 `;
 
 export const StyledMessagesContainer = styled.div<{ location: string }>`

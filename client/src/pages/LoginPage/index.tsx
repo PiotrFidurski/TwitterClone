@@ -23,27 +23,25 @@ export const StyledFormWrapper = styled.div`
   padding-top: 15px;
 `;
 
-export const LoginPage: React.FC = () => {
-  return (
-    <StyledContainer>
-      <JustifyCenter>
-        <Logo />
-      </JustifyCenter>
-      <JustifyCenter>
-        <SpanContainer bigger bolder>
-          <span>Log in to Twitter</span>
+export const LoginPage: React.FC = () => (
+  <StyledContainer>
+    <JustifyCenter>
+      <Logo />
+    </JustifyCenter>
+    <JustifyCenter>
+      <SpanContainer bigger bolder>
+        <span>Log in to Twitter</span>
+      </SpanContainer>
+    </JustifyCenter>
+    <StyledFormWrapper>
+      <Form />
+    </StyledFormWrapper>
+    <JustifyCenter>
+      <StyledLink to="/register" $textunderline>
+        <SpanContainer grey>
+          <span>Sign up for twitter</span>
         </SpanContainer>
-      </JustifyCenter>
-      <StyledFormWrapper>
-        <Form />
-      </StyledFormWrapper>
-      <JustifyCenter>
-        <StyledLink to="/register" $textunderline>
-          <SpanContainer grey>
-            <span>Sign up for twitter</span>
-          </SpanContainer>
-        </StyledLink>
-      </JustifyCenter>
-    </StyledContainer>
-  );
-};
+      </StyledLink>
+    </JustifyCenter>
+  </StyledContainer>
+);

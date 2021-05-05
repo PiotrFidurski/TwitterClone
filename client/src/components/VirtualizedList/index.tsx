@@ -111,7 +111,7 @@ export const VirtualizedList: React.FC<Props> = ({ ...props }) => {
               </VariableSizeList>
               <JustifyCenter
                 style={{
-                  marginTop: "-600px",
+                  marginTop: "-580px",
                   padding: "15px",
                   borderBottom: "1px solid var(--colors-border)",
                 }}
