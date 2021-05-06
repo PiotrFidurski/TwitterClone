@@ -9,12 +9,7 @@ import { Observable } from "@apollo/client/utilities/observables/Observable";
 import { cache } from "./cache";
 import typeDefs from "./typeDefs";
 import { WebSocketLink } from "@apollo/client/link/ws";
-import {
-  AuthUserDocument,
-  AuthUserQuery,
-  Tweet,
-  User,
-} from "./generated/graphql";
+import { AuthUserDocument } from "./generated/graphql";
 
 cache.writeQuery({
   query: AuthUserDocument,
@@ -148,30 +143,4 @@ export const client = new ApolloClient({
     splitLink,
   ]),
   typeDefs,
-
-  // User: {
-  //   isFollowed: (parent: User, args, { cache }) => {
-  //     const data: AuthUserQuery = cache.readQuery({
-  //       query: AuthUserDocument,
-  //     });
-  //     return (
-  //       data &&
-  //       data.authUser &&
-  //       parent!.followers !== null &&
-  //       !!parent.followers!.filter(
-  //         (follower) => follower.id === data!.authUser.id
-  //       ).length
-  //     );
-  //   },
-  // },
-  // Tweet: {
-  //   isLiked: (parent: Tweet, args, { cache }) => {
-  //     const data: AuthUserQuery | null = cache.readQuery({
-  //       query: AuthUserDocument,
-  //     });
-
-  //     return !!parent!.likes!.filter((user) => user.id === data!.authUser.id)
-  //       .length;
-  //   },
-  // },
 });

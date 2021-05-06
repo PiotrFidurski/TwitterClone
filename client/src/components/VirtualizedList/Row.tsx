@@ -18,8 +18,6 @@ interface Props {
     array: TweetType[];
     setRowHeight: (index: number, size: number) => void;
     userId: string;
-    showBorder: boolean;
-    showConnector: boolean;
   };
   style: React.CSSProperties;
 }
