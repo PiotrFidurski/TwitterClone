@@ -7,8 +7,8 @@ import {
 } from "../../generated/graphql";
 import {
   StyledDetailsContainer,
-  StyledPostWrapper,
-} from "../PostComposition/styles";
+  StyledTweetWrapper,
+} from "../TweetComposition/styles";
 import {
   BaseStylesDiv,
   HoverContainer,
@@ -21,18 +21,18 @@ import { ReactComponent as Close } from "../svgs/Close.svg";
 import { CreateTweet } from "../CreateTweet";
 import { useLocation } from "react-router-dom";
 import { TweetProvider } from "../TweetContext";
-import { Tweet } from "../PostComposition";
+import { Tweet } from "../TweetComposition";
 import { useQuery } from "@apollo/client";
 
 export const CreateTweetModal: React.FC = () => {
   const location: any = useLocation();
 
   const tweetId = location.state?.tweetId;
-  console.log(location);
+
   const { data, loading } = useQuery<TweetQuery>(TweetDocument, {
     variables: { tweetId },
   });
-  console.log(data);
+
   const { data: userData, loading: userLoading } = useQuery(AuthUserDocument);
 
   return (
@@ -59,8 +59,8 @@ export const CreateTweetModal: React.FC = () => {
               >
                 <Tweet>
                   <Tweet.ShowThread />
-                  <StyledPostWrapper disableHover>
-                    <Tweet.Threaded />
+                  <StyledTweetWrapper disableHover>
+                    <Tweet.Thread />
                     <BaseStylesDiv>
                       <Tweet.Avatar>
                         <Connector />
@@ -77,7 +77,7 @@ export const CreateTweetModal: React.FC = () => {
                         </div>
                       </StyledDetailsContainer>
                     </BaseStylesDiv>
-                  </StyledPostWrapper>
+                  </StyledTweetWrapper>
                 </Tweet>
               </TweetProvider>
             ) : null}

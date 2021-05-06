@@ -12,10 +12,11 @@ import { Comments } from "./Comments";
 import { TweetProvider } from "../../../components/TweetContext";
 import {
   StyledDetailsContainer,
-  StyledPostWrapper,
-} from "../../../components/PostComposition/styles";
-import { Header, Tweet } from "../../../components/PostComposition";
-import { DisplayMoreButton } from "../../../components/PostComposition/DisplayMoreButton";
+  StyledTweetWrapper,
+} from "../../../components/TweetComposition/styles";
+import { Tweet } from "../../../components/TweetComposition";
+import { Header } from "../../../components/TweetComposition/Header";
+import { ShowMore } from "../../../components/TweetComposition/ShowMore";
 import { DropdownProvider } from "../../../components/DropDown";
 import { moveUpAndLeftReducer } from "../../../components/DropDown/reducers";
 import { useQuery } from "@apollo/client";
@@ -58,10 +59,10 @@ export const Conversation: React.FC<Props> = ({ tweet, user }) => {
               userId={user!.id!}
             >
               <Tweet>
-                <StyledPostWrapper>
-                  <Tweet.Threaded>
+                <StyledTweetWrapper>
+                  <Tweet.Thread>
                     <Connector isReply />
-                  </Tweet.Threaded>
+                  </Tweet.Thread>
                   <BaseStylesDiv>
                     <Tweet.Avatar>
                       {tweet!.replyCount! ? <Connector /> : null}
@@ -79,7 +80,7 @@ export const Conversation: React.FC<Props> = ({ tweet, user }) => {
                       <Tweet.Footer />
                     </StyledDetailsContainer>
                   </BaseStylesDiv>
-                </StyledPostWrapper>
+                </StyledTweetWrapper>
               </Tweet>
             </TweetProvider>
           ))
@@ -90,9 +91,9 @@ export const Conversation: React.FC<Props> = ({ tweet, user }) => {
         !data!.conversation!.edges?.some(
           (el) => el.id === tweet.inReplyToId
         ) ? (
-          <DisplayMoreButton tweet={tweet} isTweetView>
+          <ShowMore tweet={tweet} isTweetView>
             tweet not available
-          </DisplayMoreButton>
+          </ShowMore>
         ) : null}
         {data && data?.conversation.__typename === "ConversationSuccess" ? (
           <TweetProvider
@@ -102,9 +103,9 @@ export const Conversation: React.FC<Props> = ({ tweet, user }) => {
               data!.conversation!.edges![data!.conversation!.edges!.length - 1]
             }
           >
-            <Tweet showBorder={true}>
-              <StyledPostWrapper disableHover>
-                <Tweet.Threaded />
+            <Tweet>
+              <StyledTweetWrapper disableHover>
+                <Tweet.Thread />
                 <BaseStylesDiv>
                   <Tweet.Avatar />
                   <StyledDetailsContainer>
@@ -133,7 +134,7 @@ export const Conversation: React.FC<Props> = ({ tweet, user }) => {
                 >
                   <Tweet.Footer marginAuto />
                 </BaseStylesDiv>
-              </StyledPostWrapper>
+              </StyledTweetWrapper>
             </Tweet>
           </TweetProvider>
         ) : null}

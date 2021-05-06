@@ -1,14 +1,15 @@
 import * as React from "react";
 import { useParams } from "react-router-dom";
 import { Tweet as TweetType } from "../../generated/graphql";
-import { BaseStylesDiv, Connector } from "../../styles";
+import { BaseStylesDiv } from "../../styles";
 import { DropdownProvider } from "../DropDown";
 import { moveUpAndLeftReducer } from "../DropDown/reducers";
 import {
-  StyledPostWrapper,
+  StyledTweetWrapper,
   StyledDetailsContainer,
-} from "../PostComposition/styles";
-import { Header, Tweet } from "../PostComposition";
+} from "../TweetComposition/styles";
+import { Tweet } from "../TweetComposition";
+import { Header } from "../TweetComposition/Header";
 import { TweetProvider } from "../TweetContext";
 
 interface Props {
@@ -27,7 +28,7 @@ export const Row: React.FC<Props> = React.memo(
   ({ ...props }) => {
     const { data, index, style } = props;
 
-    const { array, setRowHeight, userId, showBorder, showConnector } = data;
+    const { array, setRowHeight, userId } = data;
 
     const { tweetId } = useParams<{ tweetId: string }>();
 
@@ -85,18 +86,12 @@ export const Row: React.FC<Props> = React.memo(
             prevTweet={array![index - 1]}
             userId={userId}
           >
-            <Tweet
-              showBorder={showBorder ? showBorder : !array[index].replyCount}
-            >
+            <Tweet>
               <Tweet.ShowThread />
-              <StyledPostWrapper>
-                <Tweet.Threaded />
+              <StyledTweetWrapper>
+                <Tweet.Thread />
                 <BaseStylesDiv>
-                  <Tweet.Avatar>
-                    {showConnector && array[index].replyCount ? (
-                      <Connector />
-                    ) : null}
-                  </Tweet.Avatar>
+                  <Tweet.Avatar />
                   <StyledDetailsContainer>
                     <Tweet.Header displayDate>
                       <DropdownProvider
@@ -111,7 +106,7 @@ export const Row: React.FC<Props> = React.memo(
                     <Tweet.Footer />
                   </StyledDetailsContainer>
                 </BaseStylesDiv>
-              </StyledPostWrapper>
+              </StyledTweetWrapper>
             </Tweet>
             {tweetId &&
               !!array[index].replyCount &&

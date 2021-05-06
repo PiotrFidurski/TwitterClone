@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useLocation } from "react-router-dom";
-import { StyledDropDownItem } from "../../components/DropDown/DropDownComposition/Menu";
+import { StyledDropDownItem } from "../../components/DropDown/DropDownComposition/styles";
 import { ReactComponent as Home } from "../../components/svgs/Home.svg";
 import { SideBar, Link, Nav } from "../../components/Sidebar";
 import { ReactComponent as Bell } from "../../components/svgs/Bell.svg";

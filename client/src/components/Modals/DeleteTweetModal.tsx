@@ -11,7 +11,7 @@ import { useModalContext } from "../context/ModalContext";
 import { Modal } from "./ModalComposition/Modal";
 
 interface Props {
-  deleteTweet: any;
+  deleteTweet: () => void;
 }
 
 const StyledContainer = styled.div`

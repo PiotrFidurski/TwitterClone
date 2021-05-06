@@ -40,6 +40,7 @@ interface ModalComposition {
 interface Props {
   displayAsAlert?: boolean;
 }
+
 export const Modal: React.FC<Props> & ModalComposition = ({
   children,
   displayAsAlert,

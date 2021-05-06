@@ -148,33 +148,30 @@ export const client = new ApolloClient({
     splitLink,
   ]),
   typeDefs,
-  resolvers: {
-    User: {
-      isFollowed: (parent: User, args, { cache }) => {
-        const data: AuthUserQuery = cache.readQuery({
-          query: AuthUserDocument,
-        });
-        return (
-          data &&
-          data.authUser &&
-          parent!.followers !== null &&
-          !!parent.followers!.filter(
-            (follower) => follower.id === data!.authUser.id
-          ).length
-        );
-      },
-    },
-    Tweet: {
-      isLiked: (parent: Tweet, args, { cache }) => {
-        const data: AuthUserQuery | null = cache.readQuery({
-          query: AuthUserDocument,
-        });
 
-        return !!parent!.likes!.filter((user) => user.id === data!.authUser.id)
-          .length;
-      },
-    },
-    Query: {},
-    Mutation: {},
-  },
+  // User: {
+  //   isFollowed: (parent: User, args, { cache }) => {
+  //     const data: AuthUserQuery = cache.readQuery({
+  //       query: AuthUserDocument,
+  //     });
+  //     return (
+  //       data &&
+  //       data.authUser &&
+  //       parent!.followers !== null &&
+  //       !!parent.followers!.filter(
+  //         (follower) => follower.id === data!.authUser.id
+  //       ).length
+  //     );
+  //   },
+  // },
+  // Tweet: {
+  //   isLiked: (parent: Tweet, args, { cache }) => {
+  //     const data: AuthUserQuery | null = cache.readQuery({
+  //       query: AuthUserDocument,
+  //     });
+
+  //     return !!parent!.likes!.filter((user) => user.id === data!.authUser.id)
+  //       .length;
+  //   },
+  // },
 });

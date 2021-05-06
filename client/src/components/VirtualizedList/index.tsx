@@ -14,8 +14,6 @@ interface Props {
   data: Tweet[];
   loadMore: () => Promise<ApolloQueryResult<FeedQuery | RepliesQuery>>;
   userId: string;
-  showBorder?: boolean;
-  showConnector?: boolean;
   loading?: boolean;
   hasNextPage?: boolean;
 }
@@ -24,28 +22,16 @@ const createItemData = memoize(
   (
     array: Tweet[],
     setRowHeight: (index: any, size: any) => void,
-    userId: string,
-    showBorder: boolean,
-    showConnector: boolean
+    userId: string
   ) => ({
     array,
     setRowHeight,
     userId,
-    showBorder,
-    showConnector,
   })
 );
 
 export const VirtualizedList: React.FC<Props> = ({ ...props }) => {
-  const {
-    data,
-    loadMore,
-    userId,
-    showBorder,
-    hasNextPage,
-    showConnector,
-    loading,
-  } = props;
+  const { data, loadMore, userId, hasNextPage, loading } = props;
 
   const listRef = React.useRef<VariableSizeList>(null);
 
@@ -77,13 +63,7 @@ export const VirtualizedList: React.FC<Props> = ({ ...props }) => {
 
   const isItemLoaded = (index: number) => !hasNextPage! || index < data.length!;
 
-  const itemData = createItemData(
-    data,
-    setRowHeight,
-    userId,
-    showBorder!,
-    showConnector!
-  );
+  const itemData = createItemData(data, setRowHeight, userId);
 
   return (
     <InfiniteLoader

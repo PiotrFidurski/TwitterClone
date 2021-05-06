@@ -47,7 +47,6 @@ export const Comments: React.FC<Props> = ({ tweet, userId }) => {
         loadMore={loadMore}
         hasNextPage={data!.replies!.pageInfo.hasNextPage!}
         data={data.replies!.edges!}
-        showConnector={true}
       />
     </div>
   ) : data?.replies.__typename === "TweetsInvalidInputError" ? (

@@ -5,6 +5,7 @@ import { Modals } from "../../components/context/ModalContext/ModalRoot";
 import { LoadingPage } from "../../pages/LoadingPage";
 import { useQuery } from "@apollo/client";
 import { AuthUserDocument, AuthUserQuery } from "../../generated/graphql";
+import { authUserId } from "../../cache";
 const HomePage = React.lazy(() => import("../../pages/HomePage"));
 const NonAuthenticatedRoutes = React.lazy(
   () => import("./NonAuthenticatedRoutes")
@@ -27,7 +28,9 @@ export const Routes = () => {
       openModal();
     }
   }, [location, loading, data, isModalAtLocation, openModal]);
-
+  React.useEffect(() => {
+    authUserId(data?.authUser.id);
+  }, [data]);
   if (loading) return <LoadingPage />;
 
   return (

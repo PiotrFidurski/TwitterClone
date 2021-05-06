@@ -59,7 +59,7 @@ export const StyledArticle = styled.article<{
   `}
 `;
 
-export const StyledPostWrapper = styled.div<{ disableHover?: boolean }>`
+export const StyledTweetWrapper = styled.div<{ disableHover?: boolean }>`
   ${({ disableHover }) => css`
     ${BaseStyles};
     flex-direction: column;
@@ -119,5 +119,39 @@ export const StyledSpacingWrapper = styled.div`
 
   flex-basis: 49px;
   margin-right: 10px;
+  flex-direction: column;
+`;
+
+export const ShowMoreContainer = styled.div`
+  ${BaseStyles};
+  display: block;
+  overflow: hidden;
+  flex-grow: 1;
+  width: 100%;
+  :hover {
+    cursor: pointer;
+    background-color: var(--colors-hover);
+  }
+`;
+
+export const ShowMoreWrapper = styled.div`
+  ${BaseStyles};
+  margin: 5px 0;
+`;
+
+export const ThreadLineContainer = styled.div`
+  ${BaseStyles};
+  flex-direction: column;
+  margin: 0px 5px;
+  flex-basis: 70px;
+  justify-content: space-between;
+`;
+
+export const Dot = styled.div`
+  ${BaseStyles};
+  width: 2px;
+  height: 2px;
+  background-color: var(--colors-threadedline);
+  margin: 0 auto;
   flex-direction: column;
 `;

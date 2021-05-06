@@ -1,6 +1,7 @@
 fragment tweetLikesFields on Tweet {
   id
   isLiked @client
+  inReplyToUsername @client
   likesCount
   replyCount
   likes {

@@ -88,7 +88,11 @@ const UserToFollow: React.FC<UserToFollowProps> = React.memo(
         __typename: "Mutation",
         followUser: {
           __typename: "UpdateResourceResponse",
-          node: { ...userToFollow, isFollowed: !userToFollow.isFollowed },
+          node: {
+            ...userToFollow,
+            isFollowed: !userToFollow.isFollowed,
+            followers: [],
+          },
         },
       },
     });

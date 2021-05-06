@@ -59,7 +59,6 @@ const GenerateFeed: React.FC<GnenerateFeedProps> = ({ userId }) => {
       data={data?.feed.edges!}
       hasNextPage={data?.feed.pageInfo.hasNextPage}
       loadMore={loadMore}
-      showConnector={true}
     />
   ) : null;
 };

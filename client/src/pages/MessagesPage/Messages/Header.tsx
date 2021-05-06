@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link, useHistory, useParams } from "react-router-dom";
 import { DropdownProvider } from "../../../components/DropDown";
-import { StyledDropDownItem } from "../../../components/DropDown/DropDownComposition/Menu";
+import { StyledDropDownItem } from "../../../components/DropDown/DropDownComposition/styles";
 import { moveLeftReducer } from "../../../components/DropDown/reducers";
 import { Header } from "../../../components/Header";
 import {

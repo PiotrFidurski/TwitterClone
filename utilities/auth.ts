@@ -5,7 +5,7 @@ import { OwnContext } from "../types";
 
 export const createAccessToken = (user: IUser) => {
   return sign({ _id: user.id }, process.env.ACCESS_TOKEN_SECRET!, {
-    expiresIn: "15m",
+    expiresIn: "5h",
   });
 };
 
@@ -14,7 +14,7 @@ export const createRefreshToken = (user: IUser) => {
     { _id: user.id, tokenVersion: user.tokenVersion },
     process.env.REFRESH_TOKEN_SECRET!,
     {
-      expiresIn: "5h",
+      expiresIn: "60d",
     }
   );
 };

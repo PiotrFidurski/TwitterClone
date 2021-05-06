@@ -1,8 +1,7 @@
 import * as React from "react";
 import { ButtonContainer, SpanContainer, StyledForm } from "../../styles";
 import { TextFormField } from "../../components/FormComponents/TextFormField";
-import { Formik, FormikErrors, FormikValues } from "formik";
-import * as yup from "yup";
+import { Formik, FormikErrors } from "formik";
 import {
   AuthUserDocument,
   AuthUserQuery,
@@ -13,44 +12,13 @@ import {
 } from "../../generated/graphql";
 import { setAccessToken } from "../../accessToken";
 import { useMutation } from "@apollo/client";
-
-const schema = yup.object().shape({
-  name: yup.string().required(),
-  username: yup.string().required(),
-  email: yup.string().email().required(),
-  password: yup
-    .string()
-    .min(8)
-    .max(40)
-    .required()
-    .matches(
-      /^(?=.*[A-Z])/,
-      "password must contain at least one capital letter"
-    )
-    .matches(/^(?=.*[0-9])/, "password must contain at least one number")
-    .matches(
-      /^(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]/,
-      "password must contain at least one special character"
-    )
-    .matches(/^(?=.*\d)(?=.*[a-z]).{8,}$/),
-});
-
-interface IHandleSubmit {
-  values: FormikValues;
-  setErrors: (
-    errors: FormikErrors<{
-      name: string | undefined;
-      username: string | undefined;
-      email: string | undefined;
-      password: string | undefined;
-      message: string;
-      __typename: "UserRegisterInvalidInputError";
-    }>
-  ) => void;
-}
+import { IHandleSubmit, Errors } from "./types";
+import { schema } from "./validationSchema";
+import { authUserId } from "../../cache";
 
 export const Form: React.FC = () => {
   const [login] = useMutation<LoginMutation>(LoginDocument);
+
   const [register] = useMutation<RegisterMutation>(RegisterDocument);
 
   const handleSubmit = async ({
@@ -59,18 +27,9 @@ export const Form: React.FC = () => {
   }: IHandleSubmit) => {
     await register({
       variables: { name, username, email, password },
-      update(cache, { data }) {
+      update(_, { data }) {
         if (data?.register.__typename === "UserRegisterInvalidInputError") {
-          setErrors(
-            data!.register as FormikErrors<{
-              name: string | undefined;
-              username: string | undefined;
-              email: string | undefined;
-              password: string | undefined;
-              message: string;
-              __typename: "UserRegisterInvalidInputError";
-            }>
-          );
+          setErrors(data!.register as FormikErrors<Errors>);
         }
         if (data?.register.__typename === "UserRegisterSuccess") {
           login({
@@ -83,6 +42,7 @@ export const Form: React.FC = () => {
                     authUser: data!.login!.node,
                   },
                 });
+                authUserId(data.login.node.id);
                 setAccessToken(data!.login!.accessToken);
               }
             },

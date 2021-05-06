@@ -1,29 +1,10 @@
 import * as React from "react";
-import {
-  AvatarContainer,
-  PlaceHolder,
-  StyledAvatar,
-  BaseStyles,
-} from "../../styles";
+import { AvatarContainer, PlaceHolder, StyledAvatar } from "../../styles";
 import { User } from "../../generated/graphql";
 import "react-circular-progressbar/dist/styles.css";
 import { Form } from "./Form";
-import styled from "styled-components";
-import { StyledAvatarWrapper } from "../PostComposition/styles";
-
-export const StyledContainer = styled.div`
-  ${BaseStyles};
-  flex-direction: column;
-  margin-top: 5px;
-`;
-
-export const StyledWrapper = styled.div`
-  ${BaseStyles};
-  color: var(--colors-maintext);
-  flex-grow: 1;
-  justify-content: flex-start;
-  padding: 0 15px 15px 15px;
-`;
+import { StyledAvatarWrapper } from "../TweetComposition/styles";
+import { StyledContainer, StyledWrapper } from "./styles";
 
 interface Props {
   user: User;

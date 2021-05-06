@@ -5,7 +5,7 @@ import { Formik } from "formik";
 import { useParams } from "react-router-dom";
 import { v4 } from "uuid";
 import { DropdownProvider } from "../../../components/DropDown";
-import { StyledDropDownItem } from "../../../components/DropDown/DropDownComposition/Menu";
+import { StyledDropDownItem } from "../../../components/DropDown/DropDownComposition/styles";
 import { emojiPickerReducer } from "../../../components/DropDown/reducers";
 import { ReactComponent as SadFace } from "../../../components/svgs/SadFace.svg";
 import {

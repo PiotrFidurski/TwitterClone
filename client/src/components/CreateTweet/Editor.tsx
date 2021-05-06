@@ -5,36 +5,10 @@ import {
   RichUtils,
   DraftHandleValue,
 } from "draft-js";
-import { BaseStyles } from "../../styles";
-import styled from "styled-components";
 import { useLocation } from "react-router-dom";
 import { useDropdownCtxt } from "../DropDown";
-
-const StyledContainer = styled.div`
-  ${BaseStyles};
-  padding: 10px 0;
-`;
-
-const StyledWrapper = styled.div`
-  ${BaseStyles};
-  flex-grow: 1;
-  width: 0px;
-  > :first-child {
-    flex-grow: 1;
-    width: 0px;
-    font-size: 19px;
-  }
-`;
-
-interface EditorProps {
-  editorState: EditorState;
-  setState: React.Dispatch<React.SetStateAction<EditorState>>;
-  setFieldValue: (
-    field: string,
-    value: any,
-    shouldValidate?: boolean | undefined
-  ) => void;
-}
+import { StyledEditorContainer, StyledEditorWrapper } from "./styles";
+import { EditorProps } from "./types";
 
 export const Editor: React.FC<EditorProps> = ({
   editorState,
@@ -71,8 +45,8 @@ export const Editor: React.FC<EditorProps> = ({
   };
 
   return (
-    <StyledContainer>
-      <StyledWrapper>
+    <StyledEditorContainer>
+      <StyledEditorWrapper>
         <DraftEditor
           ref={focusRef}
           handleReturn={handleReturn}
@@ -81,7 +55,7 @@ export const Editor: React.FC<EditorProps> = ({
           spellCheck={true}
           placeholder="What's happening?"
         />
-      </StyledWrapper>
-    </StyledContainer>
+      </StyledEditorWrapper>
+    </StyledEditorContainer>
   );
 };

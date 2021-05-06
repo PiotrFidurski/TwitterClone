@@ -6,7 +6,7 @@ import {
   HoverContainer,
 } from "../../styles";
 import { Link } from "react-router-dom";
-import { StyledDropDownItem } from "../DropDown/DropDownComposition/Menu";
+import { StyledDropDownItem } from "../DropDown/DropDownComposition/styles";
 
 export const StyledContainer = styled.div`
   ${BaseStyles};

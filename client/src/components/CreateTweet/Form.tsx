@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Formik, FormikState } from "formik";
+import { Formik } from "formik";
 import { EditorState, ContentState } from "draft-js";
 import { Toolbar } from "./Toolbar";
 import * as yup from "yup";
@@ -16,24 +16,8 @@ import { useMutation } from "@apollo/client";
 import { EmojiPicker } from "../TwemojiPicker/EmojiPicker";
 import { DropdownProvider } from "../DropDown";
 import { emojiPickerReducer } from "../DropDown/reducers";
-import { StyledDropDownItem } from "../DropDown/DropDownComposition/Menu";
-
-const schema = yup.object().shape({
-  body: yup.string().required().max(280),
-});
-
-interface IHandleSubmit {
-  body: string;
-  resetForm: (
-    nextState?:
-      | Partial<
-          FormikState<{
-            body: string;
-          }>
-        >
-      | undefined
-  ) => void;
-}
+import { StyledDropDownItem } from "../DropDown/DropDownComposition/styles";
+import { IHandleSubmit } from "./types";
 
 interface Props {
   tweetToReplyTo?: {
@@ -102,7 +86,9 @@ export const Form: React.FC<Props> = ({ tweetToReplyTo }) => {
   return (
     <Formik
       initialValues={{ body: "" }}
-      validationSchema={schema}
+      validationSchema={yup.object().shape({
+        body: yup.string().required().max(280),
+      })}
       onSubmit={({ body }, { resetForm }) => handleSubmit({ body, resetForm })}
     >
       {({ setFieldValue }) => {

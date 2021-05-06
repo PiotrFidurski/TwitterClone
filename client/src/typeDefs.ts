@@ -6,6 +6,7 @@ const typeDefs = gql`
   }
   extend type Tweet {
     isLiked: Boolean
+    inReplyToUsername: String
   }
 `;
 

@@ -106,8 +106,6 @@ const UserTweets = () => {
       userId={userData!.userByName!.node.id!}
       loadMore={loadMore}
       hasNextPage={data!.userTweets?.pageInfo!.hasNextPage}
-      showBorder={true}
-      showConnector={false}
     />
   ) : data?.userTweets.__typename === "TweetsInvalidInputError" ? (
     <BaseStylesDiv flexGrow>
@@ -167,8 +165,6 @@ const UserTweetsAndReplies = () => {
       userId={userData!.userByName!.node.id}
       hasNextPage={data!.userTweetsAndReplies!.pageInfo.hasNextPage!}
       loadMore={loadMore}
-      showBorder={true}
-      showConnector={false}
     />
   ) : data?.userTweetsAndReplies.__typename === "TweetsInvalidInputError" ? (
     <BaseStylesDiv flexGrow>
@@ -226,8 +222,6 @@ const UserLikedTweets = () => {
       userId={userData!.userByName!.node.id}
       loadMore={loadMore}
       hasNextPage={data!.userLikedTweets!.pageInfo.hasNextPage!}
-      showBorder={true}
-      showConnector={false}
     />
   ) : data?.userLikedTweets.__typename === "TweetsInvalidInputError" ? (
     <BaseStylesDiv flexGrow>

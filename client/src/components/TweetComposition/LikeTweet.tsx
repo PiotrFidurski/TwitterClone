@@ -36,6 +36,7 @@ export const LikeTweet = () => {
           node: {
             __typename: "Tweet",
             ...tweet,
+            likes: [],
             isLiked: !tweet.isLiked,
             likesCount: tweet.isLiked
               ? tweet.likesCount! - 1

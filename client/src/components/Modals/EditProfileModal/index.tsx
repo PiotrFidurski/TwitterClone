@@ -1,10 +1,10 @@
 import * as React from "react";
-import { Modal } from "./ModalComposition/Modal";
+import { Modal } from "../ModalComposition/Modal";
 import {
   UpdateUserDocument,
   UploadAvatarDocument,
   AuthUserDocument,
-} from "../../generated/graphql";
+} from "../../../generated/graphql";
 import {
   BaseStylesDiv,
   HoverContainer,
@@ -13,45 +13,17 @@ import {
   ButtonContainer,
   StyledForm,
   Spinner,
-} from "../../styles";
-import { ReactComponent as Close } from "../svgs/Close.svg";
-import { HeaderContainer } from "../PostComposition/styles";
-import { Background } from "../../pages/ProfilePage/Profile/styles";
-import { TextFormField } from "../FormComponents/TextFormField";
+} from "../../../styles";
+import { ReactComponent as Close } from "../../svgs/Close.svg";
+import { HeaderContainer } from "../../TweetComposition/styles";
+import { Background } from "../../../pages/ProfilePage/Profile/styles";
+import { TextFormField } from "../../FormComponents/TextFormField";
 import { Formik } from "formik";
-import { UploadAvatar } from "../UploadAvatar";
-import * as yup from "yup";
+import { UploadAvatar } from "../../UploadAvatar";
 import { useHistory } from "react-router-dom";
 import { useMutation, useQuery } from "@apollo/client";
-
-interface Errors {
-  name: string | undefined;
-  bio: string | undefined;
-  website: string | undefined;
-  message: string;
-  __typename: "UserUpdateInvalidInputError";
-}
-
-interface IHandleSubmit {
-  values: { name: string; bio: string; website: string };
-  setErrors: (errors: Errors) => void;
-}
-
-const schema = yup.object().shape({
-  name: yup.string().required(),
-  bio: yup.string().nullable(),
-  website: yup.lazy((value) =>
-    !value
-      ? yup.string()
-      : yup
-          .string()
-          .matches(
-            /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/,
-            "Invalid url."
-          )
-          .nullable()
-  ),
-});
+import { Errors, IHandleSubmit } from "./types";
+import { schema } from "./validationSchema";
 
 export const EditProfileModal: React.FC = () => {
   const [updateUser, { called, data: fieldData }] = useMutation(
@@ -62,6 +34,7 @@ export const EditProfileModal: React.FC = () => {
   );
 
   const history = useHistory();
+
   const { data, loading } = useQuery(AuthUserDocument);
 
   React.useEffect(() => {

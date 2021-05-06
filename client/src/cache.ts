@@ -1,4 +1,4 @@
-import { InMemoryCache } from "@apollo/client";
+import { InMemoryCache, makeVar } from "@apollo/client";
 import { Tweet } from "./generated/graphql";
 import generatedIntrospection from "./generated/introspection-result";
 
@@ -8,6 +8,52 @@ export const cache: InMemoryCache = new InMemoryCache({
     return object.id;
   },
   typePolicies: {
+    User: {
+      fields: {
+        isFollowed: {
+          read(existing = false, { cache, readField, toReference }) {
+            const followers: any = readField("followers");
+            return (
+              !!followers?.filter((user: any) => {
+                const ref = toReference(user);
+                const id = readField("id", ref);
+                return id === authUserId();
+              }).length || existing
+            );
+          },
+        },
+      },
+    },
+    Tweet: {
+      fields: {
+        likes: {
+          keyArgs: false,
+          merge: false,
+          read(existing) {
+            return existing;
+          },
+        },
+        isLiked: {
+          read(existing = false, { cache, readField, toReference }) {
+            const likes: any = readField("likes");
+
+            const isLiked = likes!.filter((user: any) => {
+              return user.__ref === authUserId();
+            }).length;
+            return likes.length ? !!isLiked : existing;
+          },
+        },
+        inReplyToUsername: {
+          read(existing = "", { readField, toReference }) {
+            const field: any = readField("inReplyToId");
+            const ref = toReference({ id: field!, __typename: "Tweet" });
+            const owner: any = readField("owner", ref);
+            const username = readField("username", owner);
+            return username ? username : existing;
+          },
+        },
+      },
+    },
     Query: {
       fields: {
         messages: {
@@ -284,3 +330,5 @@ export const cache: InMemoryCache = new InMemoryCache({
     },
   },
 });
+
+export const authUserId = makeVar("");

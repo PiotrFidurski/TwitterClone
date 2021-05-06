@@ -1,6 +1,5 @@
 import * as React from "react";
 import styled from "styled-components";
-import { User } from "../../generated/graphql";
 import {
   BaseStyles,
   BaseStylesDiv,
@@ -13,7 +12,6 @@ import { Modal } from "./ModalComposition/Modal";
 
 interface Props {
   leaveConversation: () => void;
-  user: User;
 }
 
 const StyledContainer = styled.div`
@@ -24,7 +22,6 @@ const StyledContainer = styled.div`
 `;
 
 export const LeaveConversationModal: React.FC<Props> = ({
-  user,
   leaveConversation,
 }) => {
   const { closeModal } = useModalContext();

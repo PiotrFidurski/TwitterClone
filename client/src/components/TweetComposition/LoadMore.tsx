@@ -4,7 +4,7 @@ import {
   RepliesToTweetDocument,
   RepliesToTweetMutation,
 } from "../../generated/graphql";
-import { DisplayMoreButton } from "./DisplayMoreButton";
+import { ShowMore } from "./ShowMore";
 import { Tweet } from "../../generated/introspection-result";
 import { Spinner } from "../../styles";
 import { useMutation } from "@apollo/client";
@@ -63,9 +63,9 @@ export const LoadMore: React.FC<Props> = ({ tweet }) => {
       }}
     >
       {!loading && !loaded ? (
-        <DisplayMoreButton tweet={tweet} isTweetView={true}>
+        <ShowMore tweet={tweet} isTweetView={true}>
           more replies
-        </DisplayMoreButton>
+        </ShowMore>
       ) : loading ? (
         <div>
           <Spinner style={{ margin: "10px auto" }} />

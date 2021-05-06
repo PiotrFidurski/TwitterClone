@@ -2,7 +2,6 @@ import * as React from "react";
 import { ButtonContainer, SpanContainer, StyledForm } from "../../styles";
 import { TextFormField } from "../../components/FormComponents/TextFormField";
 import { Formik, FormikErrors } from "formik";
-import * as yup from "yup";
 import {
   AuthUserQuery,
   AuthUserDocument,
@@ -11,23 +10,9 @@ import {
 } from "../../generated/graphql";
 import { setAccessToken } from "../../accessToken";
 import { useMutation } from "@apollo/client";
-
-const schema = yup.object().shape({
-  email: yup.string().email().required(),
-  password: yup.string().min(6).required(),
-});
-
-interface IHandleSubmit {
-  values: { email: string; password: string };
-  setErrors: (
-    errors: FormikErrors<{
-      email: string | undefined;
-      password: string | undefined;
-      message: string;
-      __typename: "UserLoginInvalidInputError";
-    }>
-  ) => void;
-}
+import { schema } from "./validationSchema";
+import { IHandleSubmit, Errors } from "./types";
+import { authUserId } from "../../cache";
 
 export const Form: React.FC = () => {
   const [login] = useMutation<LoginMutation>(LoginDocument);
@@ -40,20 +25,14 @@ export const Form: React.FC = () => {
       variables: { email, password },
       update(cache, { data }) {
         if (data?.login?.__typename === "UserLoginInvalidInputError") {
-          setErrors(
-            data!.login! as FormikErrors<{
-              email: string | undefined;
-              password: string | undefined;
-              message: string;
-              __typename: "UserLoginInvalidInputError";
-            }>
-          );
+          setErrors(data!.login! as FormikErrors<Errors>);
         }
         if (data?.login?.__typename === "UserLoginSuccess") {
           cache.writeQuery<AuthUserQuery>({
             query: AuthUserDocument,
             data: { authUser: data.login.node },
           });
+          authUserId(data.login.node.id);
           setAccessToken(data.login.accessToken);
         }
       },

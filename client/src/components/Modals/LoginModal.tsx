@@ -10,7 +10,7 @@ import {
 import { Modal } from "./ModalComposition/Modal";
 
 interface Props {
-  closeModal: any;
+  closeModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const StyledContainer = styled.div`
@@ -51,7 +51,6 @@ export const LoginModal: React.FC<Props> = ({ closeModal }) => {
             </ButtonContainer>
             <StyledLink to="/login">
               <ButtonContainer
-                // warning
                 filledVariant
                 style={{ minHeight: "35px" }}
                 onClick={() => {
