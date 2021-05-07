@@ -6,30 +6,24 @@ import AuthDirective from "./customDirectives/AuthDirective";
 import { app, serverConfig, sessionMiddleware } from "./config/expressServer";
 import { createServer } from "http";
 import { connect } from "mongoose";
-import { RedisPubSub } from "graphql-redis-subscriptions";
 import Redis from "ioredis";
 import { decode } from "jsonwebtoken";
 
 serverConfig();
 
-const subscriber = new Redis({
+export const subscriber = new Redis({
   host: `${process.env.REDIS_HOST}`,
   port: 18964,
   password: process.env.REDIS_PASSWORD,
   username: process.env.REDIS_USERNAME,
   retryStrategy: (options: any) => Math.max(options.attempt * 100, 3000),
 });
-const publisher = new Redis({
+export const publisher = new Redis({
   host: `${process.env.REDIS_HOST}`,
   port: 18964,
   password: process.env.REDIS_PASSWORD,
   username: process.env.REDIS_USERNAME,
   retryStrategy: (options: any) => Math.max(options.attempt * 100, 3000),
-});
-
-export const redisPubSub = new RedisPubSub({
-  subscriber,
-  publisher,
 });
 
 const DBURI =

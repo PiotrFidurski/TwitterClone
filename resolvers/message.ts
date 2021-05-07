@@ -4,7 +4,7 @@ import { OwnContext } from "types";
 import Conversation from "../entity/Conversation/index";
 import Message from "../entity/Message";
 import { withFilter } from "graphql-subscriptions";
-import { redisPubSub } from "../index";
+import { subscriber, publisher } from "../index";
 import { Types } from "mongoose";
 import LastSeenMessage from "../entity/Conversation/LastSeenMessage";
 import {
@@ -18,7 +18,10 @@ let pubSub: RedisPubSub;
 
 pubSub =
   process.env.NODE_ENV === "production"
-    ? redisPubSub
+    ? new RedisPubSub({
+        subscriber,
+        publisher,
+      })
     : new RedisPubSub({
         connection: {
           port: 6379,
