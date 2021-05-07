@@ -4,6 +4,7 @@ import { OwnContext } from "types";
 import Conversation from "../entity/Conversation/index";
 import Message from "../entity/Message";
 import { withFilter } from "graphql-subscriptions";
+import { subscriber, publisher } from "../index";
 import { Types } from "mongoose";
 import LastSeenMessage from "../entity/Conversation/LastSeenMessage";
 import {
@@ -11,25 +12,9 @@ import {
   conversationPipeline,
   resolve,
 } from "../utilities/resolverUtils";
-import Redis from "ioredis";
 import { RedisPubSub } from "graphql-redis-subscriptions";
 
 let pubSub: RedisPubSub;
-
-const subscriber = new Redis({
-  host: `${process.env.REDIS_HOST}`,
-  port: 18964,
-  password: process.env.REDIS_PASSWORD,
-  username: process.env.REDIS_USERNAME,
-  retryStrategy: (options: any) => Math.max(options.attempt * 100, 3000),
-});
-const publisher = new Redis({
-  host: `${process.env.REDIS_HOST}`,
-  port: 18964,
-  password: process.env.REDIS_PASSWORD,
-  username: process.env.REDIS_USERNAME,
-  retryStrategy: (options: any) => Math.max(options.attempt * 100, 3000),
-});
 
 pubSub =
   process.env.NODE_ENV === "production"
