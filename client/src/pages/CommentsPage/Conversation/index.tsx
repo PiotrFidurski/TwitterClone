@@ -32,7 +32,6 @@ export const Conversation: React.FC<Props> = ({ tweet, user }) => {
       conversationId: tweet.conversationId,
       tweetId: tweet!.id,
     },
-    fetchPolicy: "network-only",
   });
 
   if (loading) return <Spinner />;

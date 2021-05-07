@@ -73,7 +73,10 @@ export const Message: React.FC<Props> = React.memo(({ ...props }) => {
           isItMyMsg={isMine(message)}
           isEmojiOnly={messageIsEmojiOnly()}
         >
-          <SpanContainer breakSpaces>
+          <SpanContainer
+            breakSpaces
+            style={isMine(message!) ? { color: "white" } : {}}
+          >
             <span>
               <Twemoji>{message!.node.messagedata!.text!}</Twemoji>
             </span>

@@ -17,6 +17,7 @@ import {
 import { Tweet } from "../../generated/introspection-result";
 import { SpanContainer, Spinner } from "../../styles";
 import { useMutation } from "@apollo/client";
+import { useParams } from "react-router";
 
 interface Props {
   tweet: Tweet;
@@ -29,6 +30,7 @@ export const ShowMoreReplies: React.FC<Props> = ({ tweet }) => {
   ] = useMutation<RepliesToTweetMutation>(RepliesToTweetDocument, {
     variables: { tweetId: tweet.id },
   });
+  const { tweetId } = useParams<{ tweetId: string }>();
 
   const loadMore = React.useCallback(async (): Promise<any> => {
     try {
@@ -36,12 +38,12 @@ export const ShowMoreReplies: React.FC<Props> = ({ tweet }) => {
         update: (cache, { data }) => {
           const cachedReplies = cache.readQuery<RepliesQuery>({
             query: RepliesDocument,
-            variables: { tweetId: tweet.conversationId },
+            variables: { tweetId },
           });
 
           cache.writeQuery<RepliesQuery>({
             query: RepliesDocument,
-            variables: { tweetId: tweet.conversationId },
+            variables: { tweetId },
             data: {
               __typename: "Query",
               replies: {
@@ -56,7 +58,7 @@ export const ShowMoreReplies: React.FC<Props> = ({ tweet }) => {
         },
       });
     } catch (error) {}
-  }, [loadRepliesToTweet, tweet]);
+  }, [loadRepliesToTweet, tweetId]);
 
   return (
     <Wrapper

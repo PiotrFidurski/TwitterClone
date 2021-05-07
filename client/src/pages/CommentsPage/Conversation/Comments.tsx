@@ -19,7 +19,6 @@ interface Props {
 export const Comments: React.FC<Props> = ({ tweet, userId }) => {
   const { data, loading, fetchMore } = useQuery<RepliesQuery>(RepliesDocument, {
     variables: { tweetId: tweet.id },
-    fetchPolicy: "network-only",
   });
 
   const loadMore = async (): Promise<any> => {
