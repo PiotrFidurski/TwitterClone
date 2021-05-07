@@ -90,7 +90,7 @@ export const Menu: React.FC = () => {
                 <span>Not interested in this Tweet</span>
               </SpanContainer>
             </StyledDropDownItem>
-            {data!.authUser!.id === tweet!.owner!.id ? (
+            {data?.authUser?.id! === tweet!.owner!.id ? (
               <StyledDropDownItem
                 danger
                 id="dropdown-item"

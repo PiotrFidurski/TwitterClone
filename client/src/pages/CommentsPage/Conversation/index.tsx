@@ -107,7 +107,7 @@ export const Conversation: React.FC<Props> = ({ tweet, user }) => {
               <StyledTweetWrapper disableHover>
                 <Tweet.Thread />
                 <BaseStylesDiv>
-                  <Tweet.Avatar />
+                  <Tweet.Avatar showThreadLine={false} />
                   <StyledDetailsContainer>
                     <Tweet.Header displayDate={false} flexColumn>
                       <DropdownProvider

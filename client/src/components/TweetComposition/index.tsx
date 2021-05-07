@@ -6,7 +6,7 @@ import { ShowMoreReplies } from "./ShowMoreReplies";
 import { Tweet as TweetType } from "../../generated/introspection-result";
 import { ShowThread } from "./ShowThread";
 import { Thread } from "./Thread";
-import { Avatar } from "./Avatar";
+import { Avatar, AvatarProps } from "./Avatar";
 import { Header, HeaderProps } from "./Header";
 import { Footer, FooterProps } from "./Footer";
 import { Body, BodyProps } from "./Body";
@@ -15,7 +15,7 @@ import { ReplyingTo } from "./ReplyingTo";
 type TweetComposition = {
   ShowThread: React.FC;
   Thread: React.FC;
-  Avatar: React.FC;
+  Avatar: React.FC<AvatarProps>;
   Header: React.FC<HeaderProps>;
   ReplyingTo: React.FC;
   Body: React.FC<BodyProps>;
@@ -25,17 +25,20 @@ type TweetComposition = {
   }>;
 };
 
-export const Tweet: React.FC & TweetComposition = ({ children }) => {
+interface Props {
+  showTweetBorder?: boolean;
+}
+
+export const Tweet: React.FC<Props> & TweetComposition = ({
+  children,
+  showTweetBorder,
+}) => {
   const history = useHistory();
 
   const { tweet } = useTweet();
 
   const displayBorder =
-    history.location.pathname === "/posts/compose"
-      ? false
-      : history.location.pathname.match(/(.user.*)/)
-      ? true
-      : !tweet.replyCount;
+    showTweetBorder !== undefined ? showTweetBorder : !tweet.replyCount;
 
   const handleRedirect = (event: React.BaseSyntheticEvent) => {
     event.stopPropagation();

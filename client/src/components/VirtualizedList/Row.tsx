@@ -18,6 +18,8 @@ interface Props {
     array: TweetType[];
     setRowHeight: (index: number, size: number) => void;
     userId: string;
+    showThreadLine: boolean;
+    showTweetBorder: boolean;
   };
   style: React.CSSProperties;
 }
@@ -26,7 +28,13 @@ export const Row: React.FC<Props> = React.memo(
   ({ ...props }) => {
     const { data, index, style } = props;
 
-    const { array, setRowHeight, userId } = data;
+    const {
+      array,
+      setRowHeight,
+      userId,
+      showThreadLine,
+      showTweetBorder,
+    } = data;
 
     const { tweetId } = useParams<{ tweetId: string }>();
 
@@ -84,12 +92,12 @@ export const Row: React.FC<Props> = React.memo(
             prevTweet={array![index - 1]}
             userId={userId}
           >
-            <Tweet>
+            <Tweet showTweetBorder={showTweetBorder}>
               <Tweet.ShowThread />
               <StyledTweetWrapper>
                 <Tweet.Thread />
                 <BaseStylesDiv>
-                  <Tweet.Avatar />
+                  <Tweet.Avatar showThreadLine={showThreadLine} />
                   <StyledDetailsContainer>
                     <Tweet.Header displayDate>
                       <DropdownProvider

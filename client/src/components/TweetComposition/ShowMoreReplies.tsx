@@ -61,10 +61,10 @@ export const ShowMoreReplies: React.FC<Props> = ({ tweet }) => {
   return (
     <Wrapper
       style={called ? { borderBottom: "transparent" } : {}}
-      onClick={async (e) => {
+      onClick={(e) => {
         e.stopPropagation();
 
-        await loadMore();
+        loadMore();
       }}
     >
       {!called ? (

@@ -2,15 +2,6 @@ import styled, { css, keyframes } from "styled-components";
 import { Form } from "formik";
 import { Link } from "react-router-dom";
 
-export const slideDown = keyframes`
-  0% { 
-    max-height: 0;
-  }
-  100% { 
-    max-height: calc(100vh - 92px);
-  }
-`;
-
 const spin = keyframes`
   0% {
     transform: rotate(0deg);

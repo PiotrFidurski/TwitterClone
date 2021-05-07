@@ -24,13 +24,15 @@ export const Routes = () => {
   const isModalAtLocation = !!Modals[location.pathname];
 
   React.useEffect(() => {
+    authUserId(data?.authUser.id);
+  }, [data]);
+
+  React.useEffect(() => {
     if (!loading && data && isModalAtLocation) {
       openModal();
     }
   }, [location, loading, data, isModalAtLocation, openModal]);
-  React.useEffect(() => {
-    authUserId(data?.authUser.id);
-  }, [data]);
+
   if (loading) return <LoadingPage />;
 
   return (

@@ -16,22 +16,36 @@ interface Props {
   userId: string;
   loading?: boolean;
   hasNextPage?: boolean;
+  showThreadLine?: boolean;
+  showTweetBorder?: boolean;
 }
 
 const createItemData = memoize(
   (
     array: Tweet[],
     setRowHeight: (index: any, size: any) => void,
-    userId: string
+    userId: string,
+    showThreadLine: boolean,
+    showTweetBorder: boolean
   ) => ({
     array,
     setRowHeight,
     userId,
+    showThreadLine,
+    showTweetBorder,
   })
 );
 
 export const VirtualizedList: React.FC<Props> = ({ ...props }) => {
-  const { data, loadMore, userId, hasNextPage, loading } = props;
+  const {
+    data,
+    loadMore,
+    userId,
+    hasNextPage,
+    loading,
+    showTweetBorder,
+    showThreadLine,
+  } = props;
 
   const listRef = React.useRef<VariableSizeList>(null);
 
@@ -63,7 +77,13 @@ export const VirtualizedList: React.FC<Props> = ({ ...props }) => {
 
   const isItemLoaded = (index: number) => !hasNextPage! || index < data.length!;
 
-  const itemData = createItemData(data, setRowHeight, userId);
+  const itemData = createItemData(
+    data,
+    setRowHeight,
+    userId,
+    showThreadLine!,
+    showTweetBorder!
+  );
 
   return (
     <InfiniteLoader

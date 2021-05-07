@@ -84,6 +84,8 @@ const UserTweets = () => {
   return userData?.userByName?.__typename === "UserByNameSuccess" &&
     data?.userTweets.__typename === "TweetConnection" ? (
     <VirtualizedList
+      showTweetBorder={true}
+      showThreadLine={false}
       data={data!.userTweets?.edges!}
       userId={userData!.userByName!.node.id!}
       loadMore={loadMore}
@@ -143,6 +145,8 @@ const UserTweetsAndReplies = () => {
   return userData?.userByName?.__typename === "UserByNameSuccess" &&
     data?.userTweetsAndReplies.__typename === "TweetConnection" ? (
     <VirtualizedList
+      showTweetBorder={true}
+      showThreadLine={false}
       data={data!.userTweetsAndReplies!.edges!}
       userId={userData!.userByName!.node.id}
       hasNextPage={data!.userTweetsAndReplies!.pageInfo.hasNextPage!}
@@ -200,6 +204,8 @@ const UserLikedTweets = () => {
   return userData?.userByName?.__typename === "UserByNameSuccess" &&
     data?.userLikedTweets.__typename === "TweetConnection" ? (
     <VirtualizedList
+      showTweetBorder={true}
+      showThreadLine={false}
       data={data!.userLikedTweets!.edges!}
       userId={userData!.userByName!.node.id}
       loadMore={loadMore}
@@ -332,7 +338,7 @@ export const Profile: React.FC<Props> = ({ user }) => {
         >
           <StyledAvatar url={user.avatar!} />
         </AvatarContainer>
-        {data!.authUser?.id === user.id ? (
+        {data?.authUser?.id === user.id ? (
           <StyledLink
             style={{ flexGrow: 0 }}
             to={{

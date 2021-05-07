@@ -12,6 +12,21 @@ import {
   conversationPipeline,
   resolve,
 } from "../utilities/resolverUtils";
+import { RedisPubSub } from "graphql-redis-subscriptions";
+
+let pubSub: RedisPubSub;
+
+pubSub =
+  process.env.NODE_ENV === "production"
+    ? redisPubSub
+    : new RedisPubSub({
+        connection: {
+          port: 6379,
+          retryStrategy: (times) => {
+            return Math.min(times * 50, 2000);
+          },
+        },
+      });
 
 export default {
   Query: {
@@ -262,7 +277,7 @@ export default {
           ...conversationPipeline,
         ]);
 
-        redisPubSub.publish("conversation_updated", {
+        pubSub.publish("conversation_updated", {
           conversationUpdated: {
             conversation: {
               id: updatedConversation!.id,
@@ -308,7 +323,7 @@ export default {
   Subscription: {
     conversationUpdated: {
       subscribe: withFilter(
-        () => redisPubSub.asyncIterator("conversation_updated"),
+        () => pubSub.asyncIterator("conversation_updated"),
         (payload, variables) => {
           return (
             payload.conversationUpdated.message.messagedata.receiverId ===

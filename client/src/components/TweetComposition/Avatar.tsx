@@ -1,20 +1,20 @@
 import * as React from "react";
-import { useParams, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { AvatarContainer, StyledAvatar, Connector } from "../../styles";
 import { useTweet } from "../TweetContext";
 import { StyledAvatarWrapper } from "./styles";
 
-export const Avatar: React.FC = ({ children }) => {
-  const { tweet } = useTweet();
+export interface AvatarProps {
+  showThreadLine?: boolean;
+}
 
-  const { tweetId } = useParams<{ tweetId: string }>();
+export const Avatar: React.FC<AvatarProps> = ({ children, showThreadLine }) => {
+  const { tweet } = useTweet();
 
   const history: any = useHistory();
 
   const displayThreadLine =
-    history.location.pathname.match(/(.user.*)/) || tweetId === tweet.id
-      ? false
-      : tweet.replyCount;
+    showThreadLine !== undefined ? showThreadLine : tweet.replyCount;
 
   return (
     <StyledAvatarWrapper>

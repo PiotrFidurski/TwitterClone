@@ -30,10 +30,12 @@ export const Editor: React.FC<EditorProps> = ({
     if (location.pathname === "/posts/compose") {
       focusRef?.current?.focus();
     }
-    if (!emojiPickerOpen) {
+    if (
+      editorState.getCurrentContent().getPlainText().length &&
+      !emojiPickerOpen
+    )
       focusRef?.current?.focus();
-    }
-  }, [location, emojiPickerOpen]);
+  }, [location, emojiPickerOpen, editorState]);
 
   const handleReturn = (
     e: React.SyntheticEvent<any, KeyboardEvent>,

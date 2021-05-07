@@ -264,7 +264,7 @@ export default {
           { $limit: 20 },
           ...tweetPipeline,
         ]);
-        console.log(tweets);
+
         if (!tweets.length)
           return {
             pageInfo: {

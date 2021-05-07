@@ -57,7 +57,7 @@ export const CreateTweetModal: React.FC = () => {
                 tweet={data.tweet.node}
                 userId={userData!.authUser!.id}
               >
-                <Tweet>
+                <Tweet showTweetBorder={false}>
                   <Tweet.ShowThread />
                   <StyledTweetWrapper disableHover>
                     <Tweet.Thread />
