@@ -116,7 +116,6 @@ export const StyledFooterWrapper = styled.div<{ marginAuto?: boolean }>`
 
 export const StyledSpacingWrapper = styled.div`
   ${BaseStyles};
-
   flex-basis: 49px;
   margin-right: 10px;
   flex-direction: column;
@@ -136,7 +135,7 @@ export const ShowMoreContainer = styled.div`
 
 export const ShowMoreWrapper = styled.div`
   ${BaseStyles};
-  margin: 5px 0;
+  margin: 10px 0;
 `;
 
 export const ThreadLineContainer = styled.div`

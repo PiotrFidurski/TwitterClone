@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import styled, { css } from "styled-components";
+
 import { MessageEdge, User } from "../../../generated/graphql";
 import { format } from "date-fns";
 import {
@@ -8,57 +8,10 @@ import {
   StyledAvatar,
   SpanContainer,
   BaseStylesDiv,
-  BaseStyles,
 } from "../../../styles";
 import { Twemoji } from "../../../components/TwemojiPicker/Twemoji";
 import twemoji from "twemoji";
-
-const StyledContainer = styled.div<{
-  isItMyMsg: boolean;
-  margin: boolean;
-  isItMyLastMsg: boolean;
-}>`
-  ${BaseStyles};
-  align-items: center;
-  margin-bottom: ${(props) => (props.isItMyLastMsg ? "10px" : "0")};
-  margin-left: ${(props) => (props.margin ? "50px" : "0")};
-  justify-content: ${(props) => (props.isItMyMsg ? "flex-end" : "flex-start")};
-`;
-
-const StyledWrapper = styled.div<{ isItMyMsg: boolean }>`
-  ${BaseStyles};
-  flex-direction: column;
-  max-width: 80%;
-  width: 100%;
-  align-items: ${(props) => (props.isItMyMsg ? "flex-end" : "flex-start")};
-`;
-
-const StyledMessage = styled.div<{ isItMyMsg: boolean; isEmojiOnly: boolean }>`
-  ${({ isItMyMsg, isEmojiOnly }) => css`
-    ${BaseStyles};
-    max-width: 85%;
-    border: 1px solid
-      ${isItMyMsg && !isEmojiOnly
-        ? "var(--colors-button)"
-        : !isItMyMsg && !isEmojiOnly
-        ? "var(--colors-thirdbackground)"
-        : "transparent"};
-    border-radius: 16px;
-    background-color: ${isItMyMsg && !isEmojiOnly
-      ? "var(--colors-button)"
-      : !isItMyMsg && !isEmojiOnly
-      ? "var(--colors-thirdbackground)"
-      : "transparent"};
-    border-bottom-left-radius: ${isItMyMsg ? "16px" : "0px"};
-    border-bottom-right-radius: ${isItMyMsg ? "0px" : "16px"};
-    padding: ${isEmojiOnly ? "0" : "10px"};
-    margin: 0 5px 5px 5px;
-    .emoji {
-      width: ${isEmojiOnly ? "2.8em" : "1.2em"};
-      height: ${isEmojiOnly ? "2.8em" : "1.2em"};
-    }
-  `}
-`;
+import { StyledMessage, StyledMessageContainer, StyledWrapper } from "./styles";
 
 interface Props {
   message: MessageEdge;
@@ -93,7 +46,7 @@ export const Message: React.FC<Props> = React.memo(({ ...props }) => {
     !!(user.id === message.node.messagedata.senderId);
 
   return (
-    <StyledContainer
+    <StyledMessageContainer
       isItMyLastMsg={isLast(index)}
       margin={message.node.messagedata!.senderId !== user.id && !isLast(index)}
       isItMyMsg={isMine(message)}
@@ -167,6 +120,6 @@ export const Message: React.FC<Props> = React.memo(({ ...props }) => {
           ) : null}
         </BaseStylesDiv>
       </StyledWrapper>
-    </StyledContainer>
+    </StyledMessageContainer>
   );
 });

@@ -16,7 +16,6 @@ import {
 } from "../../../components/TweetComposition/styles";
 import { Tweet } from "../../../components/TweetComposition";
 import { Header } from "../../../components/TweetComposition/Header";
-import { ShowMore } from "../../../components/TweetComposition/ShowMore";
 import { DropdownProvider } from "../../../components/DropDown";
 import { moveUpAndLeftReducer } from "../../../components/DropDown/reducers";
 import { useQuery } from "@apollo/client";
@@ -33,6 +32,7 @@ export const Conversation: React.FC<Props> = ({ tweet, user }) => {
       conversationId: tweet.conversationId,
       tweetId: tweet!.id,
     },
+    fetchPolicy: "network-only",
   });
 
   if (loading) return <Spinner />;
@@ -91,9 +91,9 @@ export const Conversation: React.FC<Props> = ({ tweet, user }) => {
         !data!.conversation!.edges?.some(
           (el) => el.id === tweet.inReplyToId
         ) ? (
-          <ShowMore tweet={tweet} isTweetView>
-            tweet not available
-          </ShowMore>
+          <SpanContainer>
+            <span>post not available</span>
+          </SpanContainer>
         ) : null}
         {data && data?.conversation.__typename === "ConversationSuccess" ? (
           <TweetProvider

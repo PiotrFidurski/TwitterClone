@@ -1,67 +1,20 @@
-import { EditorState, Modifier } from "draft-js";
+import { EditorState } from "draft-js";
 import * as React from "react";
-import styled from "styled-components";
 import {
   Absolute,
-  BaseStyles,
   BaseStylesDiv,
   HoverContainer,
   SpanContainer,
 } from "../../styles";
 import { TextFormField } from "../FormComponents/TextFormField";
 import emojiJson from "./emojis.json";
-
-const StyledBody = styled.div`
-  max-height: 300px;
-  ${BaseStyles};
-  padding: 10px 15px;
-  flex-wrap: wrap;
-`;
-
-const StyledPanelButton = styled.div`
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  transition: all 0.2s;
-`;
-
-const StyledContainer = styled.div`
-  ${BaseStylesDiv};
-  flex-direction: column;
-  flex-grow: 1;
-`;
-
-function insertCharacter(characterToInsert: any, editorState: EditorState) {
-  const currentContent = editorState.getCurrentContent(),
-    currentSelection = editorState.getSelection();
-
-  const newContent = Modifier.insertText(
-    currentContent,
-    currentSelection,
-    characterToInsert
-  );
-  return EditorState.moveFocusToEnd(
-    EditorState.push(editorState, newContent, "insert-characters")
-  );
-}
-
-interface Props {
-  setFieldValue: (
-    field: string,
-    value: any,
-    shouldValidate?: boolean | undefined
-  ) => void;
-  setState: React.Dispatch<React.SetStateAction<EditorState>>;
-  state: EditorState;
-}
-
-type Emoji = { name: string; unicode: string; char: string };
+import { insertEmoji } from "./insertEmoji";
+import { StyledPanelButton, StyledBody, StyledContainer } from "./styles";
+import { Emoji, Props } from "./types";
 
 let allEmojis: Array<Emoji> = [];
 
-emojiJson.forEach((e) => (allEmojis = [...allEmojis, ...e.emojis]));
+emojiJson.forEach((emoji) => (allEmojis = [...allEmojis, ...emoji.emojis]));
 
 export const EmojiPicker: React.FC<Props> = ({ ...props }) => {
   const { setState, state, setFieldValue } = props;
@@ -71,7 +24,7 @@ export const EmojiPicker: React.FC<Props> = ({ ...props }) => {
   const [searchEmoji, setSearchEmoji] = React.useState("");
 
   const onEmojiSelect = (emoji: Emoji) => {
-    const newState = insertCharacter(emoji.char, state);
+    const newState = insertEmoji(emoji.char, state);
     setFieldValue("body", newState.getCurrentContent().getPlainText("\u0001"));
     setState(
       EditorState.push(state, newState.getCurrentContent(), "insert-characters")

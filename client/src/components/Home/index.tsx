@@ -1,6 +1,5 @@
 import * as React from "react";
 import {
-  PrimaryColumn,
   Main,
   StyledRoutesWrapper,
   BaseStylesDiv,
@@ -90,21 +89,19 @@ export const Home: React.FC = () => {
       <Main>
         <div>
           <StyledRoutesWrapper>
-            <PrimaryColumn>
-              <Switch>
-                <Redirect exact from="/" to="/login" />
-                <Redirect exact from="/settings/profile" to="/login" />
-                <Redirect exact from="/home" to="/login" />
-                <Redirect exact from="/messages" to="/login" />
-                <Redirect exact from="/messages/*" to="/login" />
-                <Route path="/user/:username">
-                  <ProfilePage user={defaultUser} />
-                </Route>
-                <Route exact path="/:username/status/:tweetId">
-                  <CommentsPage user={defaultUser} />
-                </Route>
-              </Switch>
-            </PrimaryColumn>
+            <Switch>
+              <Redirect exact from="/" to="/login" />
+              <Redirect exact from="/settings/profile" to="/login" />
+              <Redirect exact from="/home" to="/login" />
+              <Redirect exact from="/messages" to="/login" />
+              <Redirect exact from="/messages/*" to="/login" />
+              <Route path="/user/:username">
+                <ProfilePage user={defaultUser} />
+              </Route>
+              <Route exact path="/:username/status/:tweetId">
+                <CommentsPage user={defaultUser} />
+              </Route>
+            </Switch>
           </StyledRoutesWrapper>
         </div>
       </Main>

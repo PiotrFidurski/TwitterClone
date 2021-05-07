@@ -12,55 +12,16 @@ import {
 } from "../../../generated/graphql";
 import {
   SpanContainer,
-  BaseStyles,
   BaseStylesDiv,
   Spinner,
   JustifyCenter,
 } from "../../../styles";
 import InfiniteScroll from "react-infinite-scroll-component";
-import styled from "styled-components";
-import { Field } from "formik";
+
 import { Message } from "./Message";
 import { Form } from "./Form";
 import { MessageHeader } from "./Header";
-
-const StyledContainer = styled.div<{ height: number }>`
-  ${BaseStyles};
-  padding: 10px;
-  flex-direction: column;
-  overflow: auto;
-  flex-direction: column-reverse;
-  min-height: ${(props) => props.height - 109}px;
-  max-height: ${(props) => props.height - 109}px;
-  height: 700px;
-  width: auto;
-`;
-
-export const InputContainer = styled(Field)`
-  ${BaseStyles};
-  border-width: 0px;
-  display: none;
-  border-style: inset;
-  width: 100%;
-  background-color: var(--colors-thirdbackground);
-  outline: none;
-  padding: 2px 10px 5px 10px;
-  color: var(--colors-maintext);
-  font-size: 19px;
-`;
-
-const SpinnerContainer = styled.div`
-  position: absolute;
-  top: 15px;
-  width: 45px;
-  border-radius: 50%;
-  height: 45px;
-  display: flex;
-  align-items: center;
-  flex-basis: auto;
-  left: 50%;
-  background-color: black;
-`;
+import { SpinnerContainer, StyledContainer } from "./styles";
 
 interface Props {
   user: User;

@@ -110,7 +110,7 @@ export const Row: React.FC<Props> = React.memo(
               !!array[index].replyCount &&
               array[index].inReplyToId !== tweetId &&
               !array.some((el: any) => el.inReplyToId === array![index].id) && (
-                <Tweet.LoadMore tweet={array![index]} />
+                <Tweet.ShowMoreReplies tweet={array![index]} />
               )}
           </TweetProvider>
         </div>

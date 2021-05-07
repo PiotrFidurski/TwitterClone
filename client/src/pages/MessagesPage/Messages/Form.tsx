@@ -16,78 +16,24 @@ import {
   MessagesConnection,
   SendMessageSuccess,
 } from "../../../generated/graphql";
-import { StyledForm, BaseStylesDiv, BaseStyles } from "../../../styles";
-import styled from "styled-components";
+import { StyledForm, BaseStylesDiv } from "../../../styles";
 import { ChatEditor } from "./Editor";
 import { EmojiPicker } from "../../../components/TwemojiPicker/EmojiPicker";
 import { EmojiDecorator } from "./EmojiDecorator";
+import {
+  ChatBox,
+  StyledEditorContainer,
+  StyledEmojiPickerContainer,
+  StyledFormArea,
+} from "./styles";
 
-const StyledFormArea = styled.div`
-  ${BaseStyles};
-  position: absolute;
-  bottom: 0px;
-  left: 0px;
-  right: 0px;
-  padding: 10px 10px 5px 10px;
-  border-top: 1px solid var(--colors-border);
-  background-color: var(--colors-mainbackground);
-`;
-
-const ChatBox = styled.div`
-  ${BaseStyles};
-  flex-grow: 1;
-  border-top: 1px solid var(--colors-border);
-  border: 1px solid var(--colors-button);
-  border-radius: 15px;
-  background-color: var(--colors-thirdbackground);
-  align-items: flex-end;
-  justify-content: space-between;
-  ::hover {
-    cursor: text;
-  }
-  &:focus {
-    background-color: var(--colors-mainbackground);
-  }
-`;
-
-const StyledEditorContainer = styled.div`
-  ${BaseStyles};
-  z-index: 0;
-  display: flex;
-  flex-grow: 1;
-  padding: 5.5px;
-  flex-direction: column;
-  width: 0px;
-  color: var(--colors-maintext);
-  margin: 0px 10px;
-  line-height: 1.3125;
-  height: 100%;
-  font-size: 15px;
-  max-height: 125px;
-  overflow-y: auto;
-  overflow-wrap: break-word;
-`;
-
-const StyledEmojiPickerContainer = styled.div`
-  ${BaseStyles};
-  flex-direction: column;
-  position: relative;
-  align-items: center;
-  width: 32px;
-  height: 32px;
-  justify-content: center;
-  :hover {
-    cursor: pointer;
-    border-radius: 9999px;
-    background-color: var(--colors-button-hover-opacity);
-  }
-`;
-
-export const Form: React.FC<{
+interface Props {
   user: User;
   conversation: Conversation;
   connection: MessagesConnection;
-}> = ({ user, conversation }) => {
+}
+
+export const Form: React.FC<Props> = ({ user, conversation }) => {
   const { conversationId } = useParams<{ conversationId: string }>();
 
   const [sendMessage] = useMutation<SendMessageMutation>(SendMessageDocument);
@@ -263,8 +209,6 @@ export const Form: React.FC<{
                   </DropdownProvider.Menu>
                 </DropdownProvider>
               </ChatBox>
-              {/* <button type="submit">submit</button> */}
-              {/* disabled if input value.length = 0 */}
             </StyledForm>
           );
         }}

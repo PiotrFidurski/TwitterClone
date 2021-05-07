@@ -36,7 +36,7 @@ export const AutheticatedRoutes: React.FC<Props> = ({ user, userInbox }) => {
         <Route path="/messages">
           <MessagesPage user={user} userInbox={userInbox} />
         </Route>
-        <Route exact path="/posts/compose">
+        <Route exact path="/tweets/compose">
           <CreateTweetModal />
         </Route>
         <Route exact path="/settings/profile">

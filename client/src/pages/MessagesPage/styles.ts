@@ -48,3 +48,34 @@ export const StyledMessagesContainer = styled.div<{ location: string }>`
   }
   border-left: 1px solid var(--colors-border);
 `;
+
+export const StyledConversation = styled.div<{
+  recentMessage: boolean;
+}>`
+  ${BaseStyles};
+  flex-grow: 0;
+  padding: 10px;
+  overflow: auto;
+  border-bottom: 1px solid var(--colors-border);
+  background-color: ${(props) =>
+    props.recentMessage! ? "var(--colors-thirdbackground)" : "transparent"};
+  :hover {
+    cursor: pointer;
+    background-color: var(--colors-background);
+  }
+`;
+
+export const StyledConversationWrapper = styled.div`
+  ${BaseStyles};
+  flex-grow: 1;
+  flex-direction: column;
+  margin: 4px 0px 0px 10px;
+  text-overflow: ellipsis;
+  width: 0px;
+`;
+
+export const StyledConversationHeader = styled.div`
+  ${BaseStyles};
+  flex-grow: 1;
+  justify-content: space-between;
+`;

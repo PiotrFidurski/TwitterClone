@@ -11,7 +11,7 @@ export const cache: InMemoryCache = new InMemoryCache({
     User: {
       fields: {
         isFollowed: {
-          read(existing = false, { cache, readField, toReference }) {
+          read(existing = false, { readField, toReference }) {
             const followers: any = readField("followers");
             return (
               !!followers?.filter((user: any) => {
@@ -27,7 +27,6 @@ export const cache: InMemoryCache = new InMemoryCache({
     Tweet: {
       fields: {
         likes: {
-          keyArgs: false,
           merge: false,
           read(existing) {
             return existing;
@@ -122,7 +121,7 @@ export const cache: InMemoryCache = new InMemoryCache({
           },
         },
         replies: {
-          keyArgs: ["tweetId"],
+          keyArgs: ["tweetId", "inReplyToId"],
           read(existing, { toReference, readField, args }: any) {
             const thread: Array<{ [key: string]: Tweet }> = [];
             existing &&
@@ -144,7 +143,7 @@ export const cache: InMemoryCache = new InMemoryCache({
               existing.edges.slice(0).forEach((reply: any) => {
                 let child = thread[reply.__ref];
                 let idx = array.indexOf(reply);
-                if (child) {
+                if (child && !array.includes(child)) {
                   array.splice(idx + 1, 0, child);
                 }
               });

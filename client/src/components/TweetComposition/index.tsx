@@ -2,7 +2,7 @@ import * as React from "react";
 import { useHistory } from "react-router-dom";
 import { StyledArticle } from "./styles";
 import { useTweet } from "../TweetContext";
-import { LoadMore } from "./LoadMore";
+import { ShowMoreReplies } from "./ShowMoreReplies";
 import { Tweet as TweetType } from "../../generated/introspection-result";
 import { ShowThread } from "./ShowThread";
 import { Thread } from "./Thread";
@@ -20,7 +20,7 @@ type TweetComposition = {
   ReplyingTo: React.FC;
   Body: React.FC<BodyProps>;
   Footer: React.FC<FooterProps>;
-  LoadMore: React.FC<{
+  ShowMoreReplies: React.FC<{
     tweet: TweetType;
   }>;
 };
@@ -30,9 +30,12 @@ export const Tweet: React.FC & TweetComposition = ({ children }) => {
 
   const { tweet } = useTweet();
 
-  const displayBorder = history.location.pathname.match(/(.user.*)/)
-    ? true
-    : !tweet.replyCount;
+  const displayBorder =
+    history.location.pathname === "/posts/compose"
+      ? false
+      : history.location.pathname.match(/(.user.*)/)
+      ? true
+      : !tweet.replyCount;
 
   const handleRedirect = (event: React.BaseSyntheticEvent) => {
     event.stopPropagation();
@@ -54,4 +57,4 @@ Tweet.Header = Header;
 Tweet.ReplyingTo = ReplyingTo;
 Tweet.Body = Body;
 Tweet.Footer = Footer;
-Tweet.LoadMore = LoadMore;
+Tweet.ShowMoreReplies = ShowMoreReplies;

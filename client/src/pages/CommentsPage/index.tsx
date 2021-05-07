@@ -58,11 +58,10 @@ export const CommentsPage: React.FC<Props> = ({ user }) => {
           </>
         )}
       </PrimaryColumn>
-      {user && user.username ? (
-        <SidebarColumn>
-          <SecondaryColumn user={user} />
-        </SidebarColumn>
-      ) : null}
+
+      <SidebarColumn>
+        <SecondaryColumn user={user} />
+      </SidebarColumn>
     </StyledContainer>
   );
 };

@@ -13,41 +13,15 @@ import {
   AvatarContainer,
   StyledAvatar,
   SpanContainer,
-  BaseStyles,
 } from "../../styles";
 import { convertDateToTime } from "../../utils/functions";
-import styled from "styled-components";
 import { useMarkMessagesAsSeen } from "../../hooks/useMarkMessagesAsSeen";
 import { Twemoji } from "../../components/TwemojiPicker/Twemoji";
-
-const StyledContainer = styled.div<{ recentMessage: boolean }>`
-  ${BaseStyles};
-  flex-grow: 0;
-  padding: 10px;
-  overflow: auto;
-  border-bottom: 1px solid var(--colors-border);
-  background-color: ${(props) =>
-    props.recentMessage! ? "var(--colors-thirdbackground)" : "transparent"};
-  :hover {
-    cursor: pointer;
-    background-color: var(--colors-background);
-  }
-`;
-
-const StyledWrapper = styled.div`
-  ${BaseStyles};
-  flex-grow: 1;
-  flex-direction: column;
-  margin: 4px 0px 0px 10px;
-  text-overflow: ellipsis;
-  width: 0px;
-`;
-
-const StyledConversationHeader = styled.div`
-  ${BaseStyles};
-  flex-grow: 1;
-  justify-content: space-between;
-`;
+import {
+  StyledConversation,
+  StyledConversationWrapper,
+  StyledConversationHeader,
+} from "./styles";
 
 interface Props {
   conversation: ConversationType;
@@ -100,7 +74,7 @@ export const Conversation: React.FC<Props> = ({
   }, [location, conversation.mostRecentEntryId]);
 
   return (
-    <StyledContainer
+    <StyledConversation
       key={conversation.id}
       onClick={() => {
         history.push(`/messages/${conversation.conversationId}`);
@@ -118,7 +92,7 @@ export const Conversation: React.FC<Props> = ({
             <StyledAvatar url={receiver.avatar} />
           </AvatarContainer>
         </Link>
-        <StyledWrapper>
+        <StyledConversationWrapper>
           <BaseStylesDiv>
             <StyledConversationHeader>
               <SpanContainer bold>
@@ -143,8 +117,8 @@ export const Conversation: React.FC<Props> = ({
               </span>
             </SpanContainer>
           ) : null}
-        </StyledWrapper>
+        </StyledConversationWrapper>
       </BaseStylesDiv>
-    </StyledContainer>
+    </StyledConversation>
   );
 };

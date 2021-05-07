@@ -4,14 +4,14 @@ import { AvatarContainer, StyledAvatar, Connector } from "../../styles";
 import { useTweet } from "../TweetContext";
 import { StyledAvatarWrapper } from "./styles";
 
-export const Avatar: React.FC = () => {
+export const Avatar: React.FC = ({ children }) => {
   const { tweet } = useTweet();
 
   const { tweetId } = useParams<{ tweetId: string }>();
 
-  const history = useHistory();
+  const history: any = useHistory();
 
-  const displayConnector =
+  const displayThreadLine =
     history.location.pathname.match(/(.user.*)/) || tweetId === tweet.id
       ? false
       : tweet.replyCount;
@@ -27,7 +27,7 @@ export const Avatar: React.FC = () => {
           }}
         />
       </AvatarContainer>
-      {displayConnector ? <Connector /> : null}
+      {displayThreadLine ? <Connector /> : children}
     </StyledAvatarWrapper>
   );
 };

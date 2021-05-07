@@ -1,6 +1,23 @@
 import styled from "styled-components";
 import { BaseStyles } from "../../../styles";
 
+export const StyledHeaderContainer = styled.div`
+  ${BaseStyles};
+  color: white;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 15px 0 15px;
+`;
+
+export const StyledContainer = styled.div`
+  ${BaseStyles};
+  color: white;
+  padding: 0 15px 0 15px;
+  width: 0px;
+  flex-grow: 1;
+`;
+
 export const Background = styled.div`
   ${BaseStyles};
   padding-bottom: 33.5%;

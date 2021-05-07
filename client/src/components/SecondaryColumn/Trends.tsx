@@ -1,24 +1,12 @@
 import * as React from "react";
 import { ReactComponent as Caret } from "../svgs/Caret.svg";
-import { StyledContainer, StyledWrapper } from "./styles";
-import {
-  HoverContainer,
-  Absolute,
-  SpanContainer,
-  BaseStyles,
-} from "../../styles";
-import styled from "styled-components";
-
-const StyledHeader = styled.div`
-  ${BaseStyles};
-  flex-grow: 1;
-  align-items: center;
-  justify-content: space-between;
-`;
+import { StyledSecondaryContainer, StyledHoverWrapper } from "./styles";
+import { HoverContainer, Absolute, SpanContainer } from "../../styles";
+import { StyledHeader } from "./SuggestedUsers/styles";
 
 export const Trends = () => (
-  <StyledContainer>
-    <StyledWrapper>
+  <StyledSecondaryContainer>
+    <StyledHoverWrapper>
       <StyledHeader>
         <SpanContainer bigger bolder>
           <span>United States trends</span>
@@ -28,7 +16,7 @@ export const Trends = () => (
           <Caret />
         </HoverContainer>
       </StyledHeader>
-    </StyledWrapper>
+    </StyledHoverWrapper>
     <Trend />
     <Trend />
     <Trend />
@@ -38,11 +26,11 @@ export const Trends = () => (
         <span>Show More</span>
       </SpanContainer>
     </div>
-  </StyledContainer>
+  </StyledSecondaryContainer>
 );
 
 export const Trend = () => (
-  <StyledWrapper hover>
+  <StyledHoverWrapper hover>
     <StyledHeader>
       <SpanContainer smaller grey>
         <span>1</span>
@@ -64,5 +52,5 @@ export const Trend = () => (
         <span>65.2K Tweets</span>
       </SpanContainer>
     </div>
-  </StyledWrapper>
+  </StyledHoverWrapper>
 );

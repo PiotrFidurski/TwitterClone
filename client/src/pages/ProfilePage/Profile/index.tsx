@@ -3,7 +3,6 @@ import {
   SpanContainer,
   BaseStylesDiv,
   StyledAvatar,
-  BaseStyles,
   Spinner,
   JustifyCenter,
 } from "../../../styles";
@@ -29,7 +28,6 @@ import {
 import { ReactComponent as Message } from "../../../components/svgs/Messages.svg";
 import { useHistory, useLocation, useParams } from "react-router-dom";
 import { StyledLink } from "../../../styles";
-import styled from "styled-components";
 import {
   MessageUserDocument,
   GetUserByNameDocument,
@@ -37,27 +35,11 @@ import {
 import { VirtualizedList } from "../../../components/VirtualizedList";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 import { useModalContext } from "../../../components/context/ModalContext";
+import { StyledContainer, StyledHeaderContainer } from "./styles";
 
 interface Props {
   user: User;
 }
-
-const StyledHeaderContainer = styled.div`
-  ${BaseStyles};
-  color: white;
-  flex-grow: 1;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 15px 0 15px;
-`;
-
-const StyledContainer = styled.div`
-  ${BaseStyles};
-  color: white;
-  padding: 0 15px 0 15px;
-  width: 0px;
-  flex-grow: 1;
-`;
 
 const UserTweets = () => {
   const { username } = useParams<{ username: string }>();

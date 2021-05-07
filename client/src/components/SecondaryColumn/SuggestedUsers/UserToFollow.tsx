@@ -1,81 +1,28 @@
+import { useMutation } from "@apollo/client";
 import * as React from "react";
-import {
-  AvatarContainer,
-  SpanContainer,
-  ButtonContainer,
-  BaseStylesDiv,
-  Spinner,
-  StyledAvatar,
-  StyledLink,
-} from "../../styles";
-import { StyledContainer, StyledWrapper, StyledHeader } from "./styles";
+import { useHistory, Link } from "react-router-dom";
 import {
   User,
   FollowUserMutation,
-  RandomUsersDocument,
-  RandomUsersQuery,
-} from "../../generated/graphql";
-import { useMutation, useQuery } from "@apollo/client";
-import { FollowUserDocument } from "../../generated/introspection-result";
-import { useModalContext } from "../context/ModalContext";
-import { useHistory } from "react-router";
-import { Link } from "react-router-dom";
-
-interface Props {
-  user: User;
-}
-export const WhoToFollow: React.FC<Props> = React.memo(
-  ({ user }) => {
-    const { data, loading, refetch } = useQuery<RandomUsersQuery>(
-      RandomUsersDocument,
-      {
-        variables: { userId: user!.id! },
-      }
-    );
-
-    return (
-      <StyledContainer>
-        {loading ? (
-          <Spinner bigMargin />
-        ) : (
-          <div>
-            <StyledWrapper>
-              <StyledHeader>
-                <SpanContainer bigger bolder>
-                  <span>Who to Follow</span>
-                </SpanContainer>
-              </StyledHeader>
-            </StyledWrapper>
-            {data &&
-              data!.randomUsers!.map((user) => {
-                return <UserToFollow key={user.id} userToFollow={user} />;
-              })}
-            <div style={{ padding: "10px 15px 10px 15px" }}>
-              <ButtonContainer
-                onClick={() => {
-                  refetch({ variables: { userId: user!.id! } });
-                }}
-              >
-                <div>
-                  <SpanContainer>
-                    <span>Refresh</span>
-                  </SpanContainer>
-                </div>
-              </ButtonContainer>
-            </div>
-          </div>
-        )}
-      </StyledContainer>
-    );
-  },
-  (prevProps, nextProps) => prevProps.user!.id === nextProps.user.id
-);
+  FollowUserDocument,
+} from "../../../generated/graphql";
+import {
+  AvatarContainer,
+  StyledAvatar,
+  BaseStylesDiv,
+  StyledLink,
+  SpanContainer,
+  ButtonContainer,
+} from "../../../styles";
+import { useModalContext } from "../../context/ModalContext";
+import { StyledHoverWrapper } from "../styles";
+import { StyledHeader } from "./styles";
 
 interface UserToFollowProps {
   userToFollow: User;
 }
 
-const UserToFollow: React.FC<UserToFollowProps> = React.memo(
+export const UserToFollow: React.FC<UserToFollowProps> = React.memo(
   ({ userToFollow }) => {
     const history = useHistory();
 
@@ -108,7 +55,7 @@ const UserToFollow: React.FC<UserToFollowProps> = React.memo(
     };
 
     return (
-      <StyledWrapper
+      <StyledHoverWrapper
         hover
         style={{ display: "flex" }}
         onClick={() => {
@@ -154,7 +101,7 @@ const UserToFollow: React.FC<UserToFollowProps> = React.memo(
             </ButtonContainer>
           </div>
         </StyledHeader>
-      </StyledWrapper>
+      </StyledHoverWrapper>
     );
   }
 );
