@@ -1,43 +1,44 @@
 import * as React from "react";
-import { useDropdownCtxt } from "../";
+import { close, useDropdown } from "../context";
 import ReactDOM from "react-dom";
 import {
   StyledAbsoluteContainer,
   StyledFixedDiv,
   StyledContentsContainer,
 } from "./styles";
+import { BaseStylesDiv } from "../../../styles";
 
-export const Menu: React.FC = ({ children }) => {
-  const { state, close, position, menuRef } = useDropdownCtxt();
+interface Props {
+  position: string;
+}
+
+export const Menu: React.FC<Props> = ({ children, position }) => {
+  const { state, menuRef, dispatch } = useDropdown();
 
   React.useEffect(() => {
     const handleClose = (e: any) => {
-      if (menuRef.current && !menuRef.current!.contains(e.target)) {
-        close();
+      if (!menuRef?.current?.contains(e.target)) {
+        close(dispatch);
       }
     };
     window.addEventListener("mousedown", handleClose);
     return () => window.removeEventListener("mousedown", handleClose);
-  }, [close, menuRef]);
+    // eslint-disable-next-line
+  }, [close, dispatch]);
 
   return ReactDOM.createPortal(
-    state && state.open ? (
+    state?.open ? (
       <StyledAbsoluteContainer>
         <StyledFixedDiv />
         <StyledAbsoluteContainer />
         <StyledContentsContainer
           ref={menuRef}
-          visible={state.visible}
           position={position}
-          dimensions={{
-            ...state.dimensions!,
-            top:
-              position === "fixed"
-                ? state.dimensions!.y
-                : state.dimensions!.top,
-          }}
+          dimensions={state.dimensions!}
         >
-          {children}
+          <BaseStylesDiv>
+            <BaseStylesDiv flexColumn>{children}</BaseStylesDiv>
+          </BaseStylesDiv>
         </StyledContentsContainer>
       </StyledAbsoluteContainer>
     ) : null,

@@ -14,7 +14,7 @@ import { StyledForm, BaseStylesDiv } from "../../styles";
 import { useModalContext } from "../context/ModalContext";
 import { useMutation } from "@apollo/client";
 import { EmojiPicker } from "../TwemojiPicker/EmojiPicker";
-import { DropdownProvider } from "../DropDown";
+import { DropdownProvider } from "../DropDown/context";
 import { emojiPickerReducer } from "../DropDown/reducers";
 import { StyledDropDownItem } from "../DropDown/DropDownComposition/styles";
 import { IHandleSubmit } from "./types";
@@ -94,14 +94,14 @@ export const Form: React.FC<Props> = ({ tweetToReplyTo }) => {
       {({ setFieldValue }) => {
         return (
           <StyledForm>
-            <DropdownProvider reducer={emojiPickerReducer} position="absolute">
+            <DropdownProvider reducer={emojiPickerReducer}>
               <Editor
                 editorState={state}
                 setState={setState}
                 setFieldValue={setFieldValue}
               />
 
-              <DropdownProvider.Menu>
+              <DropdownProvider.Menu position="absolute">
                 <StyledDropDownItem noPadding>
                   <BaseStylesDiv>
                     <EmojiPicker

@@ -4,17 +4,18 @@ import { BaseStyles, SpanContainer } from "../../../styles";
 export const StyledContentsContainer = styled.div<{
   position: string;
   dimensions: DOMRectReadOnly;
-  visible: boolean;
 }>`
   ${BaseStyles};
   min-height: 25px;
   box-shadow: rgb(101 119 134 / 20%) 0px 0px 15px,
     rgb(101 119 134 / 15%) 0px 0px 3px 1px;
   position: ${(props) => props.position};
-  visibility: ${(props) => (props.visible ? "visible" : "hidden")};
   min-width: fit-content;
   overflow: hidden;
-  top: ${(props) => (props.dimensions ? props.dimensions.top : "10")}px;
+  top: ${(props) =>
+    props.dimensions && props.position === "fixed"
+      ? props.dimensions.y
+      : props.dimensions.top}px;
   left: ${(props) => (props.dimensions ? props.dimensions.left : "10")}px;
   border-radius: 5px;
   background: var(--colors-mainbackground);

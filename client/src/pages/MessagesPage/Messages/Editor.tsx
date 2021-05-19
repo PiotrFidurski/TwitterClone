@@ -1,7 +1,7 @@
 import * as React from "react";
 import { EditorState, DraftHandleValue } from "draft-js";
 import { useLocation } from "react-router-dom";
-import { useDropdownCtxt } from "../../../components/DropDown";
+import { useDropdown } from "../../../components/DropDown/context";
 import { Editor } from "draft-js";
 
 export const ChatEditor: React.FC<any> = ({
@@ -12,7 +12,7 @@ export const ChatEditor: React.FC<any> = ({
 }) => {
   const editorRef = React.useRef<Editor | null>(null);
 
-  const { state: dropdownState } = useDropdownCtxt();
+  const { state: dropdownState } = useDropdown();
   const location = useLocation();
   const handleReturn = (e: React.KeyboardEvent, state: EditorState) => {
     const handled: DraftHandleValue = "handled";

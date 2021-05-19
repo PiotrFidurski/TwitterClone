@@ -3,7 +3,7 @@ import { ButtonContainer, SpanContainer, BaseStylesDiv } from "../../styles";
 import { ReactComponent as SadFace } from "../../components/svgs/SadFace.svg";
 import { EditorState } from "draft-js";
 import { ProgressCircle } from "./ProgressCircle";
-import { DropdownProvider } from "../DropDown";
+import { DropdownProvider } from "../DropDown/context";
 import {
   StyledEmojiPickerContainer,
   StyledProgressCircleContainer,

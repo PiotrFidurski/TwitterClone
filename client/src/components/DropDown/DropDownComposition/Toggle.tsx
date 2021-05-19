@@ -1,16 +1,16 @@
 import * as React from "react";
-import { useDropdownCtxt } from "../";
+import { open, useDropdown } from "../context";
 import { BaseStylesDiv } from "../../../styles";
 
 export const Toggle: React.FC = ({ children }) => {
-  const { open, ref } = useDropdownCtxt();
+  const { dispatch, toggleRef } = useDropdown();
 
   return (
     <BaseStylesDiv
-      ref={ref}
+      ref={toggleRef}
       onClick={(e) => {
         e.stopPropagation();
-        open();
+        open(dispatch);
       }}
     >
       {children}

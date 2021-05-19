@@ -3,7 +3,6 @@ export interface IState {
   open: boolean;
   width: number;
   height: number;
-  visible: boolean;
 }
 
 export interface IAction {
@@ -11,26 +10,32 @@ export interface IAction {
   value?: any;
 }
 
+export const actionTypes = {
+  open: "open",
+  close: "close",
+  setMenuSize: "setMenuSize",
+  setDimensions: "setDimensions",
+};
+
 export const baseReducer = (state: IState, action: IAction) => {
   switch (action.type) {
-    case "open": {
+    case actionTypes.open: {
       return {
         ...state,
         open: !state.open,
-        visible: true,
       };
     }
-    case "close": {
+    case actionTypes.close: {
       return {
         ...state,
         open: false,
       };
     }
-
-    case "set_dimensions": {
+    case actionTypes.setMenuSize: {
       return {
         ...state,
-        dimensions: { ...action.value },
+        width: action.value.width as number,
+        height: action.value.height as number,
       };
     }
     default:
@@ -39,167 +44,68 @@ export const baseReducer = (state: IState, action: IAction) => {
 };
 
 export const sidebarReducer = (state: IState, action: IAction) => {
-  switch (action.type) {
-    case "open": {
-      return {
-        ...state,
-        open: !state.open,
-      };
-    }
-    case "close": {
-      return {
-        ...state,
-        open: false,
-      };
-    }
-    case "set_menu_size": {
-      return {
-        ...state,
-        width: action.value.width,
-        height: action.value.height,
-      };
-    }
-    case "set_dimensions": {
-      return {
-        ...state,
-        dimensions: {
-          ...action.value,
-          y:
-            action.value.y + state.height > window.innerHeight
-              ? action.value.y - state.height + 50
-              : action.value.y,
-        },
-      };
-    }
-    case "set_visibility": {
-      return { ...state, visible: true };
-    }
-    default:
-      return state;
+  if (action.type === actionTypes.setDimensions) {
+    return {
+      ...state,
+      dimensions: {
+        ...action.value,
+        y:
+          action.value.y + state.height > window.innerHeight
+            ? action.value.y - state.height + 50
+            : action.value.y,
+      },
+    };
   }
+  return baseReducer(state, action);
 };
+
 export const emojiPickerReducer = (state: IState, action: IAction) => {
-  switch (action.type) {
-    case "open": {
-      return {
-        ...state,
-        open: !state.open,
-      };
-    }
-    case "close": {
-      return {
-        ...state,
-        open: false,
-      };
-    }
-    case "set_menu_size": {
-      return {
-        ...state,
-        width: action.value.width,
-        height: action.value.height,
-      };
-    }
-    case "set_dimensions": {
-      return {
-        ...state,
-        dimensions: {
-          ...action.value,
-          left:
-            action.value.right + state.width / 2 > window.innerWidth
-              ? action.value.right - state.width
-              : action.value.right - state.width / 2 - 15,
-          top:
-            action.value.y + state.height > window.innerHeight
-              ? action.value.top - state.height
-              : action.value.top + 35,
-        },
-      };
-    }
-    case "set_visibility": {
-      return { ...state, visible: true };
-    }
-    default:
-      return state;
+  if (action.type === actionTypes.setDimensions) {
+    return {
+      ...state,
+      dimensions: {
+        ...action.value,
+        left:
+          action.value.right + state.width / 2 > window.innerWidth
+            ? action.value.right - state.width
+            : action.value.right - state.width / 2 - 15,
+        top:
+          action.value.y + state.height > window.innerHeight
+            ? action.value.top - state.height
+            : action.value.top + 35,
+      },
+    };
   }
+  return baseReducer(state, action);
 };
 
 export const moveLeftReducer = (state: IState, action: IAction) => {
-  switch (action.type) {
-    case "open": {
-      return {
-        ...state,
-        open: !state.open,
-      };
-    }
-    case "close": {
-      return {
-        ...state,
-        open: false,
-      };
-    }
-    case "set_menu_size": {
-      return {
-        ...state,
-        width: action.value.width,
-        height: action.value.height,
-      };
-    }
-    case "set_dimensions": {
-      return {
-        ...state,
-        dimensions: {
-          ...action.value,
-          left: action.value.right - state.width,
-          top: action.value.top + 10,
-        },
-      };
-    }
-    case "set_visibility": {
-      return { ...state, visible: true };
-    }
-    default:
-      return state;
+  if (action.type === actionTypes.setDimensions) {
+    return {
+      ...state,
+      dimensions: {
+        ...action.value,
+        left: action.value.right - state.width,
+        top: action.value.top + 10,
+      },
+    };
   }
+  return baseReducer(state, action);
 };
 
-export const moveUpAndLeftReducer = (state: IState, action: IAction) => {
-  switch (action.type) {
-    case "open": {
-      return {
-        ...state,
-        open: !state.open,
-      };
-    }
-    case "close": {
-      return {
-        ...state,
-        open: false,
-      };
-    }
-    case "set_menu_size": {
-      return {
-        ...state,
-        width: action.value.width,
-        height: action.value.height,
-      };
-    }
-    case "set_dimensions": {
-      return {
-        ...state,
-        dimensions: {
-          ...action.value,
-          left: action.value.left - state.width + 15,
-          top:
-            action.value.y + state.height > window.innerHeight
-              ? action.value.top - state.height + 15
-              : action.value.top,
-        },
-      };
-    }
-    case "set_visibility": {
-      return { ...state, visible: true };
-    }
-    default:
-      return state;
+export const dynamicReducer = (state: IState, action: IAction) => {
+  if (action.type === actionTypes.setDimensions) {
+    return {
+      ...state,
+      dimensions: {
+        ...action.value,
+        left: action.value.left - state.width + 15,
+        top:
+          action.value.y + state.height > window.innerHeight
+            ? action.value.top - state.height + 15
+            : action.value.top,
+      },
+    };
   }
+  return baseReducer(state, action);
 };

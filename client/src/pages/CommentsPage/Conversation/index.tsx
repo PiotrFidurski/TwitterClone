@@ -16,8 +16,8 @@ import {
 } from "../../../components/TweetComposition/styles";
 import { Tweet } from "../../../components/TweetComposition";
 import { Header } from "../../../components/TweetComposition/Header";
-import { DropdownProvider } from "../../../components/DropDown";
-import { moveUpAndLeftReducer } from "../../../components/DropDown/reducers";
+import { DropdownProvider } from "../../../components/DropDown/context";
+import { dynamicReducer } from "../../../components/DropDown/reducers";
 import { useQuery } from "@apollo/client";
 import { ConversationDocument } from "../../../generated/introspection-result";
 
@@ -68,10 +68,7 @@ export const Conversation: React.FC<Props> = ({ tweet, user }) => {
                     </Tweet.Avatar>
                     <StyledDetailsContainer>
                       <Tweet.Header>
-                        <DropdownProvider
-                          position="absolute"
-                          reducer={moveUpAndLeftReducer}
-                        >
+                        <DropdownProvider reducer={dynamicReducer}>
                           <Header.Menu />
                         </DropdownProvider>
                       </Tweet.Header>
@@ -109,10 +106,7 @@ export const Conversation: React.FC<Props> = ({ tweet, user }) => {
                   <Tweet.Avatar showThreadLine={false} />
                   <StyledDetailsContainer>
                     <Tweet.Header displayDate={false} flexColumn>
-                      <DropdownProvider
-                        position="absolute"
-                        reducer={moveUpAndLeftReducer}
-                      >
+                      <DropdownProvider reducer={dynamicReducer}>
                         <Header.Menu />
                       </DropdownProvider>
                     </Tweet.Header>

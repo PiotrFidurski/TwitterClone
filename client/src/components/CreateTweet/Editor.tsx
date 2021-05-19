@@ -6,7 +6,7 @@ import {
   DraftHandleValue,
 } from "draft-js";
 import { useLocation } from "react-router-dom";
-import { useDropdownCtxt } from "../DropDown";
+import { useDropdown } from "../DropDown/context";
 import { StyledEditorContainer, StyledEditorWrapper } from "./styles";
 import { EditorProps } from "./types";
 
@@ -19,7 +19,7 @@ export const Editor: React.FC<EditorProps> = ({
   const location = useLocation();
   const {
     state: { open: emojiPickerOpen },
-  } = useDropdownCtxt();
+  } = useDropdown();
 
   const handleChange = (state: EditorState) => {
     setFieldValue("body", state.getCurrentContent().getPlainText());

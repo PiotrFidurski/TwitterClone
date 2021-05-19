@@ -2,8 +2,8 @@ import * as React from "react";
 import { useParams } from "react-router-dom";
 import { Tweet as TweetType } from "../../generated/graphql";
 import { BaseStylesDiv } from "../../styles";
-import { DropdownProvider } from "../DropDown";
-import { moveUpAndLeftReducer } from "../DropDown/reducers";
+import { DropdownProvider } from "../DropDown/context";
+import { dynamicReducer } from "../DropDown/reducers";
 import {
   StyledTweetWrapper,
   StyledDetailsContainer,
@@ -28,13 +28,8 @@ export const Row: React.FC<Props> = React.memo(
   ({ ...props }) => {
     const { data, index, style } = props;
 
-    const {
-      array,
-      setRowHeight,
-      userId,
-      showThreadLine,
-      showTweetBorder,
-    } = data;
+    const { array, setRowHeight, userId, showThreadLine, showTweetBorder } =
+      data;
 
     const { tweetId } = useParams<{ tweetId: string }>();
 
@@ -100,10 +95,7 @@ export const Row: React.FC<Props> = React.memo(
                   <Tweet.Avatar showThreadLine={showThreadLine} />
                   <StyledDetailsContainer>
                     <Tweet.Header displayDate>
-                      <DropdownProvider
-                        position="absolute"
-                        reducer={moveUpAndLeftReducer}
-                      >
+                      <DropdownProvider reducer={dynamicReducer}>
                         <Header.Menu />
                       </DropdownProvider>
                     </Tweet.Header>

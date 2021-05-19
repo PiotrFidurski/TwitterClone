@@ -1,19 +1,18 @@
 import * as React from "react";
-import { IState } from "./reducers";
+import { actionTypes, IAction, IState } from "../reducers";
 
 export const useDimensions = (
-  callback: (value: any) => void,
-  state: IState
+  state: IState,
+  dispatch: React.Dispatch<IAction>
 ) => {
   const ref = React.useRef<HTMLDivElement | any>(null);
 
   const handleResize = React.useCallback(() => {
     const top =
-      ref.current &&
-      ref.current!.getBoundingClientRect().top -
-        document.body!.getBoundingClientRect().top;
+      ref?.current?.getBoundingClientRect().top -
+      document.body?.getBoundingClientRect().top;
 
-    const size = ref.current && ref.current!.getBoundingClientRect().toJSON();
+    const size = ref?.current?.getBoundingClientRect().toJSON();
 
     if (ref.current) {
       const dims = {
@@ -21,12 +20,12 @@ export const useDimensions = (
         top: top,
       };
 
-      callback({
-        type: "set_dimensions",
+      dispatch({
+        type: actionTypes.setDimensions,
         value: dims,
       });
     }
-  }, [callback]);
+  }, [dispatch]);
 
   const clientHeight =
     document.getElementById("feed")! &&
@@ -34,16 +33,7 @@ export const useDimensions = (
 
   React.useLayoutEffect(() => {
     handleResize();
-
-    if (!state.visible && state.width) {
-      callback({ type: "set_visibility" });
-    }
-  }, [handleResize, state.width, state.visible, callback]);
-
-  React.useEffect(() => {
-    handleResize();
-    // eslint-disable-next-line
-  }, [clientHeight]);
+  }, [handleResize, state.width, dispatch, clientHeight]);
 
   React.useLayoutEffect(() => {
     let movementMs: any = null;

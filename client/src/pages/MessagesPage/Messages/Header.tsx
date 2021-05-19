@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link, useHistory, useParams } from "react-router-dom";
-import { DropdownProvider } from "../../../components/DropDown";
+import { DropdownProvider } from "../../../components/DropDown/context";
 import { StyledDropDownItem } from "../../../components/DropDown/DropDownComposition/styles";
 import { moveLeftReducer } from "../../../components/DropDown/reducers";
 import { Header } from "../../../components/Header";
@@ -44,8 +44,9 @@ export const MessageHeader: React.FC<Props> = ({ receiver, messages }) => {
   const handleLeaveConversation = () => {
     leaveConversation({
       update: (cache, { data: _data }) => {
-        const leaveConversation = (_data?.leaveConversation as UpdateResourceResponse)
-          .node as Conversation;
+        const leaveConversation = (
+          _data?.leaveConversation as UpdateResourceResponse
+        ).node as Conversation;
         cache.modify({
           fields: {
             userInbox(cachedEntries) {
@@ -106,7 +107,7 @@ export const MessageHeader: React.FC<Props> = ({ receiver, messages }) => {
           <SpanContainer bold biggest>
             <span>{receiver.username}</span>
           </SpanContainer>
-          <DropdownProvider position="absolute" reducer={moveLeftReducer}>
+          <DropdownProvider reducer={moveLeftReducer}>
             <DropdownProvider.Toggle>
               <ButtonContainer
                 noPadding
@@ -125,7 +126,7 @@ export const MessageHeader: React.FC<Props> = ({ receiver, messages }) => {
                 </div>
               </ButtonContainer>
             </DropdownProvider.Toggle>
-            <DropdownProvider.Menu>
+            <DropdownProvider.Menu position="absolute">
               <BaseStylesDiv flexColumn>
                 <StyledDropDownItem
                   danger

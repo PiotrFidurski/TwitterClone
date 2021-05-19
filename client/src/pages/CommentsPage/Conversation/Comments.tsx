@@ -39,7 +39,7 @@ export const Comments: React.FC<Props> = ({ tweet, userId }) => {
   if (loading) return <Spinner />;
 
   return data?.replies.__typename === "TweetConnection" ? (
-    <div>
+    <div id="feed">
       <PlaceHolder light />
       <VirtualizedList
         userId={userId!}

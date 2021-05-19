@@ -30,7 +30,7 @@ import {
 } from "../../styles";
 import { NavLink, StyledNotification } from "../../components/Sidebar/styles";
 import { Location } from "history";
-import { DropdownProvider } from "../../components/DropDown";
+import { DropdownProvider } from "../../components/DropDown/context";
 import { useApolloClient, useSubscription } from "@apollo/client";
 import { UserInboxQueryResult } from "../../generated/introspection-result";
 import { useMarkMessagesAsSeen } from "../../hooks/useMarkMessagesAsSeen";
@@ -136,7 +136,7 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
             Profile
           </SpanContainer>
         </Link>
-        <DropdownProvider position="fixed" reducer={sidebarReducer}>
+        <DropdownProvider reducer={sidebarReducer}>
           <DropdownProvider.Toggle>
             <BaseStylesDiv>
               <HoverContainer style={{ padding: "10px" }}>
@@ -150,47 +150,43 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
               </HoverContainer>
             </BaseStylesDiv>
           </DropdownProvider.Toggle>
-          <DropdownProvider.Menu>
-            <BaseStylesDiv>
-              <BaseStylesDiv flexColumn>
-                <NavLink
-                  style={{ textDecoration: "none" }}
-                  to={{
-                    pathname: "/i/display",
-                    state: {
-                      ...location.state,
-                      isModalLocaction: location,
-                    },
-                  }}
-                >
-                  <StyledDropDownItem>
-                    <Display />
-                    <Brush style={{ position: "absolute" }} />
-                    <SpanContainer>
-                      <span>Display</span>
-                    </SpanContainer>
-                  </StyledDropDownItem>
-                </NavLink>
-                <StyledDropDownItem>
-                  <Lists />
-                  <SpanContainer>
-                    <span>Keyboard shortcuts</span>
-                  </SpanContainer>
-                </StyledDropDownItem>
-                <StyledDropDownItem>
-                  <Settings />
-                  <SpanContainer>
-                    <span>Settings and privacy</span>
-                  </SpanContainer>
-                </StyledDropDownItem>
-                <StyledDropDownItem danger onClick={logout}>
-                  <Logout />
-                  <SpanContainer>
-                    <span>Log Out @{user.username}</span>
-                  </SpanContainer>
-                </StyledDropDownItem>
-              </BaseStylesDiv>
-            </BaseStylesDiv>
+          <DropdownProvider.Menu position="fixed">
+            <NavLink
+              style={{ textDecoration: "none" }}
+              to={{
+                pathname: "/i/display",
+                state: {
+                  ...location.state,
+                  isModalLocaction: location,
+                },
+              }}
+            >
+              <StyledDropDownItem>
+                <Display />
+                <Brush style={{ position: "absolute" }} />
+                <SpanContainer>
+                  <span>Display</span>
+                </SpanContainer>
+              </StyledDropDownItem>
+            </NavLink>
+            <StyledDropDownItem>
+              <Lists />
+              <SpanContainer>
+                <span>Keyboard shortcuts</span>
+              </SpanContainer>
+            </StyledDropDownItem>
+            <StyledDropDownItem>
+              <Settings />
+              <SpanContainer>
+                <span>Settings and privacy</span>
+              </SpanContainer>
+            </StyledDropDownItem>
+            <StyledDropDownItem danger onClick={logout}>
+              <Logout />
+              <SpanContainer>
+                <span>Log Out @{user.username}</span>
+              </SpanContainer>
+            </StyledDropDownItem>
           </DropdownProvider.Menu>
         </DropdownProvider>
         <NavLink

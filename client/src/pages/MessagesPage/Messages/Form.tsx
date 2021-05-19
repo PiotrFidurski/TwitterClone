@@ -4,7 +4,7 @@ import { EditorState, ContentState } from "draft-js";
 import { Formik } from "formik";
 import { useParams } from "react-router-dom";
 import { v4 } from "uuid";
-import { DropdownProvider } from "../../../components/DropDown";
+import { DropdownProvider } from "../../../components/DropDown/context";
 import { StyledDropDownItem } from "../../../components/DropDown/DropDownComposition/styles";
 import { emojiPickerReducer } from "../../../components/DropDown/reducers";
 import { ReactComponent as SadFace } from "../../../components/svgs/SadFace.svg";
@@ -82,7 +82,8 @@ export const Form: React.FC<Props> = ({ user, conversation }) => {
               },
             } as SendMessageMutation,
             update: (cache, { data }) => {
-              const sendMessageSuccess = data?.sendMessage as SendMessageSuccess;
+              const sendMessageSuccess =
+                data?.sendMessage as SendMessageSuccess;
               cache.modify({
                 fields: {
                   userInbox(
@@ -96,8 +97,8 @@ export const Form: React.FC<Props> = ({ user, conversation }) => {
                     return {
                       ...cachedEntries,
                       __typename: "UserInboxResult",
-                      lastSeenMessageId: sendMessageSuccess.newmessage!.node
-                        .id!,
+                      lastSeenMessageId:
+                        sendMessageSuccess.newmessage!.node.id!,
                       conversations: [...cachedEntries!.conversations!].filter(
                         (conversationRef: any) => {
                           if (conversationRef!.__ref === conversation.id) {
@@ -114,8 +115,8 @@ export const Form: React.FC<Props> = ({ user, conversation }) => {
                               messages_conversation: [
                                 ...messages_conversation!,
                               ].splice(0, 0, newMessageRef),
-                              mostRecentEntryId: sendMessageSuccess.newmessage!
-                                .node.id!,
+                              mostRecentEntryId:
+                                sendMessageSuccess.newmessage!.node.id!,
                             };
                           }
                           return conversationRef;
@@ -170,10 +171,7 @@ export const Form: React.FC<Props> = ({ user, conversation }) => {
               onSubmit={handleSubmit}
             >
               <ChatBox>
-                <DropdownProvider
-                  position="absolute"
-                  reducer={emojiPickerReducer}
-                >
+                <DropdownProvider reducer={emojiPickerReducer}>
                   <StyledEditorContainer>
                     <ChatEditor
                       handleSubmission={handleSubmit}
@@ -198,7 +196,7 @@ export const Form: React.FC<Props> = ({ user, conversation }) => {
                       </BaseStylesDiv>
                     </StyledEmojiPickerContainer>
                   </DropdownProvider.Toggle>
-                  <DropdownProvider.Menu>
+                  <DropdownProvider.Menu position="absolute">
                     <StyledDropDownItem noPadding>
                       <EmojiPicker
                         setState={setState}

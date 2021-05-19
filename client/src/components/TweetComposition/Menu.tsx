@@ -8,12 +8,7 @@ import {
   AuthUserQuery,
   AuthUserDocument,
 } from "../../generated/graphql";
-import {
-  HoverContainer,
-  Absolute,
-  BaseStylesDiv,
-  SpanContainer,
-} from "../../styles";
+import { HoverContainer, Absolute, SpanContainer } from "../../styles";
 import { ReactComponent as Caret } from "../svgs/Caret.svg";
 import { ReactComponent as Delete } from "../svgs/Delete.svg";
 import { ReactComponent as SadFace } from "../svgs/SadFace.svg";
@@ -22,7 +17,11 @@ import { ReactComponent as FollowMinus } from "../svgs/followminus.svg";
 import { ReactComponent as Block } from "../svgs/block.svg";
 import { ReactComponent as Mute } from "../svgs/mute.svg";
 import { useModalContext } from "../context/ModalContext";
-import { useDropdownCtxt, DropdownProvider } from "../DropDown";
+import {
+  useDropdown,
+  DropdownProvider as Dropdown,
+  close,
+} from "../DropDown/context";
 import { StyledDropDownItem } from "../DropDown/DropDownComposition/styles";
 import { useTweet } from "../TweetContext";
 
@@ -40,7 +39,7 @@ export const Menu: React.FC = () => {
       },
     },
   });
-  const { close } = useDropdownCtxt();
+  const { dispatch } = useDropdown();
   const { cache } = useApolloClient();
   const { data } = useQuery<AuthUserQuery>(AuthUserDocument, {
     fetchPolicy: "cache-only",
@@ -75,85 +74,81 @@ export const Menu: React.FC = () => {
 
   return (
     <div onClick={(e) => e.stopPropagation()}>
-      <DropdownProvider.Toggle>
+      <Dropdown.Toggle>
         <HoverContainer>
           <Absolute />
           <Caret />
         </HoverContainer>
-      </DropdownProvider.Toggle>
-      <DropdownProvider.Menu>
-        <BaseStylesDiv>
-          <BaseStylesDiv flexColumn>
-            <StyledDropDownItem id="dropdown-item">
-              <SadFace />
-              <SpanContainer>
-                <span>Not interested in this Tweet</span>
-              </SpanContainer>
-            </StyledDropDownItem>
-            {data?.authUser?.id! === tweet!.owner!.id ? (
-              <StyledDropDownItem
-                danger
-                id="dropdown-item"
-                onClick={() =>
-                  openModal("deleteTweetAlert", {
-                    deleteTweet: evictTweetFromCache,
-                  })
-                }
-              >
-                <Delete />
-                <SpanContainer>
-                  <span>Delete</span>
-                </SpanContainer>
-              </StyledDropDownItem>
-            ) : null}
+      </Dropdown.Toggle>
+      <Dropdown.Menu position="absolute">
+        <StyledDropDownItem id="dropdown-item">
+          <SadFace />
+          <SpanContainer>
+            <span>Not interested in this Tweet</span>
+          </SpanContainer>
+        </StyledDropDownItem>
+        {data?.authUser?.id! === tweet!.owner!.id ? (
+          <StyledDropDownItem
+            danger
+            id="dropdown-item"
+            onClick={() =>
+              openModal("deleteTweetAlert", {
+                deleteTweet: evictTweetFromCache,
+              })
+            }
+          >
+            <Delete />
+            <SpanContainer>
+              <span>Delete</span>
+            </SpanContainer>
+          </StyledDropDownItem>
+        ) : null}
 
-            {data && data!.authUser!.id !== tweet!.owner!.id ? (
-              <StyledDropDownItem
-                id="dropdown-item"
-                onClick={() => {
-                  if (!data!.authUser!.username) {
-                    openModal("loginAlert", { closeModal: setOpen });
-                  } else {
-                    tweet!.owner!.isFollowed
-                      ? openModal("unfollowUserAlert", {
-                          unfollowUser: followUser,
-                          user: tweet!.owner!,
-                        })
-                      : followUser();
-                  }
+        {data && data!.authUser!.id !== tweet!.owner!.id ? (
+          <StyledDropDownItem
+            id="dropdown-item"
+            onClick={() => {
+              if (!data!.authUser!.username) {
+                openModal("loginAlert", { closeModal: setOpen });
+              } else {
+                tweet!.owner!.isFollowed
+                  ? openModal("unfollowUserAlert", {
+                      unfollowUser: followUser,
+                      user: tweet!.owner!,
+                    })
+                  : followUser();
+              }
 
-                  close();
-                }}
-              >
-                {tweet!.owner!.isFollowed || !data!.authUser!.username ? (
-                  <FollowPlus />
-                ) : (
-                  <FollowMinus />
-                )}
-                <SpanContainer>
-                  <span>
-                    {tweet!.owner!.isFollowed
-                      ? `Unfollow @${tweet!.owner!.username}`
-                      : `Follow @${tweet!.owner!.username}`}
-                  </span>
-                </SpanContainer>
-              </StyledDropDownItem>
-            ) : null}
-            <StyledDropDownItem id="dropdown-item">
-              <Mute />
-              <SpanContainer>
-                <span>Mute @{tweet!.owner!.username!}</span>
-              </SpanContainer>
-            </StyledDropDownItem>
-            <StyledDropDownItem id="dropdown-item">
-              <Block />
-              <SpanContainer>
-                <span>Block @{tweet!.owner!.username!}</span>
-              </SpanContainer>
-            </StyledDropDownItem>
-          </BaseStylesDiv>
-        </BaseStylesDiv>
-      </DropdownProvider.Menu>
+              close(dispatch);
+            }}
+          >
+            {tweet!.owner!.isFollowed || !data!.authUser!.username ? (
+              <FollowPlus />
+            ) : (
+              <FollowMinus />
+            )}
+            <SpanContainer>
+              <span>
+                {tweet!.owner!.isFollowed
+                  ? `Unfollow @${tweet!.owner!.username}`
+                  : `Follow @${tweet!.owner!.username}`}
+              </span>
+            </SpanContainer>
+          </StyledDropDownItem>
+        ) : null}
+        <StyledDropDownItem id="dropdown-item">
+          <Mute />
+          <SpanContainer>
+            <span>Mute @{tweet!.owner!.username!}</span>
+          </SpanContainer>
+        </StyledDropDownItem>
+        <StyledDropDownItem id="dropdown-item">
+          <Block />
+          <SpanContainer>
+            <span>Block @{tweet!.owner!.username!}</span>
+          </SpanContainer>
+        </StyledDropDownItem>
+      </Dropdown.Menu>
     </div>
   );
 };
