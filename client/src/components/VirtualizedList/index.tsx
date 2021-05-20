@@ -2,12 +2,12 @@ import * as React from "react";
 import { VariableSizeList } from "react-window";
 import memoize from "memoize-one";
 import InfiniteLoader from "react-window-infinite-loader";
-import { WindowScroller } from "react-virtualized/dist/es/WindowScroller";
 import { Row } from "./Row";
 import { JustifyCenter, SpanContainer, Spinner } from "../../styles";
 import { mergeRefs } from "../../utils/functions";
 import { Tweet } from "../../generated/graphql";
 import { Props } from "./types";
+import { ReactWindowScroller } from "react-window-scroller";
 
 const createItemData = memoize(
   (
@@ -81,20 +81,23 @@ export const VirtualizedList: React.FC<Props> = ({ ...props }) => {
       isItemLoaded={isItemLoaded}
     >
       {({ onItemsRendered, ref }) => (
-        <WindowScroller onScroll={handleScroll}>
-          {() => (
+        <ReactWindowScroller>
+          {({ ref: refo, outerRef, style, onScroll }: any) => (
             <>
               <VariableSizeList
-                ref={mergeRefs(...[ref, listRef])}
+                ref={mergeRefs(...[ref, refo, listRef])}
                 height={window.innerHeight}
                 width={600}
+                style={style}
+                outerRef={outerRef}
+                onScroll={onScroll}
                 onItemsRendered={onItemsRendered}
                 itemSize={getRowHeight}
                 itemData={itemData}
                 itemKey={itemKey}
                 itemCount={data.length}
                 innerElementType={renderAtBottom}
-                className="window-scroller-override"
+                // className="window-scroller-override"
               >
                 {Row}
               </VariableSizeList>
@@ -120,7 +123,7 @@ export const VirtualizedList: React.FC<Props> = ({ ...props }) => {
               </JustifyCenter>
             </>
           )}
-        </WindowScroller>
+        </ReactWindowScroller>
       )}
     </InfiniteLoader>
   );
