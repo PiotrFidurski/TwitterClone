@@ -12,10 +12,10 @@ import {
 import { useTweet } from "../TweetContext";
 import { useMutation } from "@apollo/client";
 import { LikeTweetDocument } from "../../generated/introspection-result";
-import { useModalContext } from "../context/ModalContext";
+import { useModal } from "../context/ModalContext";
 
 export const LikeTweet = () => {
-  const { openModal, setOpen } = useModalContext();
+  const { openModal, setOpen } = useModal();
   const { data } = useAuthUserQuery();
   const { tweet } = useTweet();
   const [likePost] = useMutation(LikeTweetDocument, {

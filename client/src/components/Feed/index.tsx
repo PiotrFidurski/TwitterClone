@@ -53,13 +53,15 @@ const GenerateFeed: React.FC<GnenerateFeedProps> = ({ userId }) => {
   if (loading) return <Spinner />;
 
   return !loading && data ? (
-    <VirtualizedList
-      userId={userId}
-      loading={loading}
-      data={data?.feed.edges!}
-      hasNextPage={data?.feed.pageInfo.hasNextPage}
-      loadMore={loadMore}
-    />
+    <div id="feed">
+      <VirtualizedList
+        userId={userId}
+        loading={loading}
+        data={data?.feed.edges!}
+        hasNextPage={data?.feed.pageInfo.hasNextPage}
+        loadMore={loadMore}
+      />
+    </div>
   ) : null;
 };
 

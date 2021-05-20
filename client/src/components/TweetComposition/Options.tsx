@@ -16,7 +16,7 @@ import { ReactComponent as FollowPlus } from "../svgs/followplus.svg";
 import { ReactComponent as FollowMinus } from "../svgs/followminus.svg";
 import { ReactComponent as Block } from "../svgs/block.svg";
 import { ReactComponent as Mute } from "../svgs/mute.svg";
-import { useModalContext } from "../context/ModalContext";
+import { useModal } from "../context/ModalContext";
 import {
   useDropdown,
   DropdownProvider as Dropdown,
@@ -25,7 +25,7 @@ import {
 import { StyledDropDownItem } from "../DropDown/DropDownComposition/styles";
 import { useTweet } from "../TweetContext";
 
-export const Menu: React.FC = () => {
+export const Options: React.FC = () => {
   const { tweet, prevTweet } = useTweet();
 
   const [deleteTweet] = useMutation<DeleteTweetMutation>(DeleteTweetDocument);
@@ -44,7 +44,7 @@ export const Menu: React.FC = () => {
   const { data } = useQuery<AuthUserQuery>(AuthUserDocument, {
     fetchPolicy: "cache-only",
   });
-  const { openModal, setOpen } = useModalContext();
+  const { openModal, setOpen } = useModal();
 
   const evictTweetFromCache = () => {
     deleteTweet({
@@ -73,7 +73,7 @@ export const Menu: React.FC = () => {
   };
 
   return (
-    <div onClick={(e) => e.stopPropagation()}>
+    <>
       <Dropdown.Toggle>
         <HoverContainer>
           <Absolute />
@@ -81,7 +81,7 @@ export const Menu: React.FC = () => {
         </HoverContainer>
       </Dropdown.Toggle>
       <Dropdown.Menu position="absolute">
-        <StyledDropDownItem id="dropdown-item">
+        <StyledDropDownItem>
           <SadFace />
           <SpanContainer>
             <span>Not interested in this Tweet</span>
@@ -90,7 +90,6 @@ export const Menu: React.FC = () => {
         {data?.authUser?.id! === tweet!.owner!.id ? (
           <StyledDropDownItem
             danger
-            id="dropdown-item"
             onClick={() =>
               openModal("deleteTweetAlert", {
                 deleteTweet: evictTweetFromCache,
@@ -106,7 +105,6 @@ export const Menu: React.FC = () => {
 
         {data && data!.authUser!.id !== tweet!.owner!.id ? (
           <StyledDropDownItem
-            id="dropdown-item"
             onClick={() => {
               if (!data!.authUser!.username) {
                 openModal("loginAlert", { closeModal: setOpen });
@@ -136,19 +134,19 @@ export const Menu: React.FC = () => {
             </SpanContainer>
           </StyledDropDownItem>
         ) : null}
-        <StyledDropDownItem id="dropdown-item">
+        <StyledDropDownItem>
           <Mute />
           <SpanContainer>
             <span>Mute @{tweet!.owner!.username!}</span>
           </SpanContainer>
         </StyledDropDownItem>
-        <StyledDropDownItem id="dropdown-item">
+        <StyledDropDownItem>
           <Block />
           <SpanContainer>
             <span>Block @{tweet!.owner!.username!}</span>
           </SpanContainer>
         </StyledDropDownItem>
       </Dropdown.Menu>
-    </div>
+    </>
   );
 };

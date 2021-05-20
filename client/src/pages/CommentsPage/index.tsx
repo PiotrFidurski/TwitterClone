@@ -35,7 +35,6 @@ export const CommentsPage: React.FC<Props> = ({ user }) => {
     variables: { tweetId },
   });
 
-  React.useEffect(() => window.scrollTo({ top: 0 }), []);
   if (loading) return <></>;
 
   return (

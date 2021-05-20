@@ -14,7 +14,7 @@ import {
   SpanContainer,
   ButtonContainer,
 } from "../../../styles";
-import { useModalContext } from "../../context/ModalContext";
+import { useModal } from "../../context/ModalContext";
 import { StyledHoverWrapper } from "../styles";
 import { StyledHeader } from "./styles";
 
@@ -26,7 +26,7 @@ export const UserToFollow: React.FC<UserToFollowProps> = React.memo(
   ({ userToFollow }) => {
     const history = useHistory();
 
-    const { openModal } = useModalContext();
+    const { openModal } = useModal();
 
     const [followUser] = useMutation<FollowUserMutation>(FollowUserDocument, {
       variables: { userId: userToFollow.id },

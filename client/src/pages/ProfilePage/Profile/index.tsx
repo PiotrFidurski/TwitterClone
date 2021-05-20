@@ -1,11 +1,5 @@
 import * as React from "react";
-import {
-  SpanContainer,
-  BaseStylesDiv,
-  StyledAvatar,
-  Spinner,
-  JustifyCenter,
-} from "../../../styles";
+import { SpanContainer, BaseStylesDiv, StyledAvatar } from "../../../styles";
 import { AvatarContainer, ButtonContainer } from "../../../styles";
 import * as S from "./styles";
 import { Tabs } from "./Tabs";
@@ -14,239 +8,68 @@ import {
   MessageUserMutation,
   useFollowUserMutation,
   User,
-  GetUserByNameQuery,
   MessageUserSuccess,
-  UserTweetsQuery,
   UserTweetsDocument,
-  UserTweetsAndRepliesQuery,
   UserTweetsAndRepliesDocument,
-  UserLikedTweetsQuery,
   UserLikedTweetsDocument,
   AuthUserDocument,
   AuthUserQuery,
 } from "../../../generated/graphql";
 import { ReactComponent as Message } from "../../../components/svgs/Messages.svg";
-import { useHistory, useLocation, useParams } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { StyledLink } from "../../../styles";
-import {
-  MessageUserDocument,
-  GetUserByNameDocument,
-} from "../../../generated/introspection-result";
-import { VirtualizedList } from "../../../components/VirtualizedList";
+import { MessageUserDocument } from "../../../generated/introspection-result";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
-import { useModalContext } from "../../../components/context/ModalContext";
+import { useModal } from "../../../components/context/ModalContext";
 import { StyledContainer, StyledHeaderContainer } from "./styles";
+import { ProfileTweetsWrapper } from "./ProfileTweetsWrapper";
 
 interface Props {
   user: User;
 }
 
-const UserTweets = () => {
-  const { username } = useParams<{ username: string }>();
-
-  const { data: userData, loading: userLoading } = useQuery<GetUserByNameQuery>(
-    GetUserByNameDocument,
-    {
-      variables: { username },
-    }
-  );
-  const userId =
-    userData?.userByName.__typename === "UserByNameSuccess"
-      ? userData.userByName.node.id
-      : "";
-  const { data, loading, fetchMore } = useQuery<UserTweetsQuery>(
-    UserTweetsDocument,
-    {
-      variables: {
-        userId,
-      },
-    }
-  );
-
-  const loadMore = async (): Promise<any> => {
-    try {
-      const after =
-        data?.userTweets.__typename === "TweetConnection" &&
-        data.userTweets.pageInfo.endCursor;
-      await fetchMore({
-        variables: {
-          userId,
-          after,
-        },
-      });
-    } catch (error) {
-      return error;
-    }
-  };
-
-  if (loading || userLoading) return <Spinner />;
-
-  return userData?.userByName?.__typename === "UserByNameSuccess" &&
-    data?.userTweets.__typename === "TweetConnection" ? (
-    <VirtualizedList
-      showTweetBorder={true}
-      showThreadLine={false}
-      data={data!.userTweets?.edges!}
-      userId={userData!.userByName!.node.id!}
-      loadMore={loadMore}
-      hasNextPage={data!.userTweets?.pageInfo!.hasNextPage}
-    />
-  ) : data?.userTweets.__typename === "TweetsInvalidInputError" ? (
-    <BaseStylesDiv flexGrow>
-      <JustifyCenter>
-        <SpanContainer bigger bolder>
-          <span>{data.userTweets.message}</span>
-        </SpanContainer>
-      </JustifyCenter>
-    </BaseStylesDiv>
-  ) : null;
-};
-
-const UserTweetsAndReplies = () => {
-  const { username } = useParams<{ username: string }>();
-
-  const { data: userData } = useQuery<GetUserByNameQuery>(
-    GetUserByNameDocument,
-    {
-      variables: { username },
-    }
-  );
-  const userId =
-    userData?.userByName.__typename === "UserByNameSuccess"
-      ? userData.userByName.node.id
-      : "";
-  const { data, loading, fetchMore } = useQuery<UserTweetsAndRepliesQuery>(
-    UserTweetsAndRepliesDocument,
-    {
-      variables: {
-        userId,
-      },
-    }
-  );
-
-  const loadMore = async (): Promise<any> => {
-    try {
-      const after =
-        data?.userTweetsAndReplies.__typename === "TweetConnection" &&
-        data.userTweetsAndReplies.pageInfo.endCursor;
-      await fetchMore({
-        variables: {
-          userId,
-          after,
-        },
-      });
-    } catch (error) {
-      return error;
-    }
-  };
-
-  if (loading) return <Spinner />;
-
-  return userData?.userByName?.__typename === "UserByNameSuccess" &&
-    data?.userTweetsAndReplies.__typename === "TweetConnection" ? (
-    <VirtualizedList
-      showTweetBorder={true}
-      showThreadLine={false}
-      data={data!.userTweetsAndReplies!.edges!}
-      userId={userData!.userByName!.node.id}
-      hasNextPage={data!.userTweetsAndReplies!.pageInfo.hasNextPage!}
-      loadMore={loadMore}
-    />
-  ) : data?.userTweetsAndReplies.__typename === "TweetsInvalidInputError" ? (
-    <BaseStylesDiv flexGrow>
-      <JustifyCenter>
-        <SpanContainer bigger bolder>
-          <span>{data.userTweetsAndReplies.message}</span>
-        </SpanContainer>
-      </JustifyCenter>
-    </BaseStylesDiv>
-  ) : null;
-};
-
-const UserLikedTweets = () => {
-  const { username } = useParams<{ username: string }>();
-  const { data: userData } = useQuery<GetUserByNameQuery>(
-    GetUserByNameDocument,
-    {
-      variables: { username },
-    }
-  );
-  const userId =
-    userData?.userByName.__typename === "UserByNameSuccess"
-      ? userData.userByName.node.id
-      : "";
-  const { data, loading, fetchMore } = useQuery<UserLikedTweetsQuery>(
-    UserLikedTweetsDocument,
-    {
-      variables: {
-        userId,
-      },
-    }
-  );
-  const loadMore = async (): Promise<any> => {
-    try {
-      const after =
-        data?.userLikedTweets.__typename === "TweetConnection" &&
-        data.userLikedTweets.pageInfo.endCursor;
-      await fetchMore({
-        variables: {
-          userId,
-          after,
-        },
-      });
-    } catch (error) {
-      return error;
-    }
-  };
-
-  if (loading) return <Spinner />;
-
-  return userData?.userByName?.__typename === "UserByNameSuccess" &&
-    data?.userLikedTweets.__typename === "TweetConnection" ? (
-    <VirtualizedList
-      showTweetBorder={true}
-      showThreadLine={false}
-      data={data!.userLikedTweets!.edges!}
-      userId={userData!.userByName!.node.id}
-      loadMore={loadMore}
-      hasNextPage={data!.userLikedTweets!.pageInfo.hasNextPage!}
-    />
-  ) : data?.userLikedTweets.__typename === "TweetsInvalidInputError" ? (
-    <BaseStylesDiv flexGrow>
-      <JustifyCenter>
-        <SpanContainer bigger bolder>
-          <span>{data.userLikedTweets.message}</span>
-        </SpanContainer>
-      </JustifyCenter>
-    </BaseStylesDiv>
-  ) : null;
-};
-
 const tabsData = [
   {
     title: "Tweets",
-    body: <UserTweets />,
+    body: (
+      <ProfileTweetsWrapper document={UserTweetsDocument} type={"userTweets"} />
+    ),
   },
   {
     title: "Tweets & Replies",
-    body: <UserTweetsAndReplies />,
+    body: (
+      <ProfileTweetsWrapper
+        document={UserTweetsAndRepliesDocument}
+        type="userTweetsAndReplies"
+      />
+    ),
   },
   {
     title: "Media",
-    body: <UserTweets />,
+    body: (
+      <ProfileTweetsWrapper document={UserTweetsDocument} type="userTweets" />
+    ),
   },
   {
     title: "Likes",
-    body: <UserLikedTweets />,
+    body: (
+      <ProfileTweetsWrapper
+        document={UserLikedTweetsDocument}
+        type="userLikedTweets"
+      />
+    ),
   },
 ];
 
 export const Profile: React.FC<Props> = ({ user }) => {
   let location = useLocation();
-  const { openModal, setOpen } = useModalContext();
+
+  const { openModal, setOpen } = useModal();
+
   const [message] = useMutation<MessageUserMutation>(MessageUserDocument, {
     variables: { userId: user!.id },
   });
+
   const history = useHistory();
 
   const { cache } = useApolloClient();

@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Absolute, BaseStyles } from "../styles";
 import { ReactComponent as Logo } from "../components/svgs/Logo.svg";
 import styled from "styled-components";

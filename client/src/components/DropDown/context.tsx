@@ -4,13 +4,15 @@ import { Toggle } from "./DropDownComposition/Toggle";
 import { IAction, IState, baseReducer, actionTypes } from "./reducers";
 import { useSetupDropdown } from "./hooks/useSetupDropdown";
 
-export const Context =
-  React.createContext<{
-    state: IState;
-    dispatch: React.Dispatch<IAction>;
-    menuRef: React.MutableRefObject<HTMLDivElement | null>;
-    toggleRef: React.MutableRefObject<HTMLDivElement | null>;
-  } | null>(null);
+interface DropdownContextProps {
+  state: IState;
+  dispatch: React.Dispatch<IAction>;
+  menuRef: React.MutableRefObject<HTMLDivElement | null>;
+  toggleRef: React.MutableRefObject<HTMLDivElement | null>;
+}
+
+export const DropdownContext =
+  React.createContext<DropdownContextProps | null>(null);
 
 interface DropdownProviderProps {
   reducer?: (state: IState, action: IAction) => IState;
@@ -28,14 +30,14 @@ export const DropdownProvider: React.FC<DropdownProviderProps> &
   });
 
   return (
-    <Context.Provider value={value} {...props}>
+    <DropdownContext.Provider value={value} {...props}>
       {children}
-    </Context.Provider>
+    </DropdownContext.Provider>
   );
 };
 
 export const useDropdown = () => {
-  const context = React.useContext(Context)!;
+  const context = React.useContext(DropdownContext)!;
   if (!context) {
     throw new Error(
       "You're using DropdownContext outside of DropdownProvider."

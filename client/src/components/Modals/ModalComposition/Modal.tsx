@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useModalContext } from "../../context/ModalContext";
+import { useModal } from "../../context/ModalContext";
 import ReactModal from "react-modal";
 import { Header, Props as HeaderProps } from "./Header";
 import { Content } from "./Content";
@@ -45,7 +45,7 @@ export const Modal: React.FC<Props> & ModalComposition = ({
   children,
   displayAsAlert,
 }) => {
-  const { closeModal, open } = useModalContext();
+  const { closeModal, open } = useModal();
   const styles = contentStyles();
 
   return (

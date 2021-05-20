@@ -3,7 +3,7 @@ import { CreateTweetModal } from "../../Modals/CreateTweetModal";
 import { EditProfileModal } from "../../Modals/EditProfileModal";
 import { useLocation } from "react-router-dom";
 import { CustomizeViewModal } from "../../Modals/CustomizeViewModal";
-import { useModalContext } from "./";
+import { useModal } from "./";
 import { DeleteTweetModal } from "../../Modals/DeleteTweetModal";
 import { UnfollowUserModal } from "../../Modals/UnfollowUserModal";
 import { LoginModal } from "../../Modals/LoginModal";
@@ -33,7 +33,7 @@ export const AlertModals: {
 
 export const ModalRoot: React.FC<Props> = React.memo(({ _key, props }) => {
   let location = useLocation();
-  const { open } = useModalContext();
+  const { open } = useModal();
   const AnyModal = Modals[location.pathname] || AlertModals[_key];
 
   if (AnyModal && open) {

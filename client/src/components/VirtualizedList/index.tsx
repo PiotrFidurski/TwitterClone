@@ -4,21 +4,10 @@ import memoize from "memoize-one";
 import InfiniteLoader from "react-window-infinite-loader";
 import { WindowScroller } from "react-virtualized/dist/es/WindowScroller";
 import { Row } from "./Row";
-import { ApolloQueryResult } from "@apollo/client";
-import { FeedQuery, RepliesQuery } from "../../generated/introspection-result";
 import { JustifyCenter, SpanContainer, Spinner } from "../../styles";
 import { mergeRefs } from "../../utils/functions";
 import { Tweet } from "../../generated/graphql";
-
-interface Props {
-  data: Tweet[];
-  loadMore: () => Promise<ApolloQueryResult<FeedQuery | RepliesQuery>>;
-  userId: string;
-  loading?: boolean;
-  hasNextPage?: boolean;
-  showThreadLine?: boolean;
-  showTweetBorder?: boolean;
-}
+import { Props } from "./types";
 
 const createItemData = memoize(
   (
@@ -57,7 +46,7 @@ export const VirtualizedList: React.FC<Props> = ({ ...props }) => {
   }, []);
 
   const getRowHeight = React.useCallback((index: number) => {
-    return rowHeight?.current[index] || 90;
+    return rowHeight?.current[index] || 95;
   }, []);
 
   const itemKey = React.useCallback(
@@ -87,7 +76,7 @@ export const VirtualizedList: React.FC<Props> = ({ ...props }) => {
 
   return (
     <InfiniteLoader
-      itemCount={hasNextPage! ? data.length! + 10 : data.length!}
+      itemCount={hasNextPage! ? data.length! + 1 : data.length!}
       loadMoreItems={loading ? async () => {} : loadMore}
       isItemLoaded={isItemLoaded}
     >
@@ -100,15 +89,16 @@ export const VirtualizedList: React.FC<Props> = ({ ...props }) => {
                 height={window.innerHeight}
                 width={600}
                 onItemsRendered={onItemsRendered}
-                className="window-scroller-override"
                 itemSize={getRowHeight}
                 itemData={itemData}
                 itemKey={itemKey}
                 itemCount={data.length}
                 innerElementType={renderAtBottom}
+                className="window-scroller-override"
               >
                 {Row}
               </VariableSizeList>
+
               <JustifyCenter
                 style={{
                   marginTop: "-580px",

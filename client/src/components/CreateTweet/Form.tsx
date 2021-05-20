@@ -11,7 +11,7 @@ import { useHistory } from "react-router-dom";
 import { Editor } from "./Editor";
 import CompositeDecorator from "./CompositeDecorator";
 import { StyledForm, BaseStylesDiv } from "../../styles";
-import { useModalContext } from "../context/ModalContext";
+import { useModal } from "../context/ModalContext";
 import { useMutation } from "@apollo/client";
 import { EmojiPicker } from "../TwemojiPicker/EmojiPicker";
 import { DropdownProvider } from "../DropDown/context";
@@ -28,7 +28,7 @@ interface Props {
 
 export const Form: React.FC<Props> = ({ tweetToReplyTo }) => {
   const [createTweet] = useMutation<CreateTweetMutation>(CreateTweetDocument);
-  const { closeModal } = useModalContext();
+  const { closeModal } = useModal();
   const history = useHistory();
 
   const [state, setState] = React.useState(() =>
@@ -112,7 +112,6 @@ export const Form: React.FC<Props> = ({ tweetToReplyTo }) => {
                   </BaseStylesDiv>
                 </StyledDropDownItem>
               </DropdownProvider.Menu>
-
               <Toolbar state={state} />
             </DropdownProvider>
           </StyledForm>

@@ -6,7 +6,6 @@ import {
   Conversation as ConversationType,
   ReadConversationMutation,
   ReadConversationDocument,
-  UserInboxQueryResult,
 } from "../../generated/graphql";
 import {
   BaseStylesDiv,
@@ -27,48 +26,38 @@ interface Props {
   conversation: ConversationType;
   user: User;
   getReceiver: (conversationId: string) => User;
-  userInbox: UserInboxQueryResult;
 }
 
 export const Conversation: React.FC<Props> = ({
   conversation,
   user,
   getReceiver,
-  userInbox,
 }) => {
   const receiver = getReceiver(conversation!.conversationId!);
 
-  const handleMarkAsSeen = useMarkMessagesAsSeen(
-    userInbox!.data!.userInbox!.conversations!
-  );
+  const updateSeenMessages = useMarkMessagesAsSeen([conversation]);
 
   const history = useHistory();
+
   const location = useLocation();
 
   const [readConversation] = useMutation<ReadConversationMutation>(
     ReadConversationDocument
   );
 
-  const authUser = conversation!.participants!.filter(
-    (_user) => _user.userId === user.id
-  )[0];
+  const [{ lastReadMessageId }] = conversation!.participants!.filter(
+    (u) => u.userId === user.id
+  );
 
   React.useEffect(() => {
-    if (
-      location.pathname === `/messages/${conversation.conversationId}` &&
-      authUser.lastReadMessageId !== ""
-    ) {
+    if (location.pathname === `/messages/${conversation.conversationId}`) {
       readConversation({
         variables: {
           conversationId: conversation!.conversationId,
-          messageId:
-            conversation!.messages_conversation! &&
-            conversation!.messages_conversation!.length
-              ? conversation!.messages_conversation![0].messagedata.id
-              : "",
+          messageId: conversation.mostRecentEntryId,
         },
       });
-      handleMarkAsSeen();
+      updateSeenMessages();
     }
     //eslint-disable-next-line
   }, [location, conversation.mostRecentEntryId]);
@@ -79,9 +68,7 @@ export const Conversation: React.FC<Props> = ({
       onClick={() => {
         history.push(`/messages/${conversation.conversationId}`);
       }}
-      recentMessage={
-        conversation!.lastReadMessageId !== authUser!.lastReadMessageId
-      }
+      recentMessage={lastReadMessageId !== conversation!.mostRecentEntryId}
     >
       <BaseStylesDiv flexGrow>
         <Link

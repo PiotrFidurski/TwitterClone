@@ -18,9 +18,15 @@ const HomePage: React.FC<Props> = ({ user }) => {
 
   if (inbox.loading && !inbox.data) return <Spinner />;
 
+  const { userInbox } = inbox!.data!;
+
   return (
     <BaseStylesDiv flexGrow>
-      <HomeSidebar user={user} userInbox={inbox} />
+      <HomeSidebar
+        user={user}
+        inbox={userInbox!}
+        subscribeToMore={inbox.subscribeToMore}
+      />
       <Main>
         <div>
           <AutheticatedRoutes user={user} userInbox={inbox} />

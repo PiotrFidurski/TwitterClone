@@ -57,11 +57,11 @@ body[data-color="rgb(121, 75, 196)"] {
 
 .window-scroller-override {
   height: 100% !important;
-  overflow: hidden !important;
+  /* overflow: hidden !important;
   display: flex !important;
   flex-basis: auto !important;
   min-width: 0px !important;
-  width: 100% !important;
+  width: 100% !important; */
 }
 
 .ReactModal__Overlay {

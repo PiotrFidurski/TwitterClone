@@ -2,11 +2,11 @@ import * as React from "react";
 import { BaseStylesDiv, SpanContainer, StyledLink } from "../../styles";
 import { convertDateToTime } from "../../utils/functions";
 import { useTweet } from "../TweetContext";
-import { Menu } from "./Menu";
+import { Options } from "./Options";
 import { StyledHeaderContainer, StyledHeaderWrapper } from "./styles";
 
 interface HeaderComposition {
-  Menu: React.FC<any>;
+  Options: React.FC<any>;
 }
 
 export interface HeaderProps {
@@ -61,4 +61,4 @@ export const Header: React.FC<HeaderProps> & HeaderComposition = ({
   );
 };
 
-Header.Menu = Menu;
+Header.Options = Options;

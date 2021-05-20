@@ -22,7 +22,7 @@ export const ModalProvider: React.FC = React.memo(({ children }) => {
   let state = history.location.state as { isModal: Location };
 
   const openModal = React.useCallback((key?: string, props?: any) => {
-    setAlertDialog({ _key: key!, props: { ...props! } });
+    setAlertDialog({ _key: key!, props });
     setOpen(true);
   }, []);
 
@@ -47,12 +47,12 @@ export const ModalProvider: React.FC = React.memo(({ children }) => {
   );
 });
 
-export const useModalContext = () => {
+export const useModal = () => {
   const context = React.useContext(ModalContext);
 
   if (!context) {
     throw new Error("You're using ModalContext outside of ModalProvider.");
   }
 
-  return { ...context };
+  return context;
 };

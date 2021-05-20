@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useModalContext } from "../../context/ModalContext";
+import { useModal } from "../../context/ModalContext";
 import styled from "styled-components";
 import { BaseStyles } from "../../../styles";
 
@@ -17,7 +17,7 @@ export interface Props {
 }
 
 export const Header: React.FC<Props> = ({ children }) => {
-  const { closeModal } = useModalContext();
+  const { closeModal } = useModal();
 
   return <StyledContainer>{children({ closeModal })}</StyledContainer>;
 };

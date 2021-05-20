@@ -17,7 +17,10 @@ import { ReactComponent as Logo } from "../../components/svgs/Logo.svg";
 import {
   ConversationUpdatedDocument,
   ConversationUpdatedSubscription,
+  Exact,
   User,
+  UserInboxQuery,
+  UserinboxResult,
 } from "../../generated/graphql";
 import {
   SpanContainer,
@@ -31,38 +34,55 @@ import {
 import { NavLink, StyledNotification } from "../../components/Sidebar/styles";
 import { Location } from "history";
 import { DropdownProvider } from "../../components/DropDown/context";
-import { useApolloClient, useSubscription } from "@apollo/client";
-import { UserInboxQueryResult } from "../../generated/introspection-result";
+import {
+  SubscribeToMoreOptions,
+  useApolloClient,
+  useSubscription,
+} from "@apollo/client";
 import { useMarkMessagesAsSeen } from "../../hooks/useMarkMessagesAsSeen";
 import { useLogout } from "../../hooks/useLogout";
 import { inboxSubscription } from "./inboxSubscription";
-import { conversationNotifications } from "./conversationNotifications";
+import { useConversationNotifications } from "./useConversationNotifications";
 import { sidebarReducer } from "../../components/DropDown/reducers";
 
 interface Props {
   user: User;
-  userInbox: UserInboxQueryResult;
+  inbox: UserinboxResult;
+  subscribeToMore: <
+    TSubscriptionData = UserInboxQuery,
+    TSubscriptionVariables = Exact<{
+      [key: string]: never;
+    }>
+  >(
+    options: SubscribeToMoreOptions<
+      UserInboxQuery,
+      TSubscriptionVariables,
+      TSubscriptionData
+    >
+  ) => () => void;
 }
 
-export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
-  const { data, subscribeToMore } = userInbox;
+export const HomeSidebar: React.FC<Props> = ({ ...props }) => {
+  const { user, subscribeToMore, inbox } = props;
+
+  const { conversations, lastSeenMessageId } = inbox!;
+
   const logout = useLogout();
+
   const location = useLocation<{ isModal: Location }>();
 
-  const handleMarkAsSeen = useMarkMessagesAsSeen(
-    data!.userInbox!.conversations!
-  );
+  const { cache } = useApolloClient();
+
+  const updateSeenMessages = useMarkMessagesAsSeen(conversations!);
 
   useSubscription<ConversationUpdatedSubscription>(
     ConversationUpdatedDocument,
     { variables: { userId: user!.id! } }
   );
 
-  const { cache } = useApolloClient();
-
-  const unreadConversations = conversationNotifications(
-    data!.userInbox!.lastSeenMessageId!,
-    data!.userInbox!.conversations!
+  const [count] = useConversationNotifications(
+    lastSeenMessageId!,
+    conversations!
   );
 
   React.useEffect(() => {
@@ -70,8 +90,7 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
 
     unsubscribe = subscribeToMore(inboxSubscription(cache, user));
     if (unsubscribe) return () => unsubscribe();
-    // eslint-disable-next-line
-  }, [subscribeToMore]);
+  }, [subscribeToMore, cache, user]);
 
   return (
     <SideBar>
@@ -94,16 +113,11 @@ export const HomeSidebar: React.FC<Props> = ({ user, userInbox }) => {
             <span>Notifications</span>
           </SpanContainer>
         </Link>
-        <div onClick={handleMarkAsSeen}>
+        <div onClick={updateSeenMessages}>
           <Link path="/messages">
             <Messages />
-            {location.pathname !== "/messages" &&
-            !location.pathname.match(/(\/messages\/)\d\w+.\d\w+/) &&
-            unreadConversations &&
-            unreadConversations.length > 0 ? (
-              <StyledNotification>
-                {unreadConversations.length}
-              </StyledNotification>
+            {count > 0 ? (
+              <StyledNotification>{count}</StyledNotification>
             ) : null}
             <SpanContainer bold bigger marginLeft marginRight>
               <span>Messages</span>

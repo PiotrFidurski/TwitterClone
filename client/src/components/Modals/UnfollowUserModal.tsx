@@ -8,7 +8,7 @@ import {
   JustifyCenter,
   SpanContainer,
 } from "../../styles";
-import { useModalContext } from "../context/ModalContext";
+import { useModal } from "../context/ModalContext";
 import { Modal } from "./ModalComposition/Modal";
 
 interface Props {
@@ -24,7 +24,7 @@ const StyledContainer = styled.div`
 `;
 
 export const UnfollowUserModal: React.FC<Props> = ({ unfollowUser, user }) => {
-  const { closeModal } = useModalContext();
+  const { closeModal } = useModal();
 
   return (
     <Modal displayAsAlert>

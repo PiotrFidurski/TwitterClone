@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useRefreshToken } from "../hooks/useRefreshToken";
 import { LoadingPage } from "../pages/LoadingPage";
 import { BaseStylesDiv } from "../styles";

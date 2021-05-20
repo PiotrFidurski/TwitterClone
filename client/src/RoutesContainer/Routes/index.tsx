@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useLocation } from "react-router-dom";
-import { useModalContext } from "../../components/context/ModalContext";
+import { useModal } from "../../components/context/ModalContext";
 import { Modals } from "../../components/context/ModalContext/ModalRoot";
 import { LoadingPage } from "../../pages/LoadingPage";
 import { useQuery } from "@apollo/client";
@@ -14,7 +14,7 @@ const NonAuthenticatedRoutes = React.lazy(
 export const Routes = () => {
   const location = useLocation();
 
-  const { openModal } = useModalContext();
+  const { openModal } = useModal();
 
   const { data, loading } = useQuery<AuthUserQuery>(AuthUserDocument, {
     fetchPolicy: "network-only",

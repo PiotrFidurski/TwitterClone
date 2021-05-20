@@ -37,7 +37,9 @@ export const Menu: React.FC<Props> = ({ children, position }) => {
           dimensions={state.dimensions!}
         >
           <BaseStylesDiv>
-            <BaseStylesDiv flexColumn>{children}</BaseStylesDiv>
+            <BaseStylesDiv flexColumn onClick={(e) => e.stopPropagation()}>
+              {children}
+            </BaseStylesDiv>
           </BaseStylesDiv>
         </StyledContentsContainer>
       </StyledAbsoluteContainer>

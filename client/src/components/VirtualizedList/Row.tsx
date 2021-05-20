@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useParams } from "react-router-dom";
-import { Tweet as TweetType } from "../../generated/graphql";
 import { BaseStylesDiv } from "../../styles";
 import { DropdownProvider } from "../DropDown/context";
 import { dynamicReducer } from "../DropDown/reducers";
@@ -11,16 +10,11 @@ import {
 import { Tweet } from "../TweetComposition";
 import { Header } from "../TweetComposition/Header";
 import { TweetProvider } from "../TweetContext";
+import { ItemData } from "./types";
 
 interface Props {
   index: number;
-  data: {
-    array: TweetType[];
-    setRowHeight: (index: number, size: number) => void;
-    userId: string;
-    showThreadLine: boolean;
-    showTweetBorder: boolean;
-  };
+  data: ItemData;
   style: React.CSSProperties;
 }
 
@@ -43,8 +37,6 @@ export const Row: React.FC<Props> = React.memo(
     }, [setRowHeight, index]);
 
     React.useEffect(() => {
-      updateSize();
-
       if (tweetId) {
         setTimeout(() => {
           updateSize();
@@ -66,10 +58,6 @@ export const Row: React.FC<Props> = React.memo(
           clearInterval(movementMs);
         });
     }, [updateSize]);
-
-    React.useEffect(() => {
-      updateSize();
-    }, [rowRef, index, setRowHeight, updateSize]);
 
     return (
       <div
@@ -96,7 +84,7 @@ export const Row: React.FC<Props> = React.memo(
                   <StyledDetailsContainer>
                     <Tweet.Header displayDate>
                       <DropdownProvider reducer={dynamicReducer}>
-                        <Header.Menu />
+                        <Header.Options />
                       </DropdownProvider>
                     </Tweet.Header>
                     <Tweet.ReplyingTo />

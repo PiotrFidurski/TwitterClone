@@ -1,10 +1,10 @@
 import * as React from "react";
-import { useModalContext } from "../../context/ModalContext";
+import { useModal } from "../../context/ModalContext";
 import { actionTypes, baseReducer } from "../reducers";
 import { useDimensions } from "./useDimensions";
 
 export const useSetupDropdown = ({ reducer = baseReducer } = {}) => {
-  const { open: modalOpen } = useModalContext();
+  const { open: modalOpen } = useModal();
 
   const [state, dispatch] = React.useReducer(reducer, {
     open: false,

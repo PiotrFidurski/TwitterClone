@@ -66,7 +66,7 @@ export default {
             },
           },
           ...conversationPipeline,
-          { $sort: { createdAt: -1 } },
+          { $sort: { mostRecentEntryId: -1 } },
         ]);
 
         let userIds: Array<string> = [];
@@ -97,10 +97,8 @@ export default {
           throw new Error(
             "argument of limit or conversationId was not provided."
           );
-        const [
-          firstHalfofConversationId,
-          secondHalfofConversationId,
-        ] = conversationId.split("-");
+        const [firstHalfofConversationId, secondHalfofConversationId] =
+          conversationId.split("-");
 
         checkForValidObjectIds(
           {
@@ -211,10 +209,8 @@ export default {
       { authenticatedUser }: OwnContext
     ) => {
       try {
-        const [
-          firstHalfofConversationId,
-          secondHalfofConversationId,
-        ] = conversationId.split("-");
+        const [firstHalfofConversationId, secondHalfofConversationId] =
+          conversationId.split("-");
 
         checkForValidObjectIds({
           senderId,
@@ -304,12 +300,12 @@ export default {
               mostRecentEntryId: conversationAggregation[0]!.mostRecentEntryId,
               oldestEntryId: conversationAggregation[0]!.oldestEntryId,
               participants: conversationAggregation[0]!.participants,
-              messages_conversation: conversationAggregation[0]!
-                .messages_conversation,
+              messages_conversation:
+                conversationAggregation[0]!.messages_conversation,
 
               type: conversationAggregation[0]!.type,
-              acceptedInvitation: conversationAggregation[0]!
-                .acceptedInvitation,
+              acceptedInvitation:
+                conversationAggregation[0]!.acceptedInvitation,
             },
             message: {
               id: newMessage._id,

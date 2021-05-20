@@ -1,45 +1,42 @@
 import { useMutation } from "@apollo/client";
 import {
   Conversation,
-  LastSeenMessage,
   SeeMessageDocument,
   SeeMessageMutation,
-  UpdateResourceResponse,
 } from "../generated/graphql";
+import { convertIdToDate } from "../utils/functions";
 
 export const useMarkMessagesAsSeen = (conversations: Array<Conversation>) => {
   const [markAsSeen] = useMutation<SeeMessageMutation>(SeeMessageDocument);
-  let arr: Array<number> = [];
-  let dates: Array<{ [key: string]: Conversation }> = [];
-  conversations?.forEach((conversation) => {
+
+  const [{ mostRecentEntryId = "" }] = conversations?.filter((conversation) => {
     if (conversation.mostRecentEntryId) {
-      const date = new Date(
-        parseInt(conversation?.mostRecentEntryId?.substring(0, 8), 16) * 1000
+      const date = convertIdToDate(conversation?.mostRecentEntryId!);
+      const mostRecentDate = new Date(
+        Math.max(
+          ...[convertIdToDate(conversation?.mostRecentEntryId!).getTime()]
+        )
       );
-      const key = Math.abs(new Date().getTime() - date.getTime()).toString();
-      dates[key] = conversation;
-      arr = [...arr, Math.abs(new Date().getTime() - date.getTime())];
+      if (date.getTime() === mostRecentDate.getTime()) {
+        return conversation;
+      }
     }
+    return { mostRecentEntryId: "" };
   });
 
-  const handleUnreadMessages = async () => {
-    if (conversations.length) {
+  const updateSeenMessages = async () => {
+    if (conversations.length && mostRecentEntryId) {
       await markAsSeen({
         variables: {
-          messageId:
-            dates.length && dates[Math.min(...arr)]
-              ? dates[Math.min(...arr)].mostRecentEntryId
-              : "",
+          messageId: mostRecentEntryId,
         },
-        update(cache, { data }) {
+        update(cache) {
           cache.modify({
             fields: {
               userInbox(cachedEntries) {
                 return {
                   ...cachedEntries,
-                  lastSeenMessageId: ((data!
-                    .seeMessage! as UpdateResourceResponse)
-                    .node as LastSeenMessage).lastSeenMessageId,
+                  lastSeenMessageId: mostRecentEntryId,
                 };
               },
             },
@@ -49,5 +46,5 @@ export const useMarkMessagesAsSeen = (conversations: Array<Conversation>) => {
     }
   };
 
-  return handleUnreadMessages;
+  return updateSeenMessages;
 };

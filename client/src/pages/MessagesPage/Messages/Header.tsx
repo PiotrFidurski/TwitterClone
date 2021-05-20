@@ -23,7 +23,7 @@ import {
   SpanContainer,
   ButtonContainer,
 } from "../../../styles";
-import { useModalContext } from "../../../components/context/ModalContext";
+import { useModal } from "../../../components/context/ModalContext";
 import { useMutation } from "@apollo/client";
 
 interface Props {
@@ -32,7 +32,7 @@ interface Props {
 }
 
 export const MessageHeader: React.FC<Props> = ({ receiver, messages }) => {
-  const { openModal } = useModalContext();
+  const { openModal } = useModal();
 
   const { conversationId } = useParams<{ conversationId: string }>();
   const history = useHistory();

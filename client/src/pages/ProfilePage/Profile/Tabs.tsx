@@ -13,6 +13,7 @@ interface Props {
 
 export const Tabs: React.FC<Props> = ({ data }) => {
   const [openIndex, setOpenIndex] = React.useState([0]);
+
   return (
     <BaseStylesDiv flexGrow flexColumn>
       <NavWrapper>

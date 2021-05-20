@@ -1,15 +1,17 @@
 import format from "date-fns/format";
 import formatDistanceToNowStrict from "date-fns/formatDistanceToNowStrict";
 
-export const mergeRefs = (...refs: Array<any>) => (ref: any) => {
-  refs.forEach((possibleRef) => {
-    if (typeof possibleRef === "function") {
-      possibleRef(ref);
-    } else {
-      (possibleRef as any).current = ref;
-    }
-  });
-};
+export const mergeRefs =
+  (...refs: Array<any>) =>
+  (ref: any) => {
+    refs.forEach((possibleRef) => {
+      if (typeof possibleRef === "function") {
+        possibleRef(ref);
+      } else {
+        (possibleRef as any).current = ref;
+      }
+    });
+  };
 
 export const convertDateToTime = (entity: { id: string }) => {
   const replaceString: { [key: string]: string } = {
@@ -41,3 +43,7 @@ export const convertDateToTime = (entity: { id: string }) => {
 
   return date;
 };
+
+export function convertIdToDate(value: string) {
+  return new Date(parseInt(value.substring(0, 8), 16) * 1000);
+}

@@ -10,7 +10,7 @@ import {
   Absolute,
   SpanContainer,
 } from "../../styles";
-import { useModalContext } from "../context/ModalContext";
+import { useModal } from "../context/ModalContext";
 import { useTweet } from "../TweetContext";
 import { ReactComponent as Retweet } from "../svgs/Retweet.svg";
 import { ReactComponent as Options } from "../svgs/Options.svg";
@@ -23,7 +23,7 @@ export interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ marginAuto }) => {
-  const { openModal, setOpen } = useModalContext();
+  const { openModal, setOpen } = useModal();
   const { data } = useQuery<AuthUserQuery>(AuthUserDocument, {
     fetchPolicy: "cache-only",
   });

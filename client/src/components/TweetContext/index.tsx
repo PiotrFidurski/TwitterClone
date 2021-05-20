@@ -11,16 +11,17 @@ const Context = React.createContext<IContext | null>(null);
 
 interface TweetProviderProps {}
 
-export const TweetProvider: React.FC<
-  TweetProviderProps & IContext
-> = React.memo(
-  ({ ...props }) => {
-    return (
-      <Context.Provider value={{ ...props }}>{props.children}</Context.Provider>
-    );
-  },
-  (prevProps, nextProps) => prevProps.tweet === nextProps.tweet
-);
+export const TweetProvider: React.FC<TweetProviderProps & IContext> =
+  React.memo(
+    ({ ...props }) => {
+      return (
+        <Context.Provider value={{ ...props }}>
+          {props.children}
+        </Context.Provider>
+      );
+    },
+    (prevProps, nextProps) => prevProps.tweet === nextProps.tweet
+  );
 
 export const useTweet = () => {
   const context = React.useContext(Context)!;

@@ -42,7 +42,6 @@ export const MessagesPage: React.FC<Props> = ({ user, userInbox }) => {
             ? data!.userInbox!.conversations!.map((conversation) => (
                 <Conversation
                   user={user}
-                  userInbox={userInbox}
                   getReceiver={getReceiver}
                   conversation={conversation}
                   key={conversation.id}

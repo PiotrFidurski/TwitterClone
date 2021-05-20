@@ -24,12 +24,10 @@ interface Props {
 }
 
 export const ShowMoreReplies: React.FC<Props> = ({ tweet }) => {
-  const [
-    loadRepliesToTweet,
-    { loading, called },
-  ] = useMutation<RepliesToTweetMutation>(RepliesToTweetDocument, {
-    variables: { tweetId: tweet.id },
-  });
+  const [loadRepliesToTweet, { loading, called }] =
+    useMutation<RepliesToTweetMutation>(RepliesToTweetDocument, {
+      variables: { tweetId: tweet.id },
+    });
   const { tweetId } = useParams<{ tweetId: string }>();
 
   const loadMore = React.useCallback(async (): Promise<any> => {

@@ -69,7 +69,7 @@ export const Conversation: React.FC<Props> = ({ tweet, user }) => {
                     <StyledDetailsContainer>
                       <Tweet.Header>
                         <DropdownProvider reducer={dynamicReducer}>
-                          <Header.Menu />
+                          <Header.Options />
                         </DropdownProvider>
                       </Tweet.Header>
                       <Tweet.Body />
@@ -107,7 +107,7 @@ export const Conversation: React.FC<Props> = ({ tweet, user }) => {
                   <StyledDetailsContainer>
                     <Tweet.Header displayDate={false} flexColumn>
                       <DropdownProvider reducer={dynamicReducer}>
-                        <Header.Menu />
+                        <Header.Options />
                       </DropdownProvider>
                     </Tweet.Header>
                   </StyledDetailsContainer>
