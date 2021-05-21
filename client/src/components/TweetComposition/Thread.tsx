@@ -3,7 +3,7 @@ import { PlaceHolder, Connector } from "../../styles";
 import { useTweet } from "../TweetContext";
 import { StyledSpacingWrapper } from "./styles";
 
-export const Thread: React.FC = () => {
+export const Thread: React.FC = React.memo(() => {
   const { prevTweet, tweet } = useTweet();
 
   const isReply = !!(
@@ -20,4 +20,4 @@ export const Thread: React.FC = () => {
       </StyledSpacingWrapper>
     </PlaceHolder>
   );
-};
+});

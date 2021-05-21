@@ -21,21 +21,26 @@ import {
   StyledConversationWrapper,
   StyledConversationHeader,
 } from "./styles";
+import { UserInboxQueryResult } from "../../generated/introspection-result";
 
 interface Props {
   conversation: ConversationType;
   user: User;
   getReceiver: (conversationId: string) => User;
+  inbox: UserInboxQueryResult;
 }
 
 export const Conversation: React.FC<Props> = ({
   conversation,
   user,
   getReceiver,
+  inbox,
 }) => {
   const receiver = getReceiver(conversation!.conversationId!);
 
-  const updateSeenMessages = useMarkMessagesAsSeen([conversation]);
+  const updateSeenMessages = useMarkMessagesAsSeen(
+    inbox.data?.userInbox?.conversations!
+  );
 
   const history = useHistory();
 

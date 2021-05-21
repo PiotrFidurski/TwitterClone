@@ -20,7 +20,9 @@ export const TweetProvider: React.FC<TweetProviderProps & IContext> =
         </Context.Provider>
       );
     },
-    (prevProps, nextProps) => prevProps.tweet === nextProps.tweet
+    (prevProps, nextProps) =>
+      prevProps.tweet.isLiked === nextProps.tweet.isLiked &&
+      prevProps.tweet.replyCount === nextProps.tweet.replyCount
   );
 
 export const useTweet = () => {

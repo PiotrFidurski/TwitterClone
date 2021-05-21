@@ -11,7 +11,7 @@ import {
 } from "../../styles";
 import { useParams } from "react-router-dom";
 import { Header } from "../../components/Header";
-import { Profile } from "./Profile";
+import { Profile, tabsData } from "./Profile";
 import {
   GetUserByNameQuery,
   User,
@@ -19,6 +19,7 @@ import {
 } from "../../generated/graphql";
 import { SecondaryColumn } from "../../components/SecondaryColumn";
 import { useQuery } from "@apollo/client";
+import { Tabs } from "./Profile/Tabs";
 
 const StyledContainer = styled.div`
   ${BaseStyles};
@@ -60,6 +61,7 @@ export const ProfilePage: React.FC<Props> = ({ user }) => {
           <>
             <Header justifyStart>{data?.userByName.node.username}</Header>
             <Profile user={data?.userByName.node!} />
+            <Tabs data={tabsData} />
           </>
         )}
       </PrimaryColumn>

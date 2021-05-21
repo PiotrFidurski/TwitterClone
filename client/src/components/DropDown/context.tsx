@@ -28,9 +28,9 @@ export const DropdownProvider: React.FC<DropdownProviderProps> &
   const value = useSetupDropdown({
     reducer,
   });
-
+  const contextValue = React.useMemo(() => value, [value]);
   return (
-    <DropdownContext.Provider value={value} {...props}>
+    <DropdownContext.Provider value={contextValue} {...props}>
       {children}
     </DropdownContext.Provider>
   );

@@ -4,10 +4,9 @@ import memoize from "memoize-one";
 import InfiniteLoader from "react-window-infinite-loader";
 import { Row } from "./Row";
 import { JustifyCenter, SpanContainer, Spinner } from "../../styles";
-import { mergeRefs } from "../../utils/functions";
 import { Tweet } from "../../generated/graphql";
 import { Props } from "./types";
-import { ReactWindowScroller } from "react-window-scroller";
+import { useWindowScroller } from "./useWindowScroller";
 
 const createItemData = memoize(
   (
@@ -38,6 +37,8 @@ export const VirtualizedList: React.FC<Props> = ({ ...props }) => {
 
   const listRef = React.useRef<VariableSizeList>(null);
 
+  const [outerRef, onScroll] = useWindowScroller(listRef);
+
   const rowHeight = React.useRef<HTMLElement | {}>({});
 
   const setRowHeight = React.useCallback((index, size) => {
@@ -58,12 +59,6 @@ export const VirtualizedList: React.FC<Props> = ({ ...props }) => {
     [data]
   );
 
-  const handleScroll = React.useCallback(({ scrollTop }) => {
-    if (listRef.current) {
-      listRef.current.scrollTo(scrollTop);
-    }
-  }, []);
-
   const isItemLoaded = (index: number) => !hasNextPage! || index < data.length!;
 
   const itemData = createItemData(
@@ -81,49 +76,48 @@ export const VirtualizedList: React.FC<Props> = ({ ...props }) => {
       isItemLoaded={isItemLoaded}
     >
       {({ onItemsRendered, ref }) => (
-        <ReactWindowScroller>
-          {({ ref: refo, outerRef, style, onScroll }: any) => (
-            <>
-              <VariableSizeList
-                ref={mergeRefs(...[ref, refo, listRef])}
-                height={window.innerHeight}
-                width={600}
-                style={style}
-                outerRef={outerRef}
-                onScroll={onScroll}
-                onItemsRendered={onItemsRendered}
-                itemSize={getRowHeight}
-                itemData={itemData}
-                itemKey={itemKey}
-                itemCount={data.length}
-                innerElementType={renderAtBottom}
-                // className="window-scroller-override"
-              >
-                {Row}
-              </VariableSizeList>
+        <div ref={ref}>
+          <VariableSizeList
+            ref={listRef}
+            height={window.innerHeight}
+            outerRef={outerRef}
+            width={600}
+            onScroll={onScroll}
+            onItemsRendered={onItemsRendered}
+            itemSize={getRowHeight}
+            itemData={itemData}
+            itemKey={itemKey}
+            itemCount={data.length}
+            innerElementType={renderAtBottom}
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "inline-block",
+            }}
+          >
+            {Row}
+          </VariableSizeList>
 
-              <JustifyCenter
-                style={{
-                  marginTop: "-580px",
-                  padding: "15px",
-                  borderBottom: "1px solid var(--colors-border)",
-                }}
-              >
-                <SpanContainer biggest>
-                  <span>
-                    {!data!.length ? (
-                      "There's nothing here."
-                    ) : loading ? (
-                      <Spinner />
-                    ) : (
-                      "You're all caught up."
-                    )}
-                  </span>
-                </SpanContainer>
-              </JustifyCenter>
-            </>
-          )}
-        </ReactWindowScroller>
+          <JustifyCenter
+            style={{
+              marginTop: "-580px",
+              padding: "15px",
+              borderBottom: "1px solid var(--colors-border)",
+            }}
+          >
+            <SpanContainer biggest>
+              <span>
+                {!data!.length ? (
+                  "There's nothing here."
+                ) : loading ? (
+                  <Spinner />
+                ) : (
+                  "You're all caught up."
+                )}
+              </span>
+            </SpanContainer>
+          </JustifyCenter>
+        </div>
       )}
     </InfiniteLoader>
   );

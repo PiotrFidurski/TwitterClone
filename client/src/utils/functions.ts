@@ -1,15 +1,13 @@
-import format from "date-fns/format";
-import formatDistanceToNowStrict from "date-fns/formatDistanceToNowStrict";
+import { closestTo, formatDistanceToNowStrict, format } from "date-fns";
+import { Conversation } from "../generated/graphql";
 
 export const mergeRefs =
-  (...refs: Array<any>) =>
-  (ref: any) => {
+  <T = any>(
+    ...refs: Array<React.RefObject<T> | React.LegacyRef<T>>
+  ): React.RefCallback<T> =>
+  (value) => {
     refs.forEach((possibleRef) => {
-      if (typeof possibleRef === "function") {
-        possibleRef(ref);
-      } else {
-        (possibleRef as any).current = ref;
-      }
+      (possibleRef as React.MutableRefObject<T | null>).current = value;
     });
   };
 
@@ -46,4 +44,19 @@ export const convertDateToTime = (entity: { id: string }) => {
 
 export function convertIdToDate(value: string) {
   return new Date(parseInt(value.substring(0, 8), 16) * 1000);
+}
+
+export function getClosestToDate(date: Date | number, array: Conversation[]) {
+  let dates: Array<Date> = [];
+  let dateK: Array<{ [key: string]: Conversation }> = [];
+
+  array?.forEach((conversation) => {
+    if (conversation.mostRecentEntryId) {
+      let date = convertIdToDate(conversation?.mostRecentEntryId!);
+      dates = [...dates, date];
+      return (dateK[date.getTime().toString()] = conversation);
+    }
+  });
+
+  return dateK[closestTo(date, dates).getTime()].mostRecentEntryId;
 }

@@ -46,15 +46,12 @@ export const Tabs: React.FC<Props> = ({ data }) => {
           </BaseStylesDiv>
         ))}
       </NavWrapper>
-      {data!.map((_, index) =>
-        openIndex.includes(index) ? (
-          <BaseStylesDiv flexGrow key={index} flexColumn>
-            <BaseStylesDiv flexGrow flexColumn>
-              {data[index].body}
-            </BaseStylesDiv>
-          </BaseStylesDiv>
-        ) : null
-      )}
+      {data!.map((_, index) => {
+        const element = data[index].body;
+        return openIndex.includes(index)
+          ? React.createElement(() => element, { key: index })
+          : null;
+      })}
     </BaseStylesDiv>
   );
 };

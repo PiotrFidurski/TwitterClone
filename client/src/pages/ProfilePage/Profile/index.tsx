@@ -1,8 +1,6 @@
 import * as React from "react";
 import { SpanContainer, BaseStylesDiv, StyledAvatar } from "../../../styles";
 import { AvatarContainer, ButtonContainer } from "../../../styles";
-import * as S from "./styles";
-import { Tabs } from "./Tabs";
 import format from "date-fns/format";
 import {
   MessageUserMutation,
@@ -28,11 +26,11 @@ interface Props {
   user: User;
 }
 
-const tabsData = [
+export const tabsData = [
   {
     title: "Tweets",
     body: (
-      <ProfileTweetsWrapper document={UserTweetsDocument} type={"userTweets"} />
+      <ProfileTweetsWrapper document={UserTweetsDocument} type="userTweets" />
     ),
   },
   {
@@ -148,19 +146,18 @@ export const Profile: React.FC<Props> = ({ user }) => {
   };
 
   return (
-    <BaseStylesDiv flexColumn>
-      <S.Background />
+    <>
       <StyledHeaderContainer>
         <AvatarContainer
           width={134}
           height="134px"
           borderColor
           borderWidth
-          marginTop="-80px"
           noRightMargin
         >
           <StyledAvatar url={user.avatar!} />
         </AvatarContainer>
+
         {data?.authUser?.id === user.id ? (
           <StyledLink
             style={{ flexGrow: 0 }}
@@ -210,6 +207,7 @@ export const Profile: React.FC<Props> = ({ user }) => {
           </BaseStylesDiv>
         )}
       </StyledHeaderContainer>
+
       <BaseStylesDiv>
         <StyledContainer
           style={{
@@ -273,7 +271,6 @@ export const Profile: React.FC<Props> = ({ user }) => {
           </BaseStylesDiv>
         </StyledContainer>
       </BaseStylesDiv>
-      <Tabs data={tabsData} />
-    </BaseStylesDiv>
+    </>
   );
 };

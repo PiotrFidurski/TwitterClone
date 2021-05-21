@@ -7,7 +7,7 @@ export const StyledHeaderContainer = styled.div`
   flex-grow: 1;
   align-items: center;
   justify-content: space-between;
-  padding: 0 15px 0 15px;
+  padding: 10px 15px 0 15px;
 `;
 
 export const StyledContainer = styled.div`
@@ -21,6 +21,8 @@ export const StyledContainer = styled.div`
 export const Background = styled.div`
   ${BaseStyles};
   padding-bottom: 33.5%;
+  flex-grow: 1;
+  flex-direction: column;
   background-color: rgb(61, 84, 102);
 `;
 

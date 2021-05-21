@@ -24,7 +24,6 @@ const PORT = process.env.PORT || 4000;
       useNewUrlParser: true,
       useCreateIndex: true,
       useUnifiedTopology: true,
-      useFindAndModify: true,
     },
     (error) => {
       if (error) {

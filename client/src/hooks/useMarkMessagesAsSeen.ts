@@ -1,42 +1,34 @@
 import { useMutation } from "@apollo/client";
 import {
   Conversation,
+  LastSeenMessage,
   SeeMessageDocument,
   SeeMessageMutation,
+  UpdateResourceResponse,
 } from "../generated/graphql";
-import { convertIdToDate } from "../utils/functions";
+import { getClosestToDate } from "../utils/functions";
 
 export const useMarkMessagesAsSeen = (conversations: Array<Conversation>) => {
   const [markAsSeen] = useMutation<SeeMessageMutation>(SeeMessageDocument);
 
-  const [{ mostRecentEntryId = "" }] = conversations?.filter((conversation) => {
-    if (conversation.mostRecentEntryId) {
-      const date = convertIdToDate(conversation?.mostRecentEntryId!);
-      const mostRecentDate = new Date(
-        Math.max(
-          ...[convertIdToDate(conversation?.mostRecentEntryId!).getTime()]
-        )
-      );
-      if (date.getTime() === mostRecentDate.getTime()) {
-        return conversation;
-      }
-    }
-    return { mostRecentEntryId: "" };
-  });
+  const mostRecentEntryId = getClosestToDate(Date.now(), conversations);
 
   const updateSeenMessages = async () => {
-    if (conversations.length && mostRecentEntryId) {
+    if (conversations.length) {
       await markAsSeen({
         variables: {
           messageId: mostRecentEntryId,
         },
-        update(cache) {
+        update(cache, { data }) {
+          const lastSeenMsgId = (
+            (data?.seeMessage as UpdateResourceResponse).node as LastSeenMessage
+          ).lastSeenMessageId;
           cache.modify({
             fields: {
               userInbox(cachedEntries) {
                 return {
                   ...cachedEntries,
-                  lastSeenMessageId: mostRecentEntryId,
+                  lastSeenMessageId: lastSeenMsgId,
                 };
               },
             },

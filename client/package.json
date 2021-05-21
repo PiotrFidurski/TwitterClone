@@ -26,7 +26,6 @@
     "react-scripts": "^4.0.0",
     "react-window": "^1.8.6",
     "react-window-infinite-loader": "^1.0.5",
-    "react-window-scroller": "^1.0.10",
     "styled-components": "^5.1.0",
     "subscriptions-transport-ws": "^0.9.18",
     "twemoji": "^13.0.2",

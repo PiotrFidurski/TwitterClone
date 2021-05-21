@@ -66,7 +66,7 @@ export default {
             },
           },
           ...conversationPipeline,
-          { $sort: { mostRecentEntryId: -1 } },
+          { $sort: { createdAt: -1 } },
         ]);
 
         let userIds: Array<string> = [];
