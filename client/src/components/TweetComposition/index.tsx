@@ -42,7 +42,10 @@ export const Tweet: React.FC<Props> & TweetComposition = ({
 
   const handleRedirect = (event: React.BaseSyntheticEvent) => {
     event.stopPropagation();
-    if (!window.getSelection()!.toString())
+    if (
+      !window.getSelection()!.toString() &&
+      event.target.id !== "_Dropdown_backdrop"
+    )
       history!.push(`/${tweet.owner!.username}/status/${tweet!.id}`);
   };
 

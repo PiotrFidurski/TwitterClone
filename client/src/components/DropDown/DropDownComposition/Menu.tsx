@@ -15,21 +15,16 @@ interface Props {
 export const Menu: React.FC<Props> = ({ children, position }) => {
   const { state, menuRef, dispatch } = useDropdown();
 
-  React.useEffect(() => {
-    const handleClose = (e: any) => {
-      if (!menuRef?.current?.contains(e.target)) {
-        close(dispatch);
-      }
-    };
-    window.addEventListener("mousedown", handleClose);
-    return () => window.removeEventListener("mousedown", handleClose);
-    // eslint-disable-next-line
-  }, [close, dispatch]);
+  const handleClose = (e: React.BaseSyntheticEvent) => {
+    if (!menuRef?.current?.contains(e.target)) {
+      close(dispatch);
+    }
+  };
 
   return ReactDOM.createPortal(
     state?.open ? (
       <StyledAbsoluteContainer>
-        <StyledFixedDiv />
+        <StyledFixedDiv onClick={handleClose} id="_Dropdown_backdrop" />
         <StyledAbsoluteContainer />
         <StyledContentsContainer
           ref={menuRef}

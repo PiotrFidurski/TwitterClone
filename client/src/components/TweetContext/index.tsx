@@ -22,7 +22,8 @@ export const TweetProvider: React.FC<TweetProviderProps & IContext> =
     },
     (prevProps, nextProps) =>
       prevProps.tweet.isLiked === nextProps.tweet.isLiked &&
-      prevProps.tweet.replyCount === nextProps.tweet.replyCount
+      prevProps.tweet.replyCount === nextProps.tweet.replyCount &&
+      prevProps.tweet.owner?.isFollowed === nextProps.tweet.owner?.isFollowed
   );
 
 export const useTweet = () => {
