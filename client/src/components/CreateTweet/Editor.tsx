@@ -29,7 +29,7 @@ export const Editor: React.FC<EditorProps> = ({
   };
 
   React.useEffect(() => {
-    if (location.pathname === "/posts/compose") {
+    if (location.pathname === "/tweets/compose") {
       focusRef?.current?.focus();
     }
   }, [location]);
