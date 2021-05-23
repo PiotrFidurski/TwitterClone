@@ -3,19 +3,19 @@ import { Form } from "formik";
 import { Link } from "react-router-dom";
 
 const spin = keyframes`
-  0% {
+  from {
     transform: rotate(0deg);
-  }
-  100% {
+  };
+  to {
     transform: rotate(360deg);
   }
 `;
 
 export const fade = keyframes`
-  0% {
+  from {
 		opacity: 0;
 	}
-	100% {
+	to {
 		opacity: 1;
 	}
 `;

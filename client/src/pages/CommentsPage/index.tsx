@@ -7,6 +7,7 @@ import {
   PrimaryColumn,
   SidebarColumn,
   SpanContainer,
+  Spinner,
 } from "../../styles";
 import { useParams } from "react-router-dom";
 import { User } from "../../generated/introspection-result";
@@ -35,8 +36,16 @@ export const CommentsPage: React.FC<Props> = ({ user }) => {
     variables: { tweetId },
   });
 
-  if (loading) return <></>;
+  React.useEffect(() => {
+    if (loading) document.body.style.margin = "0px 17px 0px 0px";
+  }, [loading]);
 
+  if (loading)
+    return (
+      <BaseStylesDiv flexGrow style={{ maxWidth: "600px" }}>
+        <Spinner />
+      </BaseStylesDiv>
+    );
   return (
     <StyledContainer>
       <PrimaryColumn>

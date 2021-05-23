@@ -16,7 +16,7 @@ import {
 } from "../../../styles";
 import { ReactComponent as Close } from "../../svgs/Close.svg";
 import { HeaderContainer } from "../../TweetComposition/styles";
-import { Background } from "../../../pages/ProfilePage/Profile/styles";
+import { Background } from "../../../pages/ProfilePage/styles";
 import { TextFormField } from "../../FormComponents/TextFormField";
 import { Formik } from "formik";
 import { UploadAvatar } from "../../UploadAvatar";
@@ -26,12 +26,10 @@ import { Errors, IHandleSubmit } from "./types";
 import { schema } from "./validationSchema";
 
 export const EditProfileModal: React.FC = () => {
-  const [updateUser, { called, data: fieldData }] = useMutation(
-    UpdateUserDocument
-  );
-  const [upload, { called: avatarCalled, data: avatarData }] = useMutation(
-    UploadAvatarDocument
-  );
+  const [updateUser, { called, data: fieldData }] =
+    useMutation(UpdateUserDocument);
+  const [upload, { called: avatarCalled, data: avatarData }] =
+    useMutation(UploadAvatarDocument);
 
   const history = useHistory();
 

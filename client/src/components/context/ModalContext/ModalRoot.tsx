@@ -17,7 +17,7 @@ interface Props {
 export const Modals: {
   [type: string]: React.FunctionComponent<any>;
 } = {
-  "/posts/compose": CreateTweetModal,
+  "/tweets/compose": CreateTweetModal,
   "/settings/profile": EditProfileModal,
   "/i/display": CustomizeViewModal,
 };

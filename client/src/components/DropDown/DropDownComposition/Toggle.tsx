@@ -8,7 +8,6 @@ export const Toggle: React.FC = ({ children }) => {
   return (
     <BaseStylesDiv
       ref={toggleRef}
-      id="toggler"
       onClick={(e) => {
         e.stopPropagation();
         open(dispatch);

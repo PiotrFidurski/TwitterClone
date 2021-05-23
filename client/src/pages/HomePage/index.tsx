@@ -1,5 +1,5 @@
 import * as React from "react";
-import { BaseStylesDiv, Main, Spinner } from "../../styles";
+import { BaseStylesDiv, Main } from "../../styles";
 import {
   User,
   UserInboxDocument,
@@ -8,6 +8,7 @@ import {
 import { AutheticatedRoutes } from "../../RoutesContainer/Routes/AuthenticatedRoutes";
 import { HomeSidebar } from "./HomeSidebar";
 import { useQuery } from "@apollo/client";
+import { LoadingPage } from "../LoadingPage";
 
 interface Props {
   user: User;
@@ -16,7 +17,7 @@ interface Props {
 const HomePage: React.FC<Props> = ({ user }) => {
   const inbox = useQuery<UserInboxQuery, any>(UserInboxDocument);
 
-  if (inbox.loading && !inbox.data) return <Spinner />;
+  if (inbox.loading && !inbox.data) return <LoadingPage />;
 
   const { userInbox } = inbox!.data!;
 

@@ -13,8 +13,9 @@ import { useTweet } from "../TweetContext";
 import { useMutation } from "@apollo/client";
 import { LikeTweetDocument } from "../../generated/introspection-result";
 import { useModal } from "../context/ModalContext";
+import { formatNumToK } from "../../utils/functions";
 
-export const LikeTweet = () => {
+export const LikeTweet = React.memo(() => {
   const { openModal, setOpen } = useModal();
   const { data } = useAuthUserQuery();
   const { tweet } = useTweet();
@@ -22,7 +23,7 @@ export const LikeTweet = () => {
     variables: { tweetId: tweet.id },
   });
 
-  const handleLikePost = (e: any) => {
+  function handleLikePost(e: React.BaseSyntheticEvent) {
     e.stopPropagation();
     if (!data!.authUser!.username) {
       return openModal("loginAlert", { closeModal: setOpen });
@@ -45,11 +46,11 @@ export const LikeTweet = () => {
         },
       } as LikeTweetMutation,
     });
-  };
+  }
 
   return (
     <InteractiveIcon color="rgb(224, 36, 94)">
-      <HoverContainer onClick={(e) => handleLikePost(e)}>
+      <HoverContainer onClick={handleLikePost}>
         <BaseStylesDiv>
           <Absolute biggerMargin />
           {tweet.isLiked ? <Liked /> : <NotLiked />}
@@ -64,9 +65,11 @@ export const LikeTweet = () => {
             }`,
           }}
         >
-          <span>{tweet.likesCount! > 0 && tweet.likesCount}</span>
+          <span>
+            {tweet.likesCount! > 0 && formatNumToK(tweet.likesCount!)}
+          </span>
         </SpanContainer>
       </HoverContainer>
     </InteractiveIcon>
   );
-};
+});

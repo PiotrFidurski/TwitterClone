@@ -60,3 +60,9 @@ export function getClosestToDate(date: Date | number, array: Conversation[]) {
 
   return dateK[closestTo(date, dates).getTime()].mostRecentEntryId;
 }
+
+export function formatNumToK(num: number) {
+  return Math.abs(num) > 999
+    ? `${Math.sign(num) * Number((Math.abs(num) / 1000).toFixed(1))} k`
+    : Math.sign(num) * Math.abs(num);
+}

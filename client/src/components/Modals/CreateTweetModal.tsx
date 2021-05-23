@@ -71,7 +71,10 @@ export const CreateTweetModal: React.FC = () => {
                         <div style={{ padding: "5px 0 15px 0" }}>
                           <SpanContainer grey>
                             <span>
-                              Replying to @{data!.tweet.node!.owner?.username}
+                              Replying to{" "}
+                              <span style={{ color: "var(--colors-button)" }}>
+                                @{data!.tweet.node!.owner?.username}
+                              </span>
                             </span>
                           </SpanContainer>
                         </div>

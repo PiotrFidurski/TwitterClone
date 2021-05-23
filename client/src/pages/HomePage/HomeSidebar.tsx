@@ -205,7 +205,7 @@ export const HomeSidebar: React.FC<Props> = ({ ...props }) => {
         </DropdownProvider>
         <NavLink
           to={{
-            pathname: "/posts/compose",
+            pathname: "/tweets/compose",
             state: {
               ...location.state,
               isModalLocaction: location,

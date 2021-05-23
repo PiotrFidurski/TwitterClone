@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { BaseStyles } from "../../../styles";
+import { BaseStyles } from "../../styles";
 
 export const StyledHeaderContainer = styled.div`
   ${BaseStyles};
@@ -24,13 +24,6 @@ export const Background = styled.div`
   flex-grow: 1;
   flex-direction: column;
   background-color: rgb(61, 84, 102);
-`;
-
-export const Wrapper = styled.div`
-  ${BaseStyles};
-  margin-bottom: 15px;
-  padding: 10px 15px 0 15px;
-  flex-direction: column;
 `;
 
 export const NavWrapper = styled.div`

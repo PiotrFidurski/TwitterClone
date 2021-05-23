@@ -21,6 +21,8 @@ export const Editor: React.FC<EditorProps> = ({
     state: { open: emojiPickerOpen },
   } = useDropdown();
 
+  const hasContent = editorState.getCurrentContent().getPlainText().length;
+
   const handleChange = (state: EditorState) => {
     setFieldValue("body", state.getCurrentContent().getPlainText());
     setState(state);
@@ -30,12 +32,11 @@ export const Editor: React.FC<EditorProps> = ({
     if (location.pathname === "/posts/compose") {
       focusRef?.current?.focus();
     }
-    if (
-      editorState.getCurrentContent().getPlainText().length &&
-      !emojiPickerOpen
-    )
-      focusRef?.current?.focus();
-  }, [location, emojiPickerOpen, editorState]);
+  }, [location]);
+
+  React.useEffect(() => {
+    if (hasContent && !emojiPickerOpen) focusRef?.current?.focus();
+  }, [hasContent, emojiPickerOpen]);
 
   const handleReturn = (
     e: React.SyntheticEvent<any, KeyboardEvent>,

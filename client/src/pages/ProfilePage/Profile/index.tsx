@@ -19,7 +19,7 @@ import { StyledLink } from "../../../styles";
 import { MessageUserDocument } from "../../../generated/introspection-result";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 import { useModal } from "../../../components/context/ModalContext";
-import { StyledContainer, StyledHeaderContainer } from "./styles";
+import { StyledContainer, StyledHeaderContainer } from "../styles";
 import { ProfileTweetsWrapper } from "./ProfileTweetsWrapper";
 
 interface Props {

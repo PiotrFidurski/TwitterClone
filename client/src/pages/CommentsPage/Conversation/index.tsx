@@ -1,6 +1,5 @@
 import * as React from "react";
-import { Connector, JustifyCenter, Spinner } from "../../../styles";
-import { DetailsInfo } from "./styles";
+import { BaseStyles, Connector, JustifyCenter, Spinner } from "../../../styles";
 import { BaseStylesDiv, SpanContainer } from "../../../styles";
 import {
   ConversationQuery,
@@ -20,6 +19,15 @@ import { DropdownProvider } from "../../../components/DropDown/context";
 import { dynamicReducer } from "../../../components/DropDown/reducers";
 import { useQuery } from "@apollo/client";
 import { ConversationDocument } from "../../../generated/introspection-result";
+import styled from "styled-components";
+
+const DetailsInfo = styled.div`
+  ${BaseStyles};
+  border-top: 1px solid var(--colors-border);
+  border-bottom: 1px solid var(--colors-border);
+  padding: 15px 0;
+  margin-top: 10px;
+`;
 
 interface Props {
   tweet: TweetType;
@@ -34,7 +42,12 @@ export const Conversation: React.FC<Props> = ({ tweet, user }) => {
     },
   });
 
-  if (loading) return <Spinner />;
+  if (loading)
+    return (
+      <BaseStylesDiv style={{ marginTop: "-50px" }}>
+        <Spinner />
+      </BaseStylesDiv>
+    );
 
   return (
     <React.Fragment>

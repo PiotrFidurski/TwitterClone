@@ -17,6 +17,7 @@ import { ReactComponent as Options } from "../svgs/Options.svg";
 import { ReactComponent as Reply } from "../svgs/Reply.svg";
 import { LikeTweet } from "./LikeTweet";
 import { StyledFooterWrapper } from "./styles";
+import { formatNumToK } from "../../utils/functions";
 
 export interface FooterProps {
   marginAuto?: boolean;
@@ -43,7 +44,7 @@ export const Footer: React.FC<FooterProps> = ({ marginAuto }) => {
               to={
                 data && data!.authUser!.username
                   ? {
-                      pathname: "/posts/compose",
+                      pathname: "/tweets/compose",
                       state: {
                         isModalLocaction: location,
                         tweetId: tweet!.id,
@@ -57,7 +58,11 @@ export const Footer: React.FC<FooterProps> = ({ marginAuto }) => {
                 <Reply />
               </BaseStylesDiv>
               <SpanContainer smaller textCenter>
-                <span>{tweet.replyCount! > 0 ? tweet.replyCount! : null}</span>
+                <span>
+                  {tweet.replyCount! > 0
+                    ? formatNumToK(tweet.replyCount!)
+                    : null}
+                </span>
               </SpanContainer>
             </StyledLink>
           </HoverContainer>

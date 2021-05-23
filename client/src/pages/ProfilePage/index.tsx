@@ -44,7 +44,12 @@ export const ProfilePage: React.FC<Props> = ({ user }) => {
 
   React.useEffect(() => window.scrollTo({ top: 0 }), []);
 
-  if (loading) return <Spinner />;
+  if (loading)
+    return (
+      <BaseStylesDiv flexGrow style={{ maxWidth: "600px" }}>
+        <Spinner />
+      </BaseStylesDiv>
+    );
 
   return (
     <StyledContainer>

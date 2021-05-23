@@ -68,14 +68,16 @@ export const ProfileTweetsWrapper: React.FC<Props> = ({
 
   return userData?.userByName?.__typename === "UserByNameSuccess" &&
     data?.[type].__typename === "TweetConnection" ? (
-    <VirtualizedList
-      showTweetBorder={true}
-      showThreadLine={false}
-      data={data?.[type]?.edges!}
-      userId={userData!.userByName!.node.id!}
-      loadMore={loadMore}
-      hasNextPage={data?.[type]?.pageInfo!.hasNextPage}
-    />
+    <div id="feed">
+      <VirtualizedList
+        showTweetBorder={true}
+        showThreadLine={false}
+        data={data?.[type]?.edges!}
+        userId={userData!.userByName!.node.id!}
+        loadMore={loadMore}
+        hasNextPage={data?.[type]?.pageInfo!.hasNextPage}
+      />
+    </div>
   ) : data?.[type].__typename === "TweetsInvalidInputError" ? (
     <BaseStylesDiv flexGrow>
       <JustifyCenter>
