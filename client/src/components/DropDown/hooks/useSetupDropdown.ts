@@ -22,8 +22,8 @@ export const useSetupDropdown = ({ reducer = baseReducer } = {}) => {
       dispatch({
         type: actionTypes.setMenuSize,
         value: {
-          width: menuRef?.current?.clientWidth,
-          height: menuRef?.current?.clientHeight,
+          width: menuRef?.current?.clientWidth!,
+          height: menuRef?.current?.clientHeight!,
         },
       });
   }, [state.open]);

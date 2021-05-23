@@ -13,7 +13,7 @@ serverConfig();
 const DBURI =
   process.env.NODE_ENV === "production"
     ? `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.riogn.mongodb.net/api?retryWrites=true&w=majority`
-    : `mongodb://Chimson:secret@127.0.0.1:27017/api`;
+    : `mongodb://${process.env.DB_LOCAL_USERNAME}:${process.env.DB_LOCAL_PASSWORD}@127.0.0.1:27017/${process.env.DB_LOCAL_NAME}`;
 
 const PORT = process.env.PORT || 4000;
 

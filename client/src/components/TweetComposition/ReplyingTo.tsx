@@ -15,17 +15,18 @@ export const ReplyingTo: React.FC = () => {
   const { tweet, prevTweet } = useTweet();
 
   const { tweetId } = useParams<{ tweetId: string }>();
-
+  console.log(tweet);
   return (
     <BaseStylesDiv style={{ margin: "0 0 4px 0" }}>
       {prevTweet &&
       tweet.inReplyToId !== null &&
       tweet.inReplyToId !== prevTweet.id &&
-      tweet.inReplyToId !== tweetId ? (
+      tweet.inReplyToId !== tweetId &&
+      tweet.inReplyToUsername ? (
         <SpanContainer grey>
           <span id="link">Replying to</span>{" "}
           <Link
-            to={`/user/${tweet!.owner!.username}`}
+            to={`/user/${tweet.inReplyToUsername}`}
             onClick={(e) => e.stopPropagation()}
             style={{ textDecoration: "none", color: "inherit" }}
           >

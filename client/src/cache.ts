@@ -53,8 +53,11 @@ export const cache: InMemoryCache = new InMemoryCache({
         inReplyToUsername: {
           read(existing = "", { readField, toReference }) {
             const field: any = readField("inReplyToId");
+
             const ref = toReference({ id: field!, __typename: "Tweet" });
-            const owner: any = readField("owner", ref);
+
+            const owner: any = readField("owner", ref!);
+
             const username = readField("username", owner);
             return username ? username : existing;
           },
