@@ -76,7 +76,7 @@ export const Form: React.FC<Props> = ({ tweetToReplyTo }) => {
       )
     );
 
-    if (history.location.pathname === "/posts/compose") {
+    if (history.location.pathname === "/tweets/compose") {
       setTimeout(() => {
         closeModal();
       }, 50);
