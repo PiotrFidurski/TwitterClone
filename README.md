@@ -4,13 +4,13 @@
 [Introduction](#introduction)  
 [Stack](#stack)    
 [Setup](#setup)  
-[Demo](#deployed)  
+[Demo](#demo) 
 
 <a name="introduction"/>
 <a name="stack"/>
 <a name="setup"/>
 <a name="screenshots"/>
-<a name="deployed"/>
+<a name="demo"/>
 
 ## Introduction
 
@@ -53,16 +53,15 @@ Simple stripped down version of twitter app created with Nodejs, graphql, mongod
     REDIS_USERNAME  
     REDIS_PASSWORD  
     
-   - run ```npm install``` to start server development u can run ```npm start```, for the client side ```cd client && npm start```, if u have ```concurrently```
-    installed on your machine u can run ```npm run dev```, which starts ur server, client, mongodb process and a redis-server
+   - run ```npm install``` to start development server  u can run ```npm start```, for the client side ```cd client && npm start```
+   - If u have ```concurrently``` installed on your machine u can run ```npm run dev```, which starts ur server, client, mongodb process and a redis-server
   
   ```yaml
   "scripts": {
      "dev": "concurrently \"ts-node-dev --respawn --transpile-only index.ts\" \"cd client && npm start\" \"mongod --auth\" \"redis-server\""
     }
   ```
-
- 
+  
  ## Demo:
  
   - If You wish to see how the app looks without installing anything feel free to visit:
