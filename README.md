@@ -66,3 +66,5 @@ Simple stripped down version of twitter app created with Nodejs, graphql, mongod
  
   - If You wish to see how the app looks without installing anything feel free to visit:
   https://frozen-ridge-40926.herokuapp.com/home and create an account.
+  
+  ![vino map gif](https://github.com/chimson/TwitterClone/blob/master/client/github_markdown_screens/oBNE3rjQ7O.gif)
