@@ -15,7 +15,7 @@ export const ReplyingTo: React.FC = () => {
   const { tweet, prevTweet } = useTweet();
 
   const { tweetId } = useParams<{ tweetId: string }>();
-  console.log(tweet);
+
   return (
     <BaseStylesDiv style={{ margin: "0 0 4px 0" }}>
       {prevTweet &&

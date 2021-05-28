@@ -54,7 +54,12 @@ export default {
     randomUsers: async (_, { userId }) => {
       try {
         const users = await User.aggregate([
-          { $match: { _id: { $ne: Types.ObjectId(userId) } } },
+          {
+            $match: {
+              _id: { $ne: Types.ObjectId(userId) },
+              followers: { $nin: [Types.ObjectId(userId)] },
+            },
+          },
           { $sample: { size: 3 } },
           ...userPipeline,
         ]);
