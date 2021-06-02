@@ -53,7 +53,9 @@ Simple stripped down version of twitter app created with Nodejs, graphql, mongod
     REDIS_USERNAME  
     REDIS_PASSWORD  
     
-   - run ```npm install``` to start development server  u can run ```npm start```, for the client side ```cd client && npm start```
+   - run ```npm install``` 
+   - to start development server  u can run ```npm start```
+   - for the client side ```cd client && npm start```
    - If u have ```concurrently``` installed on your machine u can run ```npm run dev```, which starts ur server, client, mongodb process and a redis-server
   
   ```yaml
