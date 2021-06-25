@@ -20,19 +20,22 @@ export const useMarkMessagesAsSeen = (conversations: Array<Conversation>) => {
           messageId: mostRecentEntryId,
         },
         update(cache, { data }) {
-          const lastSeenMsgId = (
-            (data?.seeMessage as UpdateResourceResponse).node as LastSeenMessage
-          ).lastSeenMessageId;
-          cache.modify({
-            fields: {
-              userInbox(cachedEntries) {
-                return {
-                  ...cachedEntries,
-                  lastSeenMessageId: lastSeenMsgId,
-                };
+          if (data?.seeMessage.__typename === "UpdateResourceResponse") {
+            const lastSeenMsgId = (
+              (data?.seeMessage as UpdateResourceResponse)
+                .node as LastSeenMessage
+            ).lastSeenMessageId;
+            cache.modify({
+              fields: {
+                userInbox(cachedEntries) {
+                  return {
+                    ...cachedEntries,
+                    lastSeenMessageId: lastSeenMsgId,
+                  };
+                },
               },
-            },
-          });
+            });
+          }
         },
       });
     }

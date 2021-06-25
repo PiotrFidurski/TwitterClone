@@ -1,4 +1,4 @@
-import { closestTo, formatDistanceToNowStrict, format } from "date-fns";
+import { closestTo, format, formatDistanceToNowStrict } from "date-fns";
 import { Conversation } from "../generated/graphql";
 
 export const mergeRefs =
@@ -53,12 +53,13 @@ export function getClosestToDate(date: Date | number, array: Conversation[]) {
   array?.forEach((conversation) => {
     if (conversation.mostRecentEntryId) {
       let date = convertIdToDate(conversation?.mostRecentEntryId!);
+
       dates = [...dates, date];
       return (dateK[date.getTime().toString()] = conversation);
     }
   });
 
-  return dateK[closestTo(date, dates).getTime()].mostRecentEntryId;
+  return dateK[closestTo(date, dates)?.getTime()].mostRecentEntryId;
 }
 
 export function formatNumToK(num: number) {

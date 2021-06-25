@@ -147,9 +147,13 @@ export const tweetPipeline = [
     },
   },
   { $unwind: "$owner" },
-  { $addFields: { modelType: "Tweet" } },
-  { $addFields: { likesCount: "$likesCount.count" } },
-  { $addFields: { replyCount: "$replyCount.count" } },
+  {
+    $addFields: {
+      modelType: "Tweet",
+      likesCount: { $size: "$likes" },
+      replyCount: "$replyCount.count",
+    },
+  },
 ];
 
 export const fetchMoreTweets = async (

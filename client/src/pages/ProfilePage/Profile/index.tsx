@@ -1,24 +1,29 @@
-import * as React from "react";
-import { SpanContainer, BaseStylesDiv, StyledAvatar } from "../../../styles";
-import { AvatarContainer, ButtonContainer } from "../../../styles";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 import format from "date-fns/format";
+import * as React from "react";
+import { useHistory, useLocation } from "react-router-dom";
+import { useModal } from "../../../components/context/ModalContext";
+import { ReactComponent as Message } from "../../../components/svgs/Messages.svg";
 import {
-  MessageUserMutation,
-  useFollowUserMutation,
-  User,
-  MessageUserSuccess,
-  UserTweetsDocument,
-  UserTweetsAndRepliesDocument,
-  UserLikedTweetsDocument,
   AuthUserDocument,
   AuthUserQuery,
+  MessageUserMutation,
+  MessageUserSuccess,
+  useFollowUserMutation,
+  User,
+  UserLikedTweetsDocument,
+  UserTweetsAndRepliesDocument,
+  UserTweetsDocument,
 } from "../../../generated/graphql";
-import { ReactComponent as Message } from "../../../components/svgs/Messages.svg";
-import { useHistory, useLocation } from "react-router-dom";
-import { StyledLink } from "../../../styles";
 import { MessageUserDocument } from "../../../generated/introspection-result";
-import { useApolloClient, useMutation, useQuery } from "@apollo/client";
-import { useModal } from "../../../components/context/ModalContext";
+import {
+  AvatarContainer,
+  BaseStylesDiv,
+  ButtonContainer,
+  SpanContainer,
+  StyledAvatar,
+  StyledLink,
+} from "../../../styles";
 import { StyledContainer, StyledHeaderContainer } from "../styles";
 import { ProfileTweetsWrapper } from "./ProfileTweetsWrapper";
 
@@ -123,7 +128,7 @@ export const Profile: React.FC<Props> = ({ user }) => {
       });
       history.push(`/messages/${data?.node?.conversationId}`);
     } catch (error) {
-      throw new Error(error);
+      throw new Error(error as any);
     }
   };
 
