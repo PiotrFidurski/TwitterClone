@@ -1,18 +1,18 @@
-import User from "../entity/User";
+import { RedisPubSub } from "graphql-redis-subscriptions";
+import { withFilter } from "graphql-subscriptions";
 import { IResolvers } from "graphql-tools";
+import Redis from "ioredis";
+import { Types } from "mongoose";
 import { OwnContext } from "types";
 import Conversation from "../entity/Conversation/index";
-import Message from "../entity/Message";
-import { withFilter } from "graphql-subscriptions";
-import { Types } from "mongoose";
 import LastSeenMessage from "../entity/Conversation/LastSeenMessage";
+import Message from "../entity/Message";
+import User from "../entity/User";
 import {
   checkForValidObjectIds,
   conversationPipeline,
   resolve,
 } from "../utilities/resolverUtils";
-import Redis from "ioredis";
-import { RedisPubSub } from "graphql-redis-subscriptions";
 
 const subscriber = new Redis({
   host: `${process.env.REDIS_HOST}`,

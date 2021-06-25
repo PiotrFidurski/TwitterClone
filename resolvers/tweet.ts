@@ -1,16 +1,16 @@
+import { ApolloError } from "apollo-server-express";
 import { IResolvers } from "graphql-tools";
-import { OwnContext } from "../types";
+import { Types } from "mongoose";
 import Tweet, { ITweet } from "../entity/Tweet";
 import User from "../entity/User";
 import schema from "../schemaValidation/post";
-import { Types } from "mongoose";
+import { OwnContext } from "../types";
 import {
-  tweetPipeline,
-  fetchMoreTweets,
   checkForValidObjectIds,
+  fetchMoreTweets,
   resolve,
+  tweetPipeline,
 } from "../utilities/resolverUtils";
-import { ApolloError } from "apollo-server-express";
 
 export default {
   Query: {

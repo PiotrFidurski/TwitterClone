@@ -1,12 +1,12 @@
-import "dotenv/config";
 import { ApolloServer } from "apollo-server-express";
-import typeDefs from "./typeDefs";
-import resolvers from "./resolvers";
-import AuthDirective from "./customDirectives/AuthDirective";
-import { app, serverConfig, sessionMiddleware } from "./config/expressServer";
+import "dotenv/config";
 import { createServer } from "http";
-import { connect } from "mongoose";
 import { decode } from "jsonwebtoken";
+import { connect } from "mongoose";
+import { app, serverConfig, sessionMiddleware } from "./config/expressServer";
+import AuthDirective from "./customDirectives/AuthDirective";
+import resolvers from "./resolvers";
+import typeDefs from "./typeDefs";
 
 serverConfig();
 
