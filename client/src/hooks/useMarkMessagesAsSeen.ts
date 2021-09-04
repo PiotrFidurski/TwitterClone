@@ -14,7 +14,7 @@ export const useMarkMessagesAsSeen = (conversations: Array<Conversation>) => {
   const mostRecentEntryId = getClosestToDate(Date.now(), conversations);
 
   const updateSeenMessages = async () => {
-    if (conversations.length) {
+    if (conversations.length && mostRecentEntryId) {
       await markAsSeen({
         variables: {
           messageId: mostRecentEntryId,

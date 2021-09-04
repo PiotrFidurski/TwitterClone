@@ -1,27 +1,27 @@
 import { useMutation } from "@apollo/client";
 import * as React from "react";
-import { useLocation, Link, useHistory } from "react-router-dom";
-import {
-  User,
-  Conversation as ConversationType,
-  ReadConversationMutation,
-  ReadConversationDocument,
-} from "../../generated/graphql";
-import {
-  BaseStylesDiv,
-  AvatarContainer,
-  StyledAvatar,
-  SpanContainer,
-} from "../../styles";
-import { convertDateToTime } from "../../utils/functions";
-import { useMarkMessagesAsSeen } from "../../hooks/useMarkMessagesAsSeen";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import { Twemoji } from "../../components/TwemojiPicker/Twemoji";
 import {
-  StyledConversation,
-  StyledConversationWrapper,
-  StyledConversationHeader,
-} from "./styles";
+  Conversation as ConversationType,
+  ReadConversationDocument,
+  ReadConversationMutation,
+  User,
+} from "../../generated/graphql";
 import { UserInboxQueryResult } from "../../generated/introspection-result";
+import { useMarkMessagesAsSeen } from "../../hooks/useMarkMessagesAsSeen";
+import {
+  AvatarContainer,
+  BaseStylesDiv,
+  SpanContainer,
+  StyledAvatar,
+} from "../../styles";
+import { convertDateToTime } from "../../utils/functions";
+import {
+  StyledConversation,
+  StyledConversationHeader,
+  StyledConversationWrapper,
+} from "./styles";
 
 interface Props {
   conversation: ConversationType;

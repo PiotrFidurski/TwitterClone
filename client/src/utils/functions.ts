@@ -48,18 +48,18 @@ export function convertIdToDate(value: string) {
 
 export function getClosestToDate(date: Date | number, array: Conversation[]) {
   let dates: Array<Date> = [];
-  let dateK: Array<{ [key: string]: Conversation }> = [];
+  let dateKey: Array<{ [key: string]: Conversation }> = [];
 
   array?.forEach((conversation) => {
     if (conversation.mostRecentEntryId) {
       let date = convertIdToDate(conversation?.mostRecentEntryId!);
 
       dates = [...dates, date];
-      return (dateK[date.getTime().toString()] = conversation);
+      return (dateKey[date.getTime().toString()] = conversation);
     }
   });
-
-  return dateK[closestTo(date, dates)?.getTime()].mostRecentEntryId;
+  console.log(dateKey);
+  return dateKey[closestTo(date, dates)?.getTime()]?.mostRecentEntryId;
 }
 
 export function formatNumToK(num: number) {
