@@ -72,14 +72,7 @@ export const VirtualizedList: React.FC<Props> = ({ ...props }) => {
   return (
     <InfiniteLoader
       itemCount={hasNextPage! ? data.length! + 1 : data.length!}
-      loadMoreItems={
-        loading
-          ? async () => {}
-          : (loadMore as (
-              startIndex: number,
-              stopIndex: number
-            ) => Promise<any> | null)
-      }
+      loadMoreItems={loading ? async () => {} : (loadMore as any)}
       isItemLoaded={isItemLoaded}
     >
       {({ onItemsRendered, ref }) => (
