@@ -58,7 +58,7 @@ export function getClosestToDate(date: Date | number, array: Conversation[]) {
       return (dateKey[date.getTime().toString()] = conversation);
     }
   });
-  console.log(dateKey);
+
   return dateKey[closestTo(date, dates)?.getTime()]?.mostRecentEntryId;
 }
 

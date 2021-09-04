@@ -1,10 +1,10 @@
+import memoize from "memoize-one";
 import * as React from "react";
 import { VariableSizeList } from "react-window";
-import memoize from "memoize-one";
 import InfiniteLoader from "react-window-infinite-loader";
-import { Row } from "./Row";
-import { JustifyCenter, SpanContainer, Spinner } from "../../styles";
 import { Tweet } from "../../generated/graphql";
+import { JustifyCenter, SpanContainer, Spinner } from "../../styles";
+import { Row } from "./Row";
 import { Props } from "./types";
 import { useWindowScroller } from "./useWindowScroller";
 
@@ -72,7 +72,14 @@ export const VirtualizedList: React.FC<Props> = ({ ...props }) => {
   return (
     <InfiniteLoader
       itemCount={hasNextPage! ? data.length! + 1 : data.length!}
-      loadMoreItems={loading ? async () => {} : loadMore}
+      loadMoreItems={
+        loading
+          ? async () => {}
+          : (loadMore as (
+              startIndex: number,
+              stopIndex: number
+            ) => Promise<any> | null)
+      }
       isItemLoaded={isItemLoaded}
     >
       {({ onItemsRendered, ref }) => (
