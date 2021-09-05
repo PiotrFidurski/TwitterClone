@@ -14,7 +14,7 @@
 
 ## Introduction
 
-Simple stripped down version of twitter app created with Nodejs, graphql, mongodb, and React. 
+Simple stripped down version of twitter app created with Nodejs, graphql, mongodb, and React. Visit at [Twitterclone](https://frozen-ridge-40926.herokuapp.com/home)
 
 ## Stack: 
   - Typescript 🔠
